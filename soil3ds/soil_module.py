@@ -1,6 +1,7 @@
 import IOtable
 from scipy import *
 from copy import deepcopy
+import numpy as np
 #from openalea.plantgl.all import *
 #import sys
 #path_ = r'H:\devel\grassland\grassland\luzerne'
@@ -196,6 +197,12 @@ class Soil(object):
         self.init_asw(HRp_init=None)  # initialise par defaut a la capacite au champ...
         # self.update_ftsw()
 
+        xs = np.cumsum(np.array(self.dxyz[0])) - self.dxyz[0][0] + self.pattern[0][0] / 100 #S.pattern  in cm #S.dxyz  # m
+        ys = np.cumsum(np.array(self.dxyz[1])) - self.dxyz[1][0] + self.pattern[0][1] / 100
+        zs = -np.cumsum(np.array(self.dxyz[2])) + self.dxyz[2][0]
+        self.corners = [xs,ys,zs]#m
+
+
     def build_teta_m(self, par_sol, key='teta_fc'):
         m_teta = []#m_teta = matrice de teneur en eau volumique
         for z in range(len(self.m_soil_number)):
@@ -377,6 +384,10 @@ class Soil(object):
     def soilSurface(self):
         """ compute soil surface (m2) """
         return sum(self.dxyz[0])*sum(self.dxyz[1])
+
+    def get_vox_coordinates(self, z, x, y):
+        """ to get the corner coordinates of a voxel from his IDs"""
+        return np.array([self.corners[0][x], self.corners[1][y], self.corners[2][z]])
 
     def stepWBmc(self, Et0, ls_roots, ls_epsi, Rain, Irrig, previous_state, ZESX=0.3, leafAlbedo=0.15, U=5., b=0.63, FTSWThreshold=0.4, treshEffRoots=0.5, opt=1):
         """ calcul du bilan hydrique journalier """
