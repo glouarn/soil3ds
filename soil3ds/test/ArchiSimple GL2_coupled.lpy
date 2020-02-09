@@ -14,6 +14,7 @@ import time as t
 import sys
 import csv
 import os
+import pandas as pd
 
 # import du sol 3ds + test
 from soil3ds import soil_moduleN as solN
@@ -30,7 +31,7 @@ import impulse.soil.soil as soil_interface
 #import IOxls
 #import IOtable
 
-path_leg = r'C:\devel\archisimple_lpy\GL sur pc serge'#r'C:\devel\racine vincent'
+path_leg = r'H:\Travail\devel\backup new\archisimple_lpy\GL sur pc serge'#r'C:\devel\racine vincent'
 sys.path.insert(0, path_leg)
 import IOxls
 import IOtable
@@ -40,16 +41,22 @@ path_plante = os.path.join(path_leg,'param_root.xls')
 ongletP = 'sevanskij'#'leo'#'canto'#'formica'#'timbale'#'giga'#'canto'#'kayanne'#
 ParamP = IOxls.read_plant_param(path_plante, ongletP)
 
-path_offre=os.path.join(path_leg,"offremleg15","moyenne"+".csv")#ongletP+".csv")#"moyenne"-> pour allocation moyenne independante des especes
-fichier_offre=open(path_offre,"rb")
-taboffre =  IOtable.conv_dataframe(IOtable.t_list( IOtable.table_csv_str(fichier_offre)))
-fichier_offre.close()
+path_offre=os.path.join(path_leg,"offremleg15","moyenne_"+".csv")#ongletP+".csv")#"moyenne"-> pour allocation moyenne independante des especes
 
+#fichier_offre=open(path_offre,"rb")
+#taboffre =  IOtable.conv_dataframe(IOtable.t_list( IOtable.table_csv_str(fichier_offre)))
+#fichier_offre.close()
+
+
+df = pd.read_csv(r'H:\Travail\devel\backup new\archisimple_lpy\GL sur pc serge\offremleg15\moyenne_.csv', sep=';')
+TT = list(df[df.V1=="TT"]["moyenne"])
+MSRacFine = list(df[df.V1=="MS_rac_fine"]["moyenne"])
 
 #print taboffre.keys()
 
-TT = map(float, IOtable.extract_dataframe(taboffre, taboffre.keys(), 'V1', val='TT')[taboffre.keys()[2]])#taboffre.keys()[2]#0 pour WC
-MSRacFine = map(float, IOtable.extract_dataframe(taboffre, taboffre.keys(), 'V1', val='MS_rac_fine')[taboffre.keys()[2]])#taboffre.keys()[2]
+#TT = map(float, IOtable.extract_dataframe(taboffre, taboffre.keys(), 'V1', val='TT')[taboffre.keys()[2]])#taboffre.keys()[2]#0 pour WC
+#MSRacFine = map(float, IOtable.extract_dataframe(taboffre, taboffre.keys(), 'V1', val='MS_rac_fine')[taboffre.keys()[2]])#taboffre.keys()[2]
+
 decalj=3  # decalage en jour dans TT pour prendre le premier jour
 Rseed = 0
 
@@ -277,8 +284,9 @@ r3=[0,0,0]  #/* Position d'origine du système racinaire */
 
 
 #fichier_sol=open(r'C:\devel\archisimple_lpy\GL sur pc serge\sol2.txt',"rb")#r'C:\devel\racine vincent\sol2.txt'#
-fichier_sol=open(os.path.join(path_leg,'sol2.txt'),"rb")
+fichier_sol=open(os.path.join(path_leg,'sol2.txt'),"r")#"rb", encoding=<theencodingofthefile>)
 tableau_sol=csv.reader(fichier_sol,delimiter='	')
+
 Sol=[]
 j=0
 for x in tableau_sol:
@@ -290,7 +298,7 @@ fichier_sol.close()
 
 
 #fichier_volrac=open(r'C:\devel\archisimple_lpy\GL sur pc serge\volrac.txt',"rb")#r'C:\devel\racine vincent\volrac.txt'#
-fichier_volrac=open(os.path.join(path_leg,'volrac.txt'),"rb")
+fichier_volrac=open(os.path.join(path_leg,'volrac.txt'),"r")#"rb")
 tableau_volrac=csv.reader(fichier_volrac,delimiter='	')
 volrac=[]
 for x in tableau_volrac:
@@ -411,7 +419,7 @@ def Gravitropisme(vertex,segment,profondeur,elong,init):#age,ordre,Turtle):
     newtortue=tortue+G+Meca
     newtortue=newtortue/np.linalg.norm(newtortue)
     A=np.array([0.,0.,0.])
-    for i in xrange(3):
+    for i in range(3):
       a=np.array([Tortue[0,:],Tortue[1,:],Tortue[2,:]])
       a[:,i]=newtortue
       A[i]=np.linalg.det(a)/float(np.linalg.det(Tortue))
@@ -475,7 +483,7 @@ def axialtree2mtg2(tree, scale, scene, parameters):
   def change_id(axial_id, mtg_id):
     mtg.property('_axial_id')[mtg_id] = axial_id
     if geoms:
-      if geoms.has_key(axial_id):
+      if geoms.__contains__(axial_id):#geoms.has_key(axial_id):
         for shape in geoms[axial_id]:
           shape.id = mtg_id
         mtg.property('geometry')[mtg_id]=geoms[axial_id]
@@ -499,7 +507,7 @@ def axialtree2mtg2(tree, scale, scene, parameters):
   current_vertex = vid
   branching_stack = [vid]
   
-  max_scale = max(scale.itervalues())  
+  max_scale = max(iter(scale.values()))  
   pending_edge=''  #edge type for the next edge to be created
   indoor=0
   #pending_edge=[]  ####
@@ -705,7 +713,7 @@ def EndEach(lstring,lscene):
   if TPS in TTdays:#fait step wtaer balance pas tous les degres jours: uniquement 1 fois par jour (TT indiques dans TTdays)
     ls_roots = [soil3D2s3DSprop(mysoil, S, 'root_length')]
     ls_transp, evapo_tot, ls_drainage, stateEV,  ls_m_transpi, m_evap, ls_ftsw = S.stepWBmc(Et0[j], ls_roots, [epsi[j]], Rain[j], Irrig[j], stateEV)
-    print 'tp water balance:', TPS
+    print ('tp water balance:', TPS)
   
   #frameDisplay(True)
   #Viewer.display(lscene)
@@ -718,13 +726,13 @@ def EndEach(lstring,lscene):
 def End():
   global timing,chemin_fichier,out, path_leg, ongletP, Rseed
   #chemin_fichier.close()
-  print 'Execution time :',t.time()-timing
-  print mysoil.m['root_length'][:,:,0]
-  print mysoil.m['ftsw_t'][:,:,0]
+  print ('Execution time :',t.time()-timing)
+  print (mysoil.m['root_length'][:,:,0])
+  print (mysoil.m['ftsw_t'][:,:,0])
   
   #ecriture en sortie du profil racinaire
   resrootpath = os.path.join(path_leg, 'toto_out_root_'+ongletP+"_seed"+str(Rseed)+'.csv')
-  f = file (resrootpath, 'w')
+  f = open(resrootpath, 'w')
   IOtable.ecriture_csv(out, f)
   f.close()
   

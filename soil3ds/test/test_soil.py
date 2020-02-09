@@ -18,7 +18,7 @@ def init_sol(inis, meteo_j, par_sol, par_SN, Lsol, discret_solXY, dz_sol, patter
     """ soil initialisation from L-py"""
     # vecteurs d'initialisation du sol
     Tsol = meteo_j['Tsol']  # 15. #degresC
-    num_nb = map(int, inis['num_nb'])  # [6,6,18] #nbr de couche de chaque num de sol
+    num_nb = list(map(int, inis['num_nb']))  # [6,6,18] #nbr de couche de chaque num de sol
     vsoilnumbers = [1] * num_nb[0] + [2] * num_nb[1] + [3] * num_nb[2]  # convention autorise 3 types d'horizon max
     # vDA = [par_SN['DA'][0]]*num_nb[0] + [par_SN['DA'][1]]*num_nb[1] + [par_SN['DA'][2]]*num_nb[2] #densite apparente de sol
     vCN = [par_SN['CN0_30']] * num_nb[0] + [par_SN['CN30_60']] * num_nb[1] + [par_SN['CN60_90']] * num_nb[
@@ -109,7 +109,7 @@ dz_sol = inis['dz_sol']  # 4.#5. #cm
 ncouches_sol = int(inis['ncouches_sol'])  # 4#10#30
 prof_sol_max = ncouches_sol * dz_sol  # 80.
 
-discret_solXY = map(int, inis['discret_solXY'])  # [10,10]# nb de discretisation du sol en X et en Y
+discret_solXY = list(map(int, inis['discret_solXY']))  # [10,10]# nb de discretisation du sol en X et en Y
 #lims_sol = rtd.lims_soil(pattern8, dxyz=[[Lsol / discret_solXY[0]] * discret_solXY[0],
 #                                         [largsol / discret_solXY[1]] * discret_solXY[1],
 #                                         [dz_sol / 100.] * ncouches_sol])
@@ -141,9 +141,9 @@ for DOY in range(DOY_deb, DOY_fin):
     #meteo_j = IOxls.extract_dataframe(meteo, ['TmoyDay','I0','Et0','Precip','Irrig','Coupe','FertNO3','FertNH4','Tsol'], 'DOY', val=DOY)
     meteo_j = IOxls.extract_dataframe(meteo, ['TmoyDay', 'I0', 'Et0', 'Precip', 'Tsol'], 'DOY', val=DOY)
     mng_j = IOxls.extract_dataframe(mng, ['Coupe', 'Irrig', 'FertNO3', 'FertNH4', 'Hcut'], 'DOY', val=DOY)
-    print DOY
-    for k in meteo_j.keys(): meteo_j[k] = meteo_j[k][0]
-    for k in mng_j.keys(): mng_j[k] = mng_j[k][0]
+    print(DOY)
+    for k in list(meteo_j.keys()): meteo_j[k] = meteo_j[k][0]
+    for k in list(mng_j.keys()): mng_j[k] = mng_j[k][0]
 
     #entrees eau
     #Precip = meteo_j['Precip']+meteo_j['Irrig']
@@ -168,7 +168,7 @@ for DOY in range(DOY_deb, DOY_fin):
 
 
     #sorties
-    print DOY, 'tsw_t: ',S.tsw_t[0,0,0], 'evapotot: ',evapo_tot #sum3(S.tsw_t)
+    print(DOY, 'tsw_t: ',S.tsw_t[0,0,0], 'evapotot: ',evapo_tot) #sum3(S.tsw_t)
     cumEV.append(evapo_tot)
     cumTransp.append(sum(ls_transp))
     cumET0.append(meteo_j['Et0']*surfsolref)

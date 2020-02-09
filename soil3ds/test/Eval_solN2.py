@@ -29,7 +29,7 @@ meteo_path = r'H:\Travail\devel\grassland\grassland\L-gume\meteo_exemple.xls'
 ongletM = 'SolNu_Lusig99'#'testSolNu'#'exemple'#'competiluz'#
 met = xlrd.open_workbook(meteo_path)
 meteo = IOtable.conv_dataframe(get_xls_col(met.sheet_by_name(ongletM)))
-for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = map(int, meteo[k])
+for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = list(map(int, meteo[k]))
 
 
 ## sol
@@ -164,7 +164,7 @@ cumEV,cumET0, cumPP, cumD, profH20, cumTransp = [],[],[], [], [], []
 vlix, azomes = [], []
 for DOY in range(DOY_deb, DOY_fin):
     meteo_j = extract_dataframe(meteo, ['TmoyDay','I0','Et0','Precip','Irrig','Coupe','FertNO3','FertNH4','Tsol'], 'DOY', val=DOY)
-    for k in meteo_j.keys(): meteo_j[k]=meteo_j[k][0]
+    for k in list(meteo_j.keys()): meteo_j[k]=meteo_j[k][0]
 
     #entrees eau
     #Precip = meteo_j['Precip']+meteo_j['Irrig']
@@ -189,7 +189,7 @@ for DOY in range(DOY_deb, DOY_fin):
 
 
     #sorties
-    print DOY, S.tsw_t[0,0,0], evapo_tot #sum3(S.tsw_t)
+    print(DOY, S.tsw_t[0,0,0], evapo_tot) #sum3(S.tsw_t)
     cumEV.append(evapo_tot)
     cumTransp.append(sum(ls_transp))
     cumET0.append(meteo_j['Et0']*surfsolref)
@@ -268,7 +268,7 @@ meteo_path = r'H:\Travail\devel\grassland\grassland\L-gume\meteo_exemple.xls'
 ongletM = 'SolNu_Lusig99'#'testSolNu'#'exemple'#'competiluz'#
 met = xlrd.open_workbook(meteo_path)
 meteo = IOtable.conv_dataframe(get_xls_col(met.sheet_by_name(ongletM)))
-for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = map(int, meteo[k])
+for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = list(map(int, meteo[k]))
 
 
 ## sol
@@ -386,7 +386,7 @@ cumEV,cumET0, cumPP, cumD, profH20, cumTransp = [],[],[], [], [], []
 vlix, azomes = [], []
 for DOY in range(DOY_deb, DOY_fin):
     meteo_j = extract_dataframe(meteo, ['TmoyDay','I0','Et0','Precip','Irrig','Coupe','FertNO3','FertNH4','Tsol'], 'DOY', val=DOY)
-    for k in meteo_j.keys(): meteo_j[k]=meteo_j[k][0]
+    for k in list(meteo_j.keys()): meteo_j[k]=meteo_j[k][0]
 
     #entrees eau
     #Precip = meteo_j['Precip']+meteo_j['Irrig']
@@ -411,7 +411,7 @@ for DOY in range(DOY_deb, DOY_fin):
 
 
     #sorties
-    print DOY, S.tsw_t[0,0,0], evapo_tot #sum3(S.tsw_t)
+    print(DOY, S.tsw_t[0,0,0], evapo_tot) #sum3(S.tsw_t)
     cumEV.append(evapo_tot)
     cumTransp.append(sum(ls_transp))
     cumET0.append(meteo_j['Et0']*surfsolref)
@@ -445,7 +445,7 @@ meteo_path = r'H:\Travail\devel\grassland\grassland\L-gume\meteo_exemple.xls'
 ongletM = 'SolNu_Lusig99'#'testSolNu'#'exemple'#'competiluz'#
 met = xlrd.open_workbook(meteo_path)
 meteo = IOtable.conv_dataframe(get_xls_col(met.sheet_by_name(ongletM)))
-for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = map(int, meteo[k])
+for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = list(map(int, meteo[k]))
 
 
 ## sol
@@ -573,7 +573,7 @@ cresi, cbio = [],[]
 minNH4, minNO3 = [], []#pour verif que pas de valeurs negatives
 for DOY in range(DOY_deb, DOY_fin):
     meteo_j = extract_dataframe(meteo, ['TmoyDay','I0','Et0','Precip','Irrig','Coupe','FertNO3','FertNH4','Tsol'], 'DOY', val=DOY)
-    for k in meteo_j.keys(): meteo_j[k]=meteo_j[k][0]
+    for k in list(meteo_j.keys()): meteo_j[k]=meteo_j[k][0]
 
     if DOY == DOYres:
         S.init_residues(vCNRESt, vAmount, vProps, vWC, vCC)
@@ -611,7 +611,7 @@ for DOY in range(DOY_deb, DOY_fin):
     S.stepNINFILT(mapN_Rain, mapN_Irrig, mapN_fertNO3, mapN_fertNH4, Drainage, opt=1)
 
     #sorties
-    print DOY, S.tsw_t[0,0,0], evapo_tot #sum3(S.tsw_t)
+    print(DOY, S.tsw_t[0,0,0], evapo_tot) #sum3(S.tsw_t)
     cumEV.append(evapo_tot)
     cumTransp.append(sum(ls_transp))
     cumET0.append(meteo_j['Et0']*surfsolref)
@@ -648,7 +648,7 @@ meteo_path = r'H:\Travail\devel\grassland\grassland\L-gume\meteo_exemple.xls'
 ongletM = 'SolNu_Lusig99'#'testSolNu'#'exemple'#'competiluz'#
 met = xlrd.open_workbook(meteo_path)
 meteo = IOtable.conv_dataframe(get_xls_col(met.sheet_by_name(ongletM)))
-for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = map(int, meteo[k])
+for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = list(map(int, meteo[k]))
 
 
 ## sol
@@ -779,7 +779,7 @@ cumEV,cumET0, cumPP, cumD, profH20, cumTransp = [],[],[], [], [], []
 vlix, azomes = [], []
 for DOY in range(DOY_deb, DOY_fin):
     meteo_j = extract_dataframe(meteo, ['TmoyDay','I0','Et0','Precip','Irrig','Coupe','FertNO3','FertNH4','Tsol'], 'DOY', val=DOY)
-    for k in meteo_j.keys(): meteo_j[k]=meteo_j[k][0]
+    for k in list(meteo_j.keys()): meteo_j[k]=meteo_j[k][0]
 
     if DOY == DOYres:
         S.init_residues(vCNRESt, vAmount, vProps, vWC, vCC)
@@ -807,7 +807,7 @@ for DOY in range(DOY_deb, DOY_fin):
     S.stepNINFILT(mapN_Rain, mapN_Irrig, mapN_fertNO3, mapN_fertNH4, Drainage, opt=1)
 
     #sorties
-    print DOY
+    print(DOY)
 
 
 S.CloseWbalance() #-> equilibre
@@ -834,7 +834,7 @@ meteo_path = r'H:\Travail\devel\grassland\grassland\L-gume\meteo_exemple.xls'
 ongletM = 'Llzsc82'#'Llzir82'#
 met = xlrd.open_workbook(meteo_path)
 meteo = IOtable.conv_dataframe(get_xls_col(met.sheet_by_name(ongletM)))
-for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = map(int, meteo[k])
+for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = list(map(int, meteo[k]))
 
 
 
@@ -944,7 +944,7 @@ vlix, azomes, resmes = [], [], []
 for DOY in range(DOY_deb, DOY_fin):
 
     meteo_j = extract_dataframe(meteo, ['TmoyDay','I0','Et0','Precip','Irrig','Coupe','FertNO3','FertNH4','Tsolnu'], 'DOY', val=DOY)
-    for k in meteo_j.keys(): meteo_j[k]=meteo_j[k][0]
+    for k in list(meteo_j.keys()): meteo_j[k]=meteo_j[k][0]
 
     #Entrees eau
     Rain = meteo_j['Precip']
@@ -967,7 +967,7 @@ for DOY in range(DOY_deb, DOY_fin):
     S.stepNINFILT(mapN_Rain, mapN_Irrig, mapN_fertNO3, mapN_fertNH4, Drainage, opt=1)
 
     #sorties
-    print DOY
+    print(DOY)
     vlix.append(S.lixiNO3*10000)
     azomes.append(sum3(S.m_NH4+S.m_NO3)*10000)
     resmes.append(sum(S.tsw_t))
@@ -1002,7 +1002,7 @@ meteo_path = r'H:\Travail\devel\grassland\grassland\L-gume\meteo_exemple.xls'
 ongletM = 'Llzir82_0fix'#'Llzsc82_0fix'#'Llzsc82'#'Llzir82'#
 met = xlrd.open_workbook(meteo_path)
 meteo = IOtable.conv_dataframe(get_xls_col(met.sheet_by_name(ongletM)))
-for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = map(int, meteo[k])
+for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = list(map(int, meteo[k]))
 
 
 
@@ -1124,7 +1124,7 @@ vlix, azomes, resmes, demplt = [], [], [], []
 for DOY in range(DOY_deb, DOY_fin):
     #meteo
     meteo_j = extract_dataframe(meteo, ['TmoyDay','I0','Et0','Precip','Irrig','Coupe','FertNO3','FertNH4','Tsol','LAI','MS','dMS', 'Npc'], 'DOY', val=DOY)
-    for k in meteo_j.keys(): meteo_j[k]=meteo_j[k][0]
+    for k in list(meteo_j.keys()): meteo_j[k]=meteo_j[k][0]
 
     #preparation des entrees eau
     Rain = meteo_j['Precip']
@@ -1163,7 +1163,7 @@ for DOY in range(DOY_deb, DOY_fin):
     Npc = (QN/1000.)/(meteo_j['MS']+meteo_j['dMS'])*100 #%
 
     #sorties
-    print DOY
+    print(DOY)
     vlix.append(S.lixiNO3*10000)
     azomes.append(sum3(S.m_NH4+S.m_NO3)/S.soilSurface()*10000)
     resmes.append(sum(S.tsw_t))
@@ -1202,7 +1202,7 @@ meteo_path = r'H:\Travail\devel\grassland\grassland\L-gume\meteo_exemple.xls'
 ongletM = 'ASCHYD11'
 met = xlrd.open_workbook(meteo_path)
 meteo = IOtable.conv_dataframe(get_xls_col(met.sheet_by_name(ongletM)))
-for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = map(int, meteo[k])
+for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = list(map(int, meteo[k]))
 
 
 
@@ -1377,7 +1377,7 @@ out_HR = [['DOY','HP5', 'HP10', 'HP25', 'HP60', 'HP90', 'HP130']]
 for DOY in range(DOY_deb, DOY_fin):
     #meteo
     meteo_j = extract_dataframe(meteo, ['TmoyDay','I0','Et0','Precip','Irrig','Coupe','FertNO3','FertNH4','irrig_Rh1N','systRac','ETPserre_cor'], 'DOY', val=DOY)
-    for k in meteo_j.keys(): meteo_j[k]=meteo_j[k][0]
+    for k in list(meteo_j.keys()): meteo_j[k]=meteo_j[k][0]
 
     #preparation du ls_roots
     onglet = str(meteo_j['systRac'])
@@ -1414,7 +1414,7 @@ for DOY in range(DOY_deb, DOY_fin):
     S.stepNINFILT(mapN_Rain, mapN_Irrig, mapN_fertNO3, mapN_fertNH4, Drainage, opt=1)
 
     #sorties
-    print DOY
+    print(DOY)
     out_HR.append([DOY]+mean(S.HRp(), axis=1)[id_out,0].tolist())
 
 S.CloseWbalance()
@@ -1444,7 +1444,7 @@ meteo_path = r'H:\Travail\devel\grassland\grassland\L-gume\meteo_exemple.xls'
 ongletM = 'ASCHYD11'
 met = xlrd.open_workbook(meteo_path)
 meteo = IOtable.conv_dataframe(get_xls_col(met.sheet_by_name(ongletM)))
-for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = map(int, meteo[k])
+for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = list(map(int, meteo[k]))
 
 
 
@@ -1619,7 +1619,7 @@ out_HR = [['DOY','HP5', 'HP10', 'HP25', 'HP60', 'HP90', 'HP130']]
 for DOY in range(DOY_deb, DOY_fin):
     #meteo
     meteo_j = extract_dataframe(meteo, ['TmoyDay','I0','Et0','Precip','Irrig','Coupe','FertNO3','FertNH4','irrig_Rh1S','systRac','ETPserre_cor','LAI'], 'DOY', val=DOY)
-    for k in meteo_j.keys(): meteo_j[k]=meteo_j[k][0]
+    for k in list(meteo_j.keys()): meteo_j[k]=meteo_j[k][0]
 
     #preparation du ls_roots
     onglet = str(meteo_j['systRac'])
@@ -1659,7 +1659,7 @@ for DOY in range(DOY_deb, DOY_fin):
     S.stepNINFILT(mapN_Rain, mapN_Irrig, mapN_fertNO3, mapN_fertNH4, Drainage, opt=1)
 
     #sorties
-    print DOY
+    print(DOY)
     out_HR.append([DOY]+mean(S.HRp(), axis=1)[id_out,0].tolist())
 
     Mascene = plot_soil_properties(S, S.ftsw_t, Scene(), 5)# ftsw
@@ -1693,7 +1693,7 @@ meteo_path = r'H:\Travail\devel\grassland\grassland\L-gume\meteo_exemple.xls'
 ongletM = 'ASCHYD11'
 met = xlrd.open_workbook(meteo_path)
 meteo = IOtable.conv_dataframe(get_xls_col(met.sheet_by_name(ongletM)))
-for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = map(int, meteo[k])
+for k in ['year', 'month', 'day', 'DOY','Coupe']: meteo[k] = list(map(int, meteo[k]))
 
 
 
@@ -1831,7 +1831,7 @@ cumEV,cumET0, cumPP, cumD, profH20, cumTransp = [],[],[], [], [], []
 vlix, azomes = [], []
 for DOY in range(DOY_deb, DOY_fin):
     meteo_j = extract_dataframe(meteo, ['TmoyDay','I0','Et0','Precip','Irrig','Coupe','FertNO3','FertNH4','Tsol'], 'DOY', val=DOY)
-    for k in meteo_j.keys(): meteo_j[k]=meteo_j[k][0]
+    for k in list(meteo_j.keys()): meteo_j[k]=meteo_j[k][0]
 
     if DOY == DOYres:
         S.init_residues(vCNRESt, vAmount, vProps, vWC, vCC)
@@ -1865,7 +1865,7 @@ for DOY in range(DOY_deb, DOY_fin):
     S.stepNINFILT(mapN_Rain, mapN_Irrig, mapN_fertNO3, mapN_fertNH4, Drainage, opt=1)
 
     #sorties
-    print DOY
+    print(DOY)
 
 
 S.CloseWbalance() #-> equilibre
