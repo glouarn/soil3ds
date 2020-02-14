@@ -34,7 +34,7 @@ import numpy as np
 
 # fonctions diverses
 def sum3(mat):
-    return sum(sum(sum(mat)))
+    return mat.sum()#sum(sum(sum(mat)))
     ## pour gerer corectement les sommes totale un peu plus compliquee en muldim...
 
 
@@ -49,33 +49,14 @@ def sum_mat(ls_m):
 
 
 def mask(mat, tresh=0.):
-    """ retourne matrice masque de 0  et 1  
+    """ retourne matrice masque de 0  et 1
     utile pour root/no roots; asw/no asw """
-    m = deepcopy(mat)
-    if len(mat.shape)==3:
-        for z in range (len(mat)):
-            for x in range (len(mat[z])):
-                for y in range (len(mat[z][x])):
-                    if mat[z][x][y]>tresh:
-                        m[z][x][y]=1
-                    else:
-                        m[z][x][y]=0
-    elif len(mat.shape)==2:
-        for x in range (len(mat)):
-            for y in range (len(mat[x])):
-                if mat[x][y]>tresh:
-                    m[x][y]=1
-                else:
-                    m[x][y]=0
-    return m
-    #plus simplement:
-    #m = mat > tresh #marche pour tous les comparrateur = matrice de bool
+    #m = deepcopy(mat) #pas utile->mat cree nouvelle matrice
+    return where(mat > tresh, 1, 0)
     #m = m*1. #pour convertir en float
-    #return m
 
 #mask(R2)
 #mask(asw_t)
-
 
 
 ##diverses fonction parametrage sol
@@ -979,16 +960,10 @@ def effective_root_lengths(ls_roots, tresh = 0.5):
     nb_r = len(ls_roots)
     tot_root_dens = sum_mat(ls_roots) #sum bug
     for rt in range(nb_r):
-        frac_root = divide(ls_roots[rt], tot_root_dens)## rq: gere bien les voxels vides
-        for z in range (len(ls_roots[rt])):
-            for x in range (len(ls_roots[rt][z])):
-                for y in range (len(ls_roots[rt][z][x])):
-                    if tot_root_dens[z][x][y]>tresh:
-                        m[rt][z][x][y] = tresh*ls_roots[rt][z][x][y]/tot_root_dens[z][x][y] #proportion de densite effective coreespondant a proportion locale de racines
-                    else:
-                        m[rt][z][x][y] = ls_roots[rt][z][x][y]
+        #frac_root = divide(ls_roots[rt], tot_root_dens)## rq: gere bien les voxels vides
+        m[rt] = where(tot_root_dens>tresh, tresh*ls_roots[rt]/tot_root_dens, ls_roots[rt])
+        
     return m
-
 
 
 #RLprofil = {0: 0.12450386886407872, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0}#sortie l-system
