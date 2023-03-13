@@ -63,7 +63,7 @@ from soil3ds.soil_module import * #soil3ds installe comme module
 
 
 class SoilN(Soil):
-    def __init__(self, par_sol, parSN, soil_number , dxyz, vDA,  vCN, vMO, vARGIs, vNO3, vNH4,  vCALCs, Tsol, pH, ZESX, CFES, obstarac=None, pattern8=[[0,0],[100.,100.]]):
+    def __init__(self, par_sol, parSN, soil_number , dxyz, vDA,  vCN, vMO, vARGIs, vNO3, vNH4,  vCALCs, Tsol, obstarac=None, pattern8=[[0,0],[100.,100.]]):
         """
         par_sol SN contient en plus pour l'azote:
             'FMIN1G'        #(day-1) (p145)
@@ -110,12 +110,14 @@ class SoilN(Soil):
         bilanC et bilanN: dictionnaires contenant les variables dynamiques et les cumuls necessaire a l'etablissement des bilans C et N (kg C/N.ha-1)
         """
         #initialisation sol et teneur en eau
-        Soil.__init__(self,par_sol, soil_number , dxyz, vDA, ZESX, CFES, obstarac, pattern8)
+        Soil.__init__(self,par_sol, soil_number, dxyz, vDA, parSN['ZESX'], parSN['CFES'], obstarac, pattern8)
         self.compute_teta_lim(par_sol)
         self.init_asw()
+        # init variables memoire evaporation
+        self.init_memory_EV(parSN)
 
         self.CALCs = vCALCs[0] #(%) value for non calcareous soils (p220 STICS) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! A mesurer/mettre a jour (rq: mesure CaO anterieure parcelle C2: 1.58 g.kg-1 dans 0-30)
-        self.pHeau = pH
+        self.pHeau = parSN['pH']#pH
         self.ARG = vARGIs[0]
         #a faire: NORGs matrices de NORGs, CORGs, K2HUM...
         
@@ -167,6 +169,17 @@ class SoilN(Soil):
         K2HUMi = par['FMIN1G']*exp(-par['FMIN2G']*ARGIs)/(1+par['FMIN3G']*CALCs)
         return K2HUMi
         #!! revoir ARGIs et CALCs!!
+
+    def init_memory_EV(self, parSN):
+        """ inititalise memory variables and parameters to compute soil evaporation """
+        self.Uval = parSN['q0']
+        HXs = self.m_teta_fc[0,0,0] #par_sol[str(vsoilnumbers[0])]['teta_fc']  # humidite a la capacite au champ de l'horizon de surface
+        self.b_ = bEV(parSN['ACLIMc'], parSN['ARGIs'], HXs)
+        self.stateEV = [0., 0., 0.]  # pour le calcul de l'evaporation du sol (memoire du cumul evapore depuis derniere PI)
+        # marche seulement pour solN (car faut parSN)
+
+    def update_memory_EV(self, new_vals):
+        self.stateEV = new_vals
 
     def SOMMin_RespT(self, par):
         """ reponse de la mineralisation (ammonification) de la SOM a la temperature - described as a sigmoid process (FTH) - Eq 8.3 p143 et (pour residus FTR p146-147) """
@@ -1155,7 +1168,7 @@ def Actual_Nuptake_plt_Bis(SN, ls_Pot_Nuptake_plt, ls_PltN):
         ls_Act_Nuptake_plt.append(Act_Nuptake_i)
         ActUpNtot = ActUpNtot + Act_Nuptake_i
 
-    print('frein', ls_frein_N, ls_PltN)
+    #print('frein', ls_frein_N, ls_PltN)
     ### retire les nitrates et ammomium rellement preleves du sol
     ##frac_NO3 =  SN.m_NO3 / (SN.m_NO3 + SN.m_NH4 + 10**-15)
     ##SN.m_NO3 = SN.m_NO3 - frac_NO3*ActUpNtot
@@ -1278,6 +1291,60 @@ def demandeNroot(MSpiv,dMSpiv,Npcpiv, surfsolref, Noptpiv):
 #    dicout['Lix'] = bilanN['cumLix']
 #    dicout['N2O'] = bilanN['cumN2O']
 #    dicout['UptPlt'] = bilanN['cumUptakePlt']
+
+
+def step_bilanWN_solVGL(S, par_SN, meteo_j,  mng_j, ParamP, ls_epsi, ls_roots, ls_demandeN_bis, opt_residu, opt_Nuptake):
+    """ daily step for soil W and N balance from meteo, management and L-egume lsystem inputs"""
+
+    # testRL = updateRootDistrib(invar['RLTot'][0], ls_systrac[0], lims_sol)
+    # ls_roots = rtd.build_ls_roots_mult(invar['RLTot'], ls_systrac, lims_sol) #ancien calcul base sur SRL fixe
+    #ls_roots = rtd.build_ls_roots_mult(array(invar['RLTotNet']) * 100. + 10e-15, ls_systrac, lims_sol)  # !*100 pour passer en cm et tester absoption d'azote (normalement m) #a passer apres calcul de longuer de racine!
+    # esternalise calcul de ls_roots -> wrapper prend grille en entree et plus geom
+
+    surfsolref = S.surfsolref
+
+    # preparation des entrees eau
+    Rain = meteo_j['Precip']
+    Irrig = mng_j['Irrig']  # ['irrig_Rh1N']#R1N = sol_nu
+
+    # preparation des entrees azote
+    mapN_Rain = 1. * S.m_1[0, :, :] * Rain * par_SN['concrr']  # Nmin de la pluie
+    mapN_Irrig = 1. * S.m_1[0, :, :] * Irrig * par_SN['concrr']  # Nmin de l'eau d'irrigation
+    mapN_fertNO3 = 1. * S.m_1[0, :, :] * mng_j['FertNO3'] * S.m_vox_surf[0, :, :] / 10000.  # kg N par voxel
+    mapN_fertNH4 = 1. * S.m_1[0, :, :] * mng_j['FertNH4'] * S.m_vox_surf[0, :, :] / 10000.  # kg N par voxel
+
+    S.updateTsol(meteo_j['Tsol'])  # (meteo_j['TmoyDay'])#(meteo_j['Tsol'])# #Tsol forcee comme dans STICS (Tsol lue!!)
+
+    #############
+    # step  sol
+    #############
+    treshEffRoots_ = 10e10  # valeur pour forcer a prendre densite effective
+    stateEV, Uval, b_ = S.stateEV, S.Uval, S.b_
+    ls_transp, evapo_tot, Drainage, new_stateEV, ls_m_transpi, m_evap, ls_ftsw = S.stepWBmc(meteo_j['Et0'] * surfsolref,
+                                                                                        ls_roots, ls_epsi,
+                                                                                        Rain * surfsolref,
+                                                                                        Irrig * surfsolref, stateEV,
+                                                                                        par_SN['ZESX'], leafAlbedo=0.15,
+                                                                                        U=Uval, b=b_, FTSWThreshold=0.4,
+                                                                                        treshEffRoots=treshEffRoots_,
+                                                                                        opt=1)
+    S.update_memory_EV(new_stateEV)
+    S.stepNB(par_SN)
+    if opt_residu == 1:  # s'ily a des residus
+        S.stepResidueMin(par_SN)
+        S.stepMicrobioMin(par_SN)
+    S.stepNitrif(par_SN)
+    #ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N, idmin = S.stepNuptakePlt(par_SN, ParamP, ls_roots, ls_m_transpi,ls_demandeN_bis)
+    S.stepNINFILT(mapN_Rain, mapN_Irrig, mapN_fertNO3, mapN_fertNH4, Drainage, opt=1)
+    ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N, idmin = S.stepNuptakePlt(par_SN, ParamP, ls_roots, ls_m_transpi, ls_demandeN_bis, opt_Nuptake)
+    #print(amin(S.m_NO3), unique(idmin, return_counts=True),ls_DQ_N)
+
+    temps_sol = [evapo_tot, Drainage, ls_m_transpi, m_evap, ActUpNtot, ls_DQ_N, idmin] #other output variables
+
+    return [S,  new_stateEV, ls_ftsw, ls_transp, ls_Act_Nuptake_plt, temps_sol]
+    #lims_sol et surfsolref pourrait pas etre fournie via S.?
+    #pourquoi b_ et Uval trainent la? (paramtres sol??)
+    #return more output variables?? -> OK temps_sol
 
 
 
