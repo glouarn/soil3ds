@@ -48,7 +48,7 @@ To run a simulation example :
 * 1. place yourself in folder `3ds-soil-model/test`
   2. run from the console:
 		```bash
-        python test_soil_coupling.py
+        python test_soil_coupling1.py
         ```
 
 
