@@ -43,11 +43,13 @@ To install and use *3DS-soil-model*, you need first to install the dependencies.
 
 ### 1.3 Running
 
-To run a simulation example, two options:
+To run a simulation example :
 
-* 1. 
-  2. 
-
+* 1. place yourself in folder `3ds-soil-model/test`
+  2. run from the console:
+		```bash
+        python test_soil_coupling.py
+        ```
 
 
 ## 2. Reading the docs
