@@ -19,7 +19,7 @@ from scipy import *
 #sys.path.insert(0, path_)
 #sys.path.insert(0, path2_)
 #from soil_module import * #soil_module5
-from soil3ds.soil_module import * #soil3ds installe comme module
+from soil3ds.soil_moduleW import * #soil3ds installe comme module
 
 ##changement version3
 #depend de soil_module5

@@ -46,7 +46,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
-    name = "3DS soil model",
+    name = "soil3ds",
     version=soil3ds.__version__,
     packages = find_packages(),
     include_package_data = True,

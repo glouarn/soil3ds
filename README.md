@@ -1,8 +1,8 @@
-=========================
-README for 3DS-soil-model
-=========================
+====================================
+README for '3DS soil model' (soil3ds)
+====================================
 
-This is 3DS-soil-model, a 3D Soil model of soil for water and N balances adapted from the STICS soil module.
+This is '3DS soil model' (soil3ds), a 3D Soil model of soil for water and N balances adapted from the STICS soil module.
 
 See 
 - Louarn G, Faverjon L, Migault V, Escobar-Gutiérrez A, Combes D. (2016). Assessment of ‘3DS’, a soil module for individual-based models of plant communities. In: IEEE International Conference on Functional-Structural Plant Growth Modeling, Simulation, Visualization and Applications (FSPMA), 125–132. doi: 10.1109/FSPMA.2016.7818298
@@ -13,14 +13,14 @@ See
 
 ## 1. Getting Started
 
-These instructions will get you a copy of *3DS-soil-model* up and running on your local 
+These instructions will get you a copy of *soil3ds* up and running on your local 
 machine.
 
 ### 1.1 Prerequisites
 
-To install and use *3DS-soil-model*, you need first to install the dependencies.
+To install and use *soil3ds*, you need first to install the dependencies.
 
-*3DS-soil-model* has been tested on Windows.
+*soil3ds* has been tested on Windows.
  
 #### 1.1.1 Install the dependencies on Windows 10 64 bit
 1) Create a conda environment with miniconda3
@@ -30,12 +30,12 @@ To install and use *3DS-soil-model*, you need first to install the dependencies.
 
 2) Place yourself in the created environment  : `conda activate myenvname`
 
-3) Install *3DS-soil-model*
+3) Install *soil3ds*
     1) Git console :
         ```bash
-        git clone -b Develop https://github.com/glouarn/3ds-soil-model.git
+        git clone -b Develop https://github.com/glouarn/soil3ds.git
         ```
-    2) installation in the conda environment (in folder `3ds-soil-model`)
+    2) installation in the conda environment (in folder `soil3ds`)
         ```bash
         python setup.py develop
         ```
@@ -45,7 +45,7 @@ To install and use *3DS-soil-model*, you need first to install the dependencies.
 
 To run a simulation example :
 
-* 1. place yourself in folder `3ds-soil-model/test`
+* 1. place yourself in folder `soil3ds/test`
   2. run from the console:
 		```bash
         python test_soil_coupling1.py

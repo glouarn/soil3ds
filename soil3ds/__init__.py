@@ -1,6 +1,6 @@
 # -*- coding: latin-1 -*-
 """
-    3DS-soil-model
+    soil3ds
     ~~~~~~~~~~~~~
 
     The 3DS soil model for Virtual Grassland
