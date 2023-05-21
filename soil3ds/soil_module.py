@@ -1,3 +1,15 @@
+'''
+
+ 3DS-soil-model, a 3D Soil model adapted from STICS : soil water balance module
+ ******************************
+ Authors: G. Louarn 
+ 
+
+ 
+
+'''
+
+
 import IOtable
 from scipy import *
 from copy import deepcopy
@@ -32,13 +44,21 @@ import numpy as np
 # gestion du drainage: 2 passe des precipitation -> simplifier (1 passe seulement suffit?) pour gere infiltration des nitrates?
 # evapo_tot -> renvoie la somme (pas la moyenne)
 
-# fonctions diverses
+
+
+########## fonctions diverses
 def sum3(mat):
+    """
+    
+    """
     return mat.sum()#sum(sum(sum(mat)))
     ## pour gerer corectement les sommes totale un peu plus compliquee en muldim...
 
 
 def sum_mat(ls_m):
+    """
+    
+    """
     #pour gerer correctement les somme de matrices similaires dans une liste (avant sum le faisait bien, mais derniere version bug???)
     s = ls_m[0]
     if len(ls_m)>1:
@@ -49,8 +69,11 @@ def sum_mat(ls_m):
 
 
 def mask(mat, tresh=0.):
-    """ retourne matrice masque de 0  et 1
-    utile pour root/no roots; asw/no asw """
+    """
+    
+    """
+    #""" retourne matrice masque de 0  et 1
+    #utile pour root/no roots; asw/no asw """
     #m = deepcopy(mat) #pas utile->mat cree nouvelle matrice
     return where(mat > tresh, 1, 0)
     #m = m*1. #pour convertir en float
@@ -62,15 +85,22 @@ def mask(mat, tresh=0.):
 ##diverses fonction parametrage sol
 
 def tetavol_pF_curve(par_sol, pF_):
-    """ empirical relationship between volumic water content and pF (=ln(abs(h))where h is soil moisture succion )
-    Driessen, 1986 cited by Penning de Cries et al., 1989
-    WCST = volumic water content at saturation
-    gamma = empirical parameter to account for bulk density and texture"""
+    """
+    
+    """
+    #""" empirical relationship between volumic water content and pF (=ln(abs(h))where h is soil moisture succion )
+    #Driessen, 1986 cited by Penning de Cries et al., 1989
+    #WCST = volumic water content at saturation
+    #gamma = empirical parameter to account for bulk density and texture"""
+    
     teta = float(par_sol['WCST'])*exp(-float(par_sol['gamma_theo'])*pF_*pF_)
     return teta
     #tetavol_pF_curve(par_sol, 4.2)
 
 def default_tetaref(par_sol, fc=2., wp=4.2, ad=7.):
+    """
+    
+    """
     par_sol['teta_sat'] = tetavol_pF_curve(par_sol, 0.)
     par_sol['teta_fc'] = tetavol_pF_curve(par_sol, fc)
     par_sol['teta_wp'] = tetavol_pF_curve(par_sol, wp)
@@ -79,6 +109,9 @@ def default_tetaref(par_sol, fc=2., wp=4.2, ad=7.):
     #p = default_tetaref(par_sol)
 
 def pF(h):
+    """
+    
+    """
     return log10(abs(h))
 
 
@@ -86,6 +119,10 @@ def pF(h):
 
 
 class Soil(object):
+    """
+    
+    """
+    
     def __init__(self, par_sol, soil_number = [13]*10, dxyz = [[1.], [1.], [0.2]*10], vDA=[1.2]*10, ZESX=0.3, CFES=1., obstarac=None, pattern8=[[0,0],[100.,100.]]):
         """  
         dxyz : dimensions des voxels selon x, y, z (m)
@@ -116,7 +153,7 @@ class Soil(object):
         m_frac_evapZ : distribution verticale relative de evaporation a la capacite au champ (qd Kzi=1) (0-1, sans dimension)
         m_corr_vol_evap : complement a la fraction de volume effectivement accessible a evaporation par voxel (0-1, sans dimension)
 
-        ## SORTIES:
+        SORTIES:
         evapo_tot : quantite d'eau evaporee totale au temps t (mm)
         m_evap : quantite d'eau evaporee au temps t par voxel (mm)
         m_transpi : quantite d'eau transpiree au temps t par voxel (mm) - cumul des n plantes par voxel
@@ -185,6 +222,9 @@ class Soil(object):
 
 
     def build_teta_m(self, par_sol, key='teta_fc'):
+        """
+    
+        """
         m_teta = []#m_teta = matrice de teneur en eau volumique
         for z in range(len(self.m_soil_number)):
             v = []
@@ -199,6 +239,9 @@ class Soil(object):
 
 
     def compute_teta_lim(self, par_sol):
+        """
+    
+        """
         self.m_teta_fc = self.build_teta_m(par_sol, key='teta_fc')
         self.m_teta_ad = self.build_teta_m(par_sol, key='teta_ad')
         self.m_teta_wp = self.build_teta_m(par_sol, key='teta_wp')
@@ -218,8 +261,12 @@ class Soil(object):
     #    self.asw_t = multiply(F, self.m_QH20max) #cree matrice asw_t
 
     def init_asw(self, HRp_init=None):
-        """ par defaut a la capacite au champ """
-        'HRp_init : a 1D vector/list of initial HRp (%) in the vertical z axis'
+        """
+    
+        """
+        #""" par defaut a la capacite au champ """
+        #'HRp_init : a 1D vector/list of initial HRp (%) in the vertical z axis'
+        
         if HRp_init==None:
             #avant, faut avoir lance compute_teta_lim(par_sol)
             F = self.m_1*1.
@@ -236,10 +283,17 @@ class Soil(object):
             self.OpenWbalance()#initialise W balance
 
     def update_asw(self):
+        """
+    
+        """
         self.asw_t = self.tsw_t - self.m_QH20wp
 
     def set_mat_obstarac(self):
-        """ definit une matrice de proportion de voxel concerne par obstrarac"""
+        """
+    
+        """
+        #""" definit une matrice de proportion de voxel concerne par obstrarac"""
+        
         if self.obstarac is None or type(self.obstarac)!=type(array([0.])):#pas d'obstarac
             mat_obstarac = 1. * self.m_1
         else: #obstrac = matrice 2D de valeurs negatives (m)
@@ -260,33 +314,56 @@ class Soil(object):
         return mat_obstarac
 
     def update_ftsw(self):
+        """
+    
+        """
+        
         ftsw = self.asw_t / self.m_QH20max
         negs = ftsw >0.
         self.ftsw_t = negs * 1. *ftsw * self.m_obstarac #pour eviter valeurs negatives
 
     
     def HRv(self):
-        """ compute relative soil humidity - Humidite volumique(%, 100 * de max de quantite d'eau fc)"""
+        """
+    
+        """
+        #""" compute relative soil humidity - Humidite volumique(%, 100 * de max de quantite d'eau fc)"""
+        
         return divide(self.tsw_t, self.m_QH20fc)*100.
         # peut etre 100 pour cent?? -> OK par rapport aux parametetre de reponse de mineralisation a l'humidite du sol (proportion de capciate au champ)
         #ambigu car pas HRv mesure par capteurs sols!
 
     def HRv_capteur(self):
-        """ compute relative soil humidity - Humidite volumique(%, 100 * vol eau par volume de sol)"""
+        """
+    
+        """
+        #""" compute relative soil humidity - Humidite volumique(%, 100 * vol eau par volume de sol)"""
+        
         return (self.tsw_t / self.m_soil_vol)/10.
 
     def HRp(self):
-        """ compute relative soil humidity - Humidite ponderale (%, 100 * g H2O.g sol-1)"""
+        """
+    
+        """
+        #""" compute relative soil humidity - Humidite ponderale (%, 100 * g H2O.g sol-1)"""
         return (self.tsw_t / self.m_soil_vol)/ (self.m_DA * 10.)
 
     def Kzi(self):
-        """ coefficients K(Z,I) de l'equation 7.6 p 129 - proportion de l'eau dispo pour evaporation """
+        """
+    
+        """
+        #""" coefficients K(Z,I) de l'equation 7.6 p 129 - proportion de l'eau dispo pour evaporation """
+        
         #seuilmax = (self.m_QH20max - self.m_QH20min) * (1 - self.m_frac_evapZ) + self.m_QH20min
         #return (self.tsw_t - seuilmax) / (self.m_QH20fc - seuilmax)
         return (self.tsw_t - self.m_QH20min) / (self.m_QH20fc - self.m_QH20min)
 
     def distrib_frac_evap(self, ZESX=0.3, CFES=1.):
-        """ distribution verticale des fractions de l'evaporation en fonction de ZESX et CFES pour Kzi=1 p- integration sur dz=1cm - Eq. 7.6 p 129"""
+        """
+    
+        """
+        #""" distribution verticale des fractions de l'evaporation en fonction de ZESX et CFES pour Kzi=1 p- integration sur dz=1cm - Eq. 7.6 p 129"""
+        
         #calcul des ponderations par cm
         nbstratesZ = len(self.dxyz[2])
         v = [self.dxyz[2][0]]
@@ -326,7 +403,11 @@ class Soil(object):
         return m
 
     def corr_vol_voxel_evap(self, ZESX=0.3):
-        """ correction pour tenir compe du fait que voxel de transition = toute l'eau n'est pas dispo (sous ZESX) -> a stocker """
+        """
+    
+        """
+        #""" correction pour tenir compe du fait que voxel de transition = toute l'eau n'est pas dispo (sous ZESX) -> a stocker """
+        
         v = [self.dxyz[2][0]]
         for i in range(1, len(self.dxyz[2])):
             v.append(v[-1]+self.dxyz[2][i])
@@ -349,7 +430,11 @@ class Soil(object):
         return comp#m_cor_vol #renvoie le complement finalement, car utilise dans les calculs
 
     def distrib_evapSTICS(self, map_Evap0):
-        """ map_Evap0 = liste des Evap par colone de voxel (matrice x, y) """
+        """
+    
+        """
+        #""" map_Evap0 = liste des Evap par colone de voxel (matrice x, y) """
+        
         # remplace sans bug check_soil_evap et distrib_evapNC
         coeffs = self.Kzi()*self.m_frac_evapZ
         coeffs1 = deepcopy(self.m_1)*1.
@@ -375,15 +460,24 @@ class Soil(object):
         #S.tsw_t - demandeEvapOK
 
     def soilSurface(self):
-        """ compute soil surface (m2) """
+        """
+    
+        """
+        #""" compute soil surface (m2) """
         return sum(self.dxyz[0])*sum(self.dxyz[1])
 
     def get_vox_coordinates(self, z, x, y):
-        """ to get the corner coordinates of a voxel from his IDs"""
+        """
+    
+        """
+        #""" to get the corner coordinates of a voxel from his IDs"""
         return np.array([self.corners[0][x], self.corners[1][y], self.corners[2][z]])
 
     def stepWBmc(self, Et0, ls_roots, ls_epsi, Rain, Irrig, previous_state, ZESX=0.3, leafAlbedo=0.15, U=5., b=0.63, FTSWThreshold=0.4, treshEffRoots=0.5, opt=1):
-        """ calcul du bilan hydrique journalier """
+        """
+    
+        """
+        #""" calcul du bilan hydrique journalier """
 
         Precip = Rain + Irrig
 
@@ -449,12 +543,16 @@ class Soil(object):
 
 
     def OpenWbalance(self):
-        """ Dictionnary for soil Water balance (mm)
-        Keys for Daily outputs: 'cumPP', 'cumIrrig', 'cumD', 'cumEV', 'cumTransp'
-        Keys for Total Input: 'intialWC', 'Irrigtot','PPtot'
-        Keys for Total outputs: 'FinalWC', 'EVtot', 'Tranptot','Drainagetot'
-        Keys for totals: 'InputWtot', 'OutputWtot'
         """
+    
+        """
+        #""" Dictionnary for soil Water balance (mm)
+        #Keys for Daily outputs: 'cumPP', 'cumIrrig', 'cumD', 'cumEV', 'cumTransp'
+        #Keys for Total Input: 'intialWC', 'Irrigtot','PPtot'
+        #Keys for Total outputs: 'FinalWC', 'EVtot', 'Tranptot','Drainagetot'
+        #Keys for totals: 'InputWtot', 'OutputWtot'
+        #"""
+        
         self.bilanW = {}
         self.bilanW['intialWC'] = sum3(self.tsw_t) / self.soilSurface()
         self.bilanW['cumEV'], self.bilanW['cumPP'], self.bilanW['cumIrrig'], self.bilanW['cumD'], self.bilanW['cumTransp'] = [],[],[], [], []
@@ -462,6 +560,9 @@ class Soil(object):
         #cumET0 = []
         
     def UpdateWbalance(self, PPj, Irrigj, evapo_tot, ls_transp, Drainage):
+        """
+    
+        """
         surfsolref = self.soilSurface()
         self.bilanW['cumPP'].append(PPj / surfsolref)
         self.bilanW['cumIrrig'].append(Irrigj / surfsolref)
@@ -472,6 +573,9 @@ class Soil(object):
 
 
     def CloseWbalance(self, print_=1):
+        """
+    
+        """
         #input
         self.bilanW['PPtot'] = sum(self.bilanW['cumPP'])
         self.bilanW['Irrigtot'] = sum(self.bilanW['cumIrrig'])
@@ -489,6 +593,9 @@ class Soil(object):
         #pourrait le diriger vers un fichier de sortie texte?
 
     def PrintWbalance(self):
+        """
+    
+        """
         bilanW = self.bilanW
         print ("")
         print ("Water Balance Input (mm)\t\t\t\t\t Water Balance Output (mm)")
@@ -537,7 +644,10 @@ class Soil(object):
 
 
 def water_uptakeVox(ls_masked_asw, ls_roots_eff, ls_transp, idx, idy, idz):
-    """ STICS manual (p 140) adapte pour liste de root systems"""
+    """
+    
+    """
+    #""" STICS manual (p 140) adapte pour liste de root systems"""
     ls_uptake = []
     for p in range(len(ls_roots_eff)):
         if ls_masked_asw[p][idz][idx][idy]>0.:#y a de l'eau dispo
@@ -556,6 +666,9 @@ def water_uptakeVox(ls_masked_asw, ls_roots_eff, ls_transp, idx, idy, idz):
 
 
 def distrib_water_uptakeNC(S, ls_masked_asw, ls_roots_eff, ls_transp):
+    """
+    
+    """
     asw_t = deepcopy(S.asw_t)
     upt = S.m_1*0.
 
@@ -579,6 +692,9 @@ def distrib_water_uptakeNC(S, ls_masked_asw, ls_roots_eff, ls_transp):
 
 
 def Transpi_NC(Et0, ls_epsi, ls_FTSW, leafAlbedo=0.15, FTSWThreshold=0.4):
+    """
+    
+    """
     ls_transp = []
     for i in range(len(ls_epsi)):
 
@@ -613,9 +729,12 @@ def Transpi_NC(Et0, ls_epsi, ls_FTSW, leafAlbedo=0.15, FTSWThreshold=0.4):
 
 ##gerer sol evapo 
 def soil_EV_1C(Et0, Precip, epsi, previous_state = [0.,0.,0.], leafAlbedo=0.15, U=5., b=0.63):
-    """ U: reservoir superficiel = quantite d'eau dans une couche superieure (varie generallement entre 0 et 30 mm
-        b: coeef empirique sans dimension pour l'evaporation du sol (cf fonction bEV)
-        meme formulation pour Lebon et al 2003 et STICS"""
+    """
+    
+    """
+    #""" U: reservoir superficiel = quantite d'eau dans une couche superieure (varie generallement entre 0 et 30 mm
+    #    b: coeef empirique sans dimension pour l'evaporation du sol (cf fonction bEV)
+    #    meme formulation pour Lebon et al 2003 et STICS"""
 
     #recup previous state
     previousSES1 = previous_state[0]
@@ -698,14 +817,17 @@ def soil_EV_1C(Et0, Precip, epsi, previous_state = [0.,0.,0.], leafAlbedo=0.15, 
 
 
 def soil_EV_STICS_old(Et0, Precip, epsi, previous_state = [0.,0.,0.], leafAlbedo=0.15, U=5., b=0.63):
-    """ U: reservoir superficiel = quantite d'eau dans une couche superieure (varie generallement entre 0 et 30 mm
-        b: coeef empirique sans dimension pour l'evaporation du sol (cf fonction bEV)
-        Et0: Evapotranspiration potenrielle de reference (gazon) en mm
-        meme formulation pour Lebon et al 2003 et STICS
-        SES1: EP cumule depuis la derniere pluie (previous_state[0])
-        SES2: EP cumule depuis passage a phase 2  (previous_state[1])
-        SEP : cumul des evap depuis debut phase 2
-        ER SoilEvaporation Reel"""
+    """
+    
+    """
+    #""" U: reservoir superficiel = quantite d'eau dans une couche superieure (varie generallement entre 0 et 30 mm
+    #    b: coeef empirique sans dimension pour l'evaporation du sol (cf fonction bEV)
+    #    Et0: Evapotranspiration potenrielle de reference (gazon) en mm
+    #    meme formulation pour Lebon et al 2003 et STICS
+    #    SES1: EP cumule depuis la derniere pluie (previous_state[0])
+    #    SES2: EP cumule depuis passage a phase 2  (previous_state[1])
+    #    SEP : cumul des evap depuis debut phase 2
+    #    ER SoilEvaporation Reel"""
 
     ##Riou -> donne des valeur negatives pour forts epsi
     #coeffTV = epsi/ (1.-leafAlbedo)
@@ -749,14 +871,17 @@ def soil_EV_STICS_old(Et0, Precip, epsi, previous_state = [0.,0.,0.], leafAlbedo
 
 
 def soil_EV_STICS_new1(Et0, Precip, epsi, previous_state = [0.,0.,0.], leafAlbedo=0.15, U=5., b=0.63):
-    """ U: reservoir superficiel = quantite d'eau dans une couche superieure (varie generallement entre 0 et 30 mm
-        b: coeef empirique sans dimension pour l'evaporation du sol (cf fonction bEV)
-        Et0: Evapotranspiration potenrielle de reference (gazon) en mm
-        meme formulation pour Lebon et al 2003 et STICS
-        SES1: EP cumule depuis la derniere pluie (previous_state[0])
-        SES2: EP cumule depuis passage a phase 2  (previous_state[1])
-        SEP : cumul des evap depuis debut phase 2
-        ER SoilEvaporation Reel"""
+    """
+    
+    """
+    #""" U: reservoir superficiel = quantite d'eau dans une couche superieure (varie generallement entre 0 et 30 mm
+    #    b: coeef empirique sans dimension pour l'evaporation du sol (cf fonction bEV)
+    #    Et0: Evapotranspiration potenrielle de reference (gazon) en mm
+    #    meme formulation pour Lebon et al 2003 et STICS
+    #    SES1: EP cumule depuis la derniere pluie (previous_state[0])
+    #    SES2: EP cumule depuis passage a phase 2  (previous_state[1])
+    #    SEP : cumul des evap depuis debut phase 2
+    #    ER SoilEvaporation Reel"""
 
     ##Riou -> donne des valeur negatives pour forts epsi
     #coeffTV = epsi/ (1.-leafAlbedo)
@@ -810,9 +935,12 @@ def soil_EV_STICS_new1(Et0, Precip, epsi, previous_state = [0.,0.,0.], leafAlbed
 
 
 def soil_EV_STICS(Et0, Precip, epsi, previous_state=[0., 0., 0.], leafAlbedo=0.15, U=5., b=0.63):
-    """ U: reservoir superficiel = quantite d'eau dans une couche superieure (varie generallement entre 0 et 30 mm
-        b: coeef empirique sans dimension pour l'evaporation du sol (cf fonction bEV)
-        meme formulation pour Lebon et al 2003 et STICS"""
+    """
+    
+    """
+    #""" U: reservoir superficiel = quantite d'eau dans une couche superieure (varie generallement entre 0 et 30 mm
+    #    b: coeef empirique sans dimension pour l'evaporation du sol (cf fonction bEV)
+    #    meme formulation pour Lebon et al 2003 et STICS"""
 
     # recup previous state
     previousSES1 = previous_state[0]
@@ -895,10 +1023,14 @@ def soil_EV_STICS(Et0, Precip, epsi, previous_state=[0., 0., 0.], leafAlbedo=0.1
 
 
 def bEV(ACLIMc, ARGIs, HXs):
-    """ calcul de  b: coeff empirique sans dimension pour l'evaporation du sol a partir de (STICS manual p 128) : 
-        ACLIMc : wheather parameter qui depend de la vitesse moyenne du vent (1m-1-> 20; 2m.s-1-> 14)
-        ARGIs : clay content de la couche superficielle (%)
-        HXs: volumetric moisture content at fc of the surface layer """
+    """
+    
+    """
+    #""" calcul de  b: coeff empirique sans dimension pour l'evaporation du sol a partir de (STICS manual p 128) : 
+    #    ACLIMc : wheather parameter qui depend de la vitesse moyenne du vent (1m-1-> 20; 2m.s-1-> 14)
+    #    ARGIs : clay content de la couche superficielle (%)
+    #    HXs: volumetric moisture content at fc of the surface layer """
+    
     HA = ARGIs/1500.
     return 0.5*ACLIMc*(HXs-HA)*power(0.63-HA, 5./3.)
 
@@ -992,7 +1124,11 @@ def bEV(ACLIMc, ARGIs, HXs):
 
 ##gerer infiltrations 
 def ls_1storder_vox(dxyz, x,y,z, opt=1):
-    """ definit liste de voxels concomittents de 1er ordre / considere sol thorique, opt=1 renvoie uniquement voxel pour ecoulement vertical direct"""
+    """
+    
+    """
+    #""" definit liste de voxels concomittents de 1er ordre / considere sol thorique, opt=1 renvoie uniquement voxel pour ecoulement vertical direct"""
+    
     lx,ly = len(dxyz[0]), len(dxyz[1])
     if lx<3 or ly<3 or opt==1: #pas au moins 9 voxel ou ecoulement direct (opt=1)
         return [[x,y,z]]
@@ -1021,6 +1157,10 @@ def ls_1storder_vox(dxyz, x,y,z, opt=1):
 #ls_1storder_vox(S.dxyz, 0,0,0, opt='1')
 
 def infil_layer(tsw_t, m_QH20max, in_ , dxyz, idz, opt=1):#in_=map_PI, 
+    """
+    
+    """
+    
     new = tsw_t[idz]+in_
     out_ = deepcopy(in_)
     out_.fill(0.)
@@ -1045,9 +1185,13 @@ def infil_layer(tsw_t, m_QH20max, in_ , dxyz, idz, opt=1):#in_=map_PI,
 #infil_layer(asw_t, m_QH20max, array([[5.]]), dxyz, 0)
 
 def distrib_PI(tsw_t, m_QH20max, map_PI, dxyz, opt=1):
-    """ distribution des precipitations+irrigation dans le sol 
-    ecoulement vertical uniquement 
-    tout ce qui est au dessus de la capacite au champ est transfere en 1 jour - drainage = sortie de la couche la plus profonde """
+    """
+    
+    """
+    #""" distribution des precipitations+irrigation dans le sol 
+    #ecoulement vertical uniquement 
+    #tout ce qui est au dessus de la capacite au champ est transfere en 1 jour - drainage = sortie de la couche la plus profonde """
+    
     in_ = map_PI
     ls_out = []
     for z in range(len(tsw_t)):
@@ -1084,7 +1228,11 @@ def distrib_PI(tsw_t, m_QH20max, map_PI, dxyz, opt=1):
 ##rq2: valeur de 0.1 cm.cm-3 pour definir profondeur d'enracinement dans L2SU(p138)
 
 def vert_roots(dxyz, lvopt):
-    """ pour generer un profil vertical de densite racinaire a partir d'une liste - (homogene en x,y)"""
+    """
+    
+    """
+    #""" pour generer un profil vertical de densite racinaire a partir d'une liste - (homogene en x,y)"""
+    
     m_roots = []
     for z in range(len(dxyz[2])):
         v = []
@@ -1117,10 +1265,14 @@ def vert_roots(dxyz, lvopt):
 
 
 def effective_root_lengths(ls_roots, tresh = 0.5):
-    """ for multiple root systems in competition
-    H0 : perfect symetry locally (in a voxel) for ressource aquisition
-    treshold of effective density similar to single species
-    fraction of effective density to each species/plant = proportion of total root length density"""
+    """
+    
+    """
+    #""" for multiple root systems in competition
+    #H0 : perfect symetry locally (in a voxel) for ressource aquisition
+    #treshold of effective density similar to single species
+    #fraction of effective density to each species/plant = proportion of total root length density"""
+    
     m = deepcopy(ls_roots)
     nb_r = len(ls_roots)
     tot_root_dens = sum_mat(ls_roots) #sum bug
@@ -1131,9 +1283,13 @@ def effective_root_lengths(ls_roots, tresh = 0.5):
     return m
 
 
-#RLprofil = {0: 0.12450386886407872, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0}#sortie l-system
+
 def build_ls_roots(RLprofil, S):
-    """ version 1 root system :a modifier pour prendre en compte une liste de RLprofil"""
+    """
+    
+    """
+    #""" version 1 root system :a modifier pour prendre en compte une liste de RLprofil"""
+    
     idz = list(RLprofil.keys())
     idz.sort()
     RLprofil_ls = []
@@ -1143,11 +1299,15 @@ def build_ls_roots(RLprofil, S):
     ls_roots = [R1]#[R1, R2]#[R3]#
     return ls_roots
 
-
+#RLprofil = {0: 0.12450386886407872, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0}#sortie l-system
 #RLprofil = [{0: 0.12450386886407872, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0}, {0: 0.145, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0}...]#sortie l-system
 
 def build_ls_roots_mult(RLprofil, S):
-    """ version 2: prends en compte une liste de RLprofil"""
+    """
+    
+    """
+    #""" version 2: prends en compte une liste de RLprofil"""
+    
     nbp = len(RLprofil)
     idz = list(RLprofil[0].keys())
     idz.sort()
@@ -1163,7 +1323,11 @@ def build_ls_roots_mult(RLprofil, S):
 
 
 def RLprof_t(t, ncouches_sol):
-    """ pour generer un profil de densite qui varie au cours du temps / phase de test """
+    """
+    
+    """
+    #""" pour generer un profil de densite qui varie au cours du temps / phase de test """
+    
     RL_profil_max = [0.64]*31+[0.64, 0.6, 0.5, 0.32, 0.16, 0.08, 0.04, 0.02, 0.01]
     n0 = ncouches_sol-t
     if t<ncouches_sol:
@@ -1179,6 +1343,9 @@ def RLprof_t(t, ncouches_sol):
 ################## TESTS ###############################
 
 def test_uni1():
+    """
+    
+    """
     ###############
     ## DEMO 1
     ## sol 1D (S)
@@ -1242,6 +1409,9 @@ def test_uni1():
 
 
 def test_uni2():
+    """
+    
+    """
     #################
     ## DEMO 2
     ## avec sol 3D (S2)

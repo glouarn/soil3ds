@@ -1,3 +1,16 @@
+'''
+
+ 3DS-soil-model, a 3D Soil model adapted from STICS : soil Nitrogen balance module
+ ******************************
+ Authors: G. Louarn 
+ 
+
+ 
+
+'''
+
+
+
 from scipy import *
 #from rpy import r
 #import sys
@@ -63,6 +76,10 @@ from soil3ds.soil_module import * #soil3ds installe comme module
 
 
 class SoilN(Soil):
+    """
+    
+    """
+    
     def __init__(self, par_sol, parSN, soil_number , dxyz, vDA,  vCN, vMO, vARGIs, vNO3, vNH4,  vCALCs, Tsol, obstarac=None, pattern8=[[0,0],[100.,100.]]):
         """
         par_sol SN contient en plus pour l'azote:
@@ -203,11 +220,15 @@ class SoilN(Soil):
         return FH
 
     def Act_rate_SOMMin (self, par):
-        """ (%??) """
+        """
+        
+        """
         return self.K2HUM*self.SOMMin_RespHum(par)*self.SOMMin_RespT(par)
 
     def stepNB(self, par):
-        """ """
+        """
+        
+        """
         #Mineralisation of soil organic matter
         NHUM = self.Norg - self.InertNorg#* (1-par['FINERTG']) #!!! *PROFHUMs : mask pour retirer profondeur ou mineralisation pas significative???
         dN_NH4 = NHUM * self.Act_rate_SOMMin(par)
