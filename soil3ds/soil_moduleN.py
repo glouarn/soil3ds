@@ -11,7 +11,7 @@
 
 
 
-from scipy import *
+#from scipy import *
 #from rpy import r
 #import sys
 #path_ = r'H:\devel\grassland\grassland\luzerne'
@@ -20,6 +20,7 @@ from scipy import *
 #sys.path.insert(0, path2_)
 #from soil_module import * #soil_module5
 from soil3ds.soil_moduleW import * #soil3ds installe comme module
+
 
 ##changement version3
 #depend de soil_module5
@@ -1227,91 +1228,6 @@ def Actual_Nuptake_plt_old(SN, ls_Pot_Nuptake_plt, ls_demandeN):
 
 
 
-def critN (MS, a=4.8, b=-0.33):
-    """ courbe critique de dilution de l'N - marche aussi pour array"""
-    # MS = array od MS values (T.ha-1)
-    vals = a*MS**b #en %
-    if vals.size>1:
-        for i in range(len(vals)): vals[i]=min(a, vals[i])
-    else:
-        vals = min(a, vals)
-    return vals 
-
-
-def demandeNdefaut(MSp,dMSp,Npc, surfsolref, a=4.8, b=-0.33):
-    """ demande N pour parties aerienne - suppose meme courbe critique pour tout le monde - base sur N crit de la biomasse totale """
-    #MSp = array des MSp (g.plant-1)
-    #dMSp = array des dMSp (g.plant-1)
-    #Npc = array des Npc plante (%)
-    #surfsol sur laquelle sont les plantes #m2
-
-    QN = MSp * Npc/100. #gN.plant-1
-    MStot = array(sum(MSp+dMSp))/(surfsolref*100.)#MS new (T.ha-1)
-    NcritTot = critN (MStot, a, b)#N crit de MS new
-    PotN = (MSp + dMSp) * NcritTot/100. #gN.plant-1
-    ls_demandeN = PotN-QN
-    ls_demandeN[ls_demandeN<0.]=0.#gN.plant-1
-    return ls_demandeN
-
-
-#surfsolref = 0.05
-#MSp = array([1.,1.2, 2.])
-#dMSp = array([0.1,0.15,0.2])
-#Npc = array([4., 3., 2.])
-#demandeNdefaut(MSp,dMSp,Npc, surfsolref)
-
-def demandeNdefaut2(MSp,dMSp,Npc, surfsolref, a=4.8, b1=-0.1 ,b2=-0.33):
-    """ demande N pour parties aerienne - suppose meme courbe critique pour tout le monde - base sur N crit de la biomasse totale """
-    #MSp = array des MSp (g.plant-1)
-    #dMSp = array des dMSp (g.plant-1)
-    #Npc = array des Npc plante (%)
-    #surfsol sur laquelle sont les plantes #m2
-
-    QN = MSp * Npc/100. #gN.plant-1
-    MStot = array(sum(MSp+dMSp))/(surfsolref*100.)#MS new (T.ha-1)
-    if MStot>=1.:
-        NcritTot = a*MStot**b2#critN (MStot, a, b2)#N crit de MS new dense
-    else:
-        NcritTot = a*MStot**b1#critN (MStot, a, b1)#N crit de MS new isole
-
-    #filtre NcritTot
-    NcritTot[NcritTot>9.]=9.#gN.plant-1
-
-    PotN = (MSp + dMSp) * NcritTot/100. #gN.plant-1
-    ls_demandeN = PotN-QN
-    ls_demandeN[ls_demandeN<0.]=0.#gN.plant-1
-    return ls_demandeN, NcritTot, MStot #renvoie aussi Ncrit et MStot
-
-
-
-def demandeNroot(MSpiv,dMSpiv,Npcpiv, surfsolref, Noptpiv):
-    """ demande N pour parties racinaire - suppose N critique constant - s'applique aux racines et aux pivots """
-    #MSp = array des MSp (g.plant-1)
-    #dMSp = array des dMSp (g.plant-1)
-    #Npc = array des Npc plante (%)
-    #surfsol sur laquelle sont les plantes #m2
-
-    QNpiv = MSpiv * Npcpiv/100. #gN.plant-1
-    PotNpiv = (MSpiv + dMSpiv) * Noptpiv/100. #gN.plant-1
-    ls_demandeN = PotNpiv-QNpiv
-    ls_demandeN[ls_demandeN<0.]=0.#gN.plant-1
-    return ls_demandeN
-
-#def saveBilanN(bilanN, path):
-#
-#    dicout= {}
-#    dicout['NRain'] = bilanN['cumRain']
-#    dicout['NIrrig'] = bilanN['cumIrrig']
-#    dicout['fertNO3'] = bilanN['cumfertNO3']
-#    dicout['fertNH4'] = bilanN['cumfertNH4']
-#    dicout['HumusNMin'] = bilanN['cumMinN']
-#    dicout['Res1'] = bilanN['cumNRes1']
-#    dicout['Res2'] = bilanN['cumNRes2']
-#    dicout['Res3'] = bilanN['cumNRes3']
-#    dicout['ResidueMinN'] = bilanN['cumNRes1']+bilanN['cumNRes2']+bilanN['cumNRes3']
-#    dicout['Lix'] = bilanN['cumLix']
-#    dicout['N2O'] = bilanN['cumN2O']
-#    dicout['UptPlt'] = bilanN['cumUptakePlt']
 
 
 def step_bilanWN_solVGL(S, par_SN, meteo_j,  mng_j, ParamP, ls_epsi, ls_roots, ls_demandeN_bis, opt_residu, opt_Nuptake):
