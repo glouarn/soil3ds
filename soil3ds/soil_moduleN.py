@@ -180,16 +180,55 @@ class SoilN(Soil):
         self.N2ONitrif, self.N2ODenitrif = 0., 0. #kg N for the whole soil volume
         self.lixiNO3 = 0. #kg N
         #reprendre les Temperature avec un modele plus elabore!! ici = Tair!
+    
+    
+    def ConcNO3(self):
+        """
+        
+        """
+        #""" calculation of the nitrate concentration (kg N.mm-1) by voxel - 8.34 p 160 """
+        #mm d'eau libre? (eau liee retiree -  pas dans les eaux de drainage)?
+        #non - rq: dans devienne-baret (2000): utilise toute l'eau du sol pour calcul de concentration
+        return self.m_NO3 / self.tsw_t#(S.tsw_t - S.m_QH20min + 0.00000001)
+
+    
+    def ConcN(self):
+        """
+        
+        """
+        #""" calculation of the molar concentration of mineral nitrogen (micromole N.L-1) by voxel - 8.36 p 161 """
+        #L d'eau libre (eau liee retiree - car pas dans les eaux de drainage)
+        MMA = 71.428 #142.85 #mole d'N.kg-1 (14 g.mole-1)
+        moleN = (self.m_NO3 + self.m_NH4)/(MMA)*10**6 #micromole d'N
+        #return moleN / (self.tsw_t * self.m_vox_surf) * 10000   #remis pour conc sur 1ha pour coller au parametrage de sTICS
+        return moleN / (self.tsw_t * self.m_vox_surf) #micromole d'N.L-1
 
 
+    def ConcN_old(self):
+        """
+        
+        """
+        #""" calculation of the molar concentration of mineral nitrogen (micromole N.L-1) by voxel - 8.36 p 161 """
+        # L d'eau libre (eau liee retiree - car pas dans les eaux de drainage)
+        MMA = 142.85  # mole d'N.kg-1 (g.mole-1)
+        moleN = (self.m_NO3 + self.m_NH4) / (MMA) * 10 ** 6  # micromole d'N
+        return moleN / (self.tsw_t * self.m_vox_surf) * 10000  # remis pour conc sur 1ha pour coller au parametrage de sTICS
+    
+    
     def Pot_rate_SOMMin(self, CALCs, ARGIs, par):
-        """ Potential rate of SOM mineralisation - eq. 8.5 p145 """
+        """
+        
+        """
+        #""" Potential rate of SOM mineralisation - eq. 8.5 p145 """
         K2HUMi = par['FMIN1G']*exp(-par['FMIN2G']*ARGIs)/(1+par['FMIN3G']*CALCs)
         return K2HUMi
         #!! revoir ARGIs et CALCs!!
 
     def init_memory_EV(self, parSN):
-        """ inititalise memory variables and parameters to compute soil evaporation """
+        """
+        
+        """
+        #""" inititalise memory variables and parameters to compute soil evaporation """
         self.Uval = parSN['q0']
         HXs = self.m_teta_fc[0,0,0] #par_sol[str(vsoilnumbers[0])]['teta_fc']  # humidite a la capacite au champ de l'horizon de surface
         self.b_ = bEV(parSN['ACLIMc'], parSN['ARGIs'], HXs)
@@ -197,10 +236,17 @@ class SoilN(Soil):
         # marche seulement pour solN (car faut parSN)
 
     def update_memory_EV(self, new_vals):
+        """
+        
+        """
         self.stateEV = new_vals
 
+
     def SOMMin_RespT(self, par):
-        """ reponse de la mineralisation (ammonification) de la SOM a la temperature - described as a sigmoid process (FTH) - Eq 8.3 p143 et (pour residus FTR p146-147) """
+        """
+        
+        """
+        #""" reponse de la mineralisation (ammonification) de la SOM a la temperature - described as a sigmoid process (FTH) - Eq 8.3 p143 et (pour residus FTR p146-147) """
         if self.m_Tsol.min()<=0.:#min(min(min(self.m_Tsol)))<=0.:
             FTH=0.*self.m_1
         else:
@@ -208,7 +254,10 @@ class SoilN(Soil):
         return FTH 
 
     def SOMMin_RespHum(self, par):
-        """ reponse de la mineralisation (ammonification) de la SOM a l'humidite relative (FH) - Eq. 8.2 p 143 - aussi utilise pour residus """
+        """
+        
+        """
+        #""" reponse de la mineralisation (ammonification) de la SOM a l'humidite relative (FH) - Eq. 8.2 p 143 - aussi utilise pour residus """
         HR = self.HRv()
         FH = (HR - par['HMinMg']*100) / (par['HoptMg']*100 - par['HMinMg']*100)
         for i in range(len(FH)):
@@ -243,7 +292,10 @@ class SoilN(Soil):
         self.bilanC['cumMinC'].append(sum3(dC_NH4) / self.soilSurface() *10000)
 
     def init_residues(self, vCNRESt=[], vAmount=[], vProps=[], vWC=[], vCC=[], forced_Cres=None):
-        """ initialisation des compartiments en relation avec gestion des residus """
+        """
+        
+        """
+        #""" initialisation des compartiments en relation avec gestion des residus """
         #dictionnaire de parametres des residus
         self.parResi = {}
         self.parResi['CNRESt'], self.parResi['CNBio'], self.parResi['KRES'], self.parResi['YRES'], self.parResi['KBio'], self.parResi['HRES'] = [],[],[],[],[],[]
@@ -268,7 +320,10 @@ class SoilN(Soil):
         self.CO2respSoil = 0. #separer (kg de C par le volume total de sol) #rq: suppose aucune recapture
 
     def addResPAR(self, par, CNRes):
-        """ add a new series of parammeters for a residue according to Nicolardot et al. (2001) in function of its CN ratio"""
+        """
+        
+        """
+        #""" add a new series of parammeters for a residue according to Nicolardot et al. (2001) in function of its CN ratio"""
         par['CNRESt'].append(CNRes) #CSURNRESt C/N des residus #liste pour les different residus 
         par['CNBio'].append(max(7.8, 16.1-123./CNRes)) #CN ratio of the zymogeneous biomass -> fontion du CN des residus (eq. 8.6) -> des biomasses microbiennes associee a chaque type de residu?
         par['KRES'].append(0.07+1.94/CNRes) # decomposition rate constant (day-1- normalised day at 15dC) from organic residue to microbil biomass?  (fig 8.4 p146) -> fonction de CNRESt
@@ -277,11 +332,44 @@ class SoilN(Soil):
         par['HRES'].append(1-(0.69*CNRes)/(11.2+CNRes)) #  partition parameter between CO2 and humus - Humification rate of microbial biomass -(fig 8.4 p146) -> fonction de CNRESt
         return par
 
+
+    def VdistribResidues(self, Amount, Vprop, Wcontent=0.8,Ccontent=0.42):
+        """
+            
+        """
+        #"""initialise CRES (Amount of decompasble C in the residue) for a given amount/gratient """
+        #Amount (T fresh matter.ha-1)
+        #Wcontent (water content; proportion)
+        #Ccontent (carbon content; propostion)
+        #Vprop : list of proportion per horizon (distribution assumed homogeneous for a given horizon) -> same number of elements than dz
+        
+        Q = (Amount/10000.)*self.soilSurface()*1000.  #kg of fresh matter
+        QC = Q*(1-Wcontent)*Ccontent #kg of C
+        nbcase_layer = len(self.dxyz[0])*len(self.dxyz[1])
+
+        m_CRES = []
+        for z in range(len(self.dxyz[2])):
+            v = []
+            for x in range(len(self.dxyz[0])):
+                vv = []
+                for y in range(len(self.dxyz[1])):
+                    vv.append(Vprop[z]*QC/nbcase_layer)
+
+                v.append(vv)
+            m_CRES.append(v)
+
+        m_CRES = array(m_CRES)
+        return m_CRES
+        
+
     def addResMat(self, Amount, Vprop, Wcontent=0.8,Ccontent=0.42, forced_Cres=None):
-        """ add matrice associee au C des residus (CRES) et de leur microbial biomass """
+        """
+        
+        """
+        #""" add matrice associee au C des residus (CRES) et de leur microbial biomass """
         self.ls_CBio.append(0*self.m_1)#matrice for the Amount of C in the microbial biomass (kg C in the voxel) -> initialise a zero
         if forced_Cres == None:
-            cres = VdistribResidues(self, Amount, Vprop, Wcontent, Ccontent)
+            cres = self.VdistribResidues(Amount, Vprop, Wcontent, Ccontent)
             self.ls_CRES.append(cres)
             #bilan
             self.bilanC['initialCres'] += sum(cres)/ self.soilSurface() *10000
@@ -293,7 +381,10 @@ class SoilN(Soil):
             self.bilanN['NminfromNres'].append([])  # ajoute une liste vide pour le residu
 
     def Pot_rate_ResidueMin(self, res_id, par):
-        """ changement potentiel en C du residu id (dans conditions donnes d'humidite et T) eq. 8.7 p 146"""
+        """
+        
+        """
+        #""" changement potentiel en C du residu id (dans conditions donnes d'humidite et T) eq. 8.7 p 146"""
         #par : par_Sol, pour reponse a humidite
         pDCRES = -self.parResi['KRES'][res_id] * self.ls_CRES[res_id] * self.SOMMin_RespHum(par) * self.SOMMin_RespT(self.parResi) #sans *FN (dispo en N) ->  pot microbial growth dans ces condition
         return pDCRES
@@ -301,7 +392,10 @@ class SoilN(Soil):
         #laisser en valeur positive?
 
     def Pot_Ndemand_microbialBio(self, par):
-        """  demande totale en azote pour atteindre croissance optimale microbio de tous les residus (kg de N par voxel) - somme des demandes pour chaque residu """
+        """
+        
+        """
+        #"""  demande totale en azote pour atteindre croissance optimale microbio de tous les residus (kg de N par voxel) - somme des demandes pour chaque residu """
         #par : par_Sol, pour reponse a humidite
         res = self.m_1*0
         for i in range(len(self.parResi['KRES'])):
@@ -313,7 +407,10 @@ class SoilN(Soil):
         return res
 
     def FN_factor(self, par):
-        """ calcul du facteur de reduction lie a la disponibilite en Nmin a proximite des residus """
+        """
+        
+        """
+        #""" calcul du facteur de reduction lie a la disponibilite en Nmin a proximite des residus """
         #!! demande des plantes pas prise en compte -> servie slmt s'il en reste apres microbio!
         MND = self.Pot_Ndemand_microbialBio(par)
         Nmin = self.m_NH4 + self.m_NO3
@@ -330,11 +427,16 @@ class SoilN(Soil):
         return FN
 
     def FBIO_factor(self, par):
-        """ p147 - a faire et introduire dans stepMicrobioMin"""
+        """
+        
+        """
+        #""" p147 - a faire et introduire dans stepMicrobioMin"""
         pass
 
     def stepResidueMin(self, par):
-        """  """
+        """
+        
+        """
         #par : par_Sol, pour reponse a humidite
         FN = self.FN_factor(par) #!! faudrait calculer FN une seule fois pour tous les residus!
         cumNRes1, cumNRes2= [],[]
@@ -370,7 +472,9 @@ class SoilN(Soil):
 
 
     def stepMicrobioMin(self, par):
-        """ """
+        """
+        
+        """
         #par : par_Sol, pour reponse a humidite
         cumNRes3= []
         for i in range(len(self.ls_CBio)):
@@ -400,21 +504,30 @@ class SoilN(Soil):
         #a faire! avec approche similaire a FN_factor!
 
     def ls_NRES(self):
-        """ calcul N dans les residus - liste equivalente de ls_CRES """
+        """
+        
+        """
+        #""" calcul N dans les residus - liste equivalente de ls_CRES """
         lsNRES = []
         for i in range(len(self.ls_CRES)):
             lsNRES.append(self.ls_CRES[i]/self.parResi['CNRESt'][i])
         return lsNRES
 
     def ls_NBio(self):
-        """ calcul N dans les biomasse microbienne de residus - liste equivalente de ls_CBio """
+        """
+        
+        """
+        #""" calcul N dans les biomasse microbienne de residus - liste equivalente de ls_CBio """
         lsNbio = []
         for i in range(len(self.ls_CBio)):
             lsNbio.append(self.ls_CBio[i]/self.parResi['CNBio'][i])
         return lsNbio
 
     def mixResMat(self, mat_res, idres, Ccontent=0.42):
-        """ add matrice associee des residus (en g MS par voxl) au C (CRES) d' un residu avec id deja existant """
+        """
+        
+        """
+        #""" add matrice associee des residus (en g MS par voxl) au C (CRES) d' un residu avec id deja existant """
         cres = mat_res * Ccontent / 1000.  # conversion #kg of C per voxel
         self.ls_CRES[idres] += cres
         # bilan
@@ -424,7 +537,10 @@ class SoilN(Soil):
     # suppose CsurN comme residu existant; a faire (?) cree noueau residu si tres different? ajuster bilan C/N # faire evoluer lrd parametres des reisdus selon C/N vrai?
 
     def Nitrif_RespHum(self, par):
-        """ reponse de la nitrification de NH4+ a l'humidite relative (FHN) - Eq. 8.14 p 150 - increasing sigmoid-like curve """
+        """
+        
+        """
+        #""" reponse de la nitrification de NH4+ a l'humidite relative (FHN) - Eq. 8.14 p 150 - increasing sigmoid-like curve """
         HR = self.HRv()
         FHN = (HR - par['HMinNg']*100) / (par['HoptNg']*100 - par['HMinNg']*100)
         for i in range(len(FHN)):
@@ -437,7 +553,10 @@ class SoilN(Soil):
         return FHN
 
     def Nitrif_RespPH(self, par):
-        """ reponse de la nitrification de NH4+ au pH (FH) - Eq. 8.13 p 150 - increasing sigmoid-like curve """
+        """
+        
+        """
+        #""" reponse de la nitrification de NH4+ au pH (FH) - Eq. 8.13 p 150 - increasing sigmoid-like curve """
         pHs = self.pHeau
         FPHN = (pHs - par['PHMinNITg']) / (par['PHMaxNITg'] - par['PHMinNITg'])
         if FPHN<0.:
@@ -447,7 +566,10 @@ class SoilN(Soil):
         return FPHN #a priori scalaire a ne calculer qu'une fois (comme pH change pas)
 
     def Nitrif_RespT(self, par):
-        """ reponse de la nitrification de NH4+ a la temperature (FTN) - Eq. 8.15 p 151 - bilinear beta-like curve """
+        """
+        
+        """
+        #""" reponse de la nitrification de NH4+ a la temperature (FTN) - Eq. 8.15 p 151 - bilinear beta-like curve """
         FTN = deepcopy(self.m_Tsol)
         for i in range(len(FTN)):
             for j in range(len(FTN[i])):
@@ -462,7 +584,10 @@ class SoilN(Soil):
         return FTN
 
     def stepNitrif(self, par):
-        """ eq. 8.12 et 8.16 """
+        """
+        
+        """
+        #""" eq. 8.12 et 8.16 """
         TNITRIF = self.m_NH4 * par['FNXg'] * self.Nitrif_RespHum(par) * self.Nitrif_RespPH(par) * self.Nitrif_RespT(par)
         NITRIF = (1 - par['RATIONITs']) * TNITRIF
         self.m_NO3 = self.m_NO3 + NITRIF
@@ -473,6 +598,9 @@ class SoilN(Soil):
 
 
     def infil_layerNO3(self, in_N, out_Water , idz, opt=1):
+        """
+        
+        """
         new = self.m_NO3[idz] + in_N
         propNO3 = out_Water / (self.m_QH20max[idz] + out_Water)#prop de nitrate qui part est fraction du volume d'eau max qui passe (jamais >1)
         #putmask(propNO3, propNO3>1. ,1.)#!!!verif pas superieur a 1 et sinon remplace par 1!!  syntaxe interessante
@@ -501,7 +629,9 @@ class SoilN(Soil):
 
 
     def distrib_NO3(self, map_N, ls_outWater, opt=1):#map_N = map application nitrates en surface
-        """  """
+        """
+        
+        """
         
         in_N = map_N
         matNO3_t = deepcopy(self.m_NO3)
@@ -517,7 +647,9 @@ class SoilN(Soil):
 
 
     def stepNINFILT(self, mapN_Rain, mapN_Irrig, mapN_fertNO3, mapN_fertNH4, ls_outWater, opt=1):#(self, map_N, ls_outWater, opt=1):
-        """ """
+        """
+        
+        """
         #ajout N NO3 mobile
         map_N = mapN_Rain + mapN_Irrig + mapN_fertNO3 #+ mapN_fertNH4
         matNO3_t, out_NO3 = self.distrib_NO3(map_N, ls_outWater, opt)
@@ -537,7 +669,10 @@ class SoilN(Soil):
      
 
     def mask_PROFUM(self, parSN):
-        """ pour creer un mask pour profhum """
+        """
+        
+        """
+        #""" pour creer un mask pour profhum """
         PROFHUM = parSN['PROFHUMs']/100. #en m
         limz = [0.]
         for i in range(len(self.dxyz[2])): 
@@ -561,18 +696,25 @@ class SoilN(Soil):
         return res
 
     def updateTsol(self, Tair):
-        """ Tsol= Tair """
+        """
+        
+        """
+        #""" Tsol= Tair """
         self.m_Tsol = self.m_1*Tair
         # A ameliorer avec bilan d'E! et TCULT
 
 
     def OpenCbalance(self):
-        """ Dictionnary for soil Carbon balance (kg C.ha-1)
-        Keys for Daily outputs: 'cumMinC', 'cumCO2Res1', 'cumCO2Res2'
-        Keys for Total Input: 'intialInertC', 'intialActiveC', 'initialCZygo', 'initialCres'
-        Keys for Total outputs: 'FinalInertC', 'FinalActiveC', 'MinCtot'
-        Keys for totals: 'InputCtot', 'OutputCtot'
         """
+        
+        """
+        #""" Dictionnary for soil Carbon balance (kg C.ha-1)
+        #Keys for Daily outputs: 'cumMinC', 'cumCO2Res1', 'cumCO2Res2'
+        #Keys for Total Input: 'intialInertC', 'intialActiveC', 'initialCZygo', 'initialCres'
+        #Keys for Total outputs: 'FinalInertC', 'FinalActiveC', 'MinCtot'
+        #Keys for totals: 'InputCtot', 'OutputCtot'
+        #"""
+        
         surfsolref = self.soilSurface()
         self.bilanC = {}
         #Humus
@@ -596,6 +738,9 @@ class SoilN(Soil):
     #    # autres termes avec microbio et residus a ajouter!!
 
     def CloseCbalance(self, print_=1):
+        """
+        
+        """
         surfsolref = self.soilSurface()
         #Humus Mineralisation
         #input  
@@ -620,6 +765,9 @@ class SoilN(Soil):
         #pourrait le diriger vers un fichier de sortie texte?
 
     def PrintCbalance(self):
+        """
+        
+        """
         bilanC = self.bilanC
         print ("")
         print ("Carbon Balance Input (kg C.ha-1)\t\t\t Carbon Balance Output (kg C.ha-1)")
@@ -634,12 +782,16 @@ class SoilN(Soil):
         print ("")
 
     def OpenNbalance(self):
-        """ Dictionnary for soil Organic and Mineral balance (kg N.ha-1)
-        Keys for Daily outputs: 
-        Keys for Total Input: 
-        Keys for Total outputs: 
-        Keys for totals: 'InputNtot', 'OutputNtot', 'InputNmintot', 'OutputNmintot'
         """
+        
+        """
+        #""" Dictionnary for soil Organic and Mineral balance (kg N.ha-1)
+        #Keys for Daily outputs: 
+        #Keys for Total Input: 
+        #Keys for Total outputs: 
+        #Keys for totals: 'InputNtot', 'OutputNtot', 'InputNmintot', 'OutputNmintot'
+        #"""
+        
         self.bilanN = {}
         self.bilanN['intialInertN'] = sum3(self.InertNorg) / self.soilSurface() *10000
         self.bilanN['intialActiveN'] = sum3(self.Norg-self.InertNorg) / self.soilSurface() *10000
@@ -680,6 +832,10 @@ class SoilN(Soil):
     #    # autres termes avec plantes...
 
     def CloseNbalance(self, print_=1):
+        """
+        
+        """
+        
         surfsolref = self.soilSurface()
         #N org humus
         self.bilanN['FinalInertN'] = sum3(self.InertNorg) / surfsolref *10000
@@ -727,6 +883,10 @@ class SoilN(Soil):
 
 
     def PrintNbalance(self):
+        """
+        
+        """
+        
         bilanN= self.bilanN
         #Norg
         print ("")
@@ -761,30 +921,12 @@ class SoilN(Soil):
         print ("")
 
 
-    def ConcNO3(self):
-        """ calculation of the nitrate concentration (kg N.mm-1) by voxel - 8.34 p 160 """
-        #mm d'eau libre? (eau liee retiree -  pas dans les eaux de drainage)?
-        #non - rq: dans devienne-baret (2000): utilise toute l'eau du sol pour calcul de concentration
-        return self.m_NO3 / self.tsw_t#(S.tsw_t - S.m_QH20min + 0.00000001)
-
-    def ConcN(self):
-        """ calculation of the molar concentration of mineral nitrogen (micromole N.L-1) by voxel - 8.36 p 161 """
-        #L d'eau libre (eau liee retiree - car pas dans les eaux de drainage)
-        MMA = 71.428 #142.85 #mole d'N.kg-1 (14 g.mole-1)
-        moleN = (self.m_NO3 + self.m_NH4)/(MMA)*10**6 #micromole d'N
-        #return moleN / (self.tsw_t * self.m_vox_surf) * 10000   #remis pour conc sur 1ha pour coller au parametrage de sTICS
-        return moleN / (self.tsw_t * self.m_vox_surf) #micromole d'N.L-1
-
-    def ConcN_old(self):
-        """ calculation of the molar concentration of mineral nitrogen (micromole N.L-1) by voxel - 8.36 p 161 """
-        # L d'eau libre (eau liee retiree - car pas dans les eaux de drainage)
-        MMA = 142.85  # mole d'N.kg-1 (g.mole-1)
-        moleN = (self.m_NO3 + self.m_NH4) / (MMA) * 10 ** 6  # micromole d'N
-        return moleN / (self.tsw_t * self.m_vox_surf) * 10000  # remis pour conc sur 1ha pour coller au parametrage de sTICS
-
 
     def stepNuptakePlt(self, par, paramp=[{}], ls_lrac=None, ls_mWaterUptakePlt=None, ls_demandeN=None, optNuptake='LocalTransporter'):
-        """ calculation of actual N uptake by plant - if no plants (baresoil) -> let None in ls_rac,ls_mWaterUptakePlt, ls_demandeN """
+        """
+        
+        """
+        #""" calculation of actual N uptake by plant - if no plants (baresoil) -> let None in ls_rac,ls_mWaterUptakePlt, ls_demandeN """
 
         if optNuptake ==0:#'STICS':
             # version initiale tiree de STICS avec correction unites concN
@@ -831,407 +973,15 @@ class SoilN(Soil):
         return ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N, idmin
 
 
-def VdistribResidues(SoilObj, Amount, Vprop, Wcontent=0.8,Ccontent=0.42):
-    """initialise CRES (Amount of decompasble C in the residue) for a given amount/gratient """
-    #Amount (T fresh matter.ha-1)
-    #Wcontent (water content; proportion)
-    #Ccontent (carbon content; propostion)
-    #Vprop : list of proportion per horizon (distribution assumed homogeneous for a given horizon) -> same number of elements than dz
-    Q = (Amount/10000.)*SoilObj.soilSurface()*1000.  #kg of fresh matter
-    QC = Q*(1-Wcontent)*Ccontent #kg of C
-    nbcase_layer = len(SoilObj.dxyz[0])*len(SoilObj.dxyz[1])
-
-    m_CRES = []
-    for z in range(len(SoilObj.dxyz[2])):
-        v = []
-        for x in range(len(SoilObj.dxyz[0])):
-            vv = []
-            for y in range(len(SoilObj.dxyz[1])):
-                vv.append(Vprop[z]*QC/nbcase_layer)
-
-            v.append(vv)
-        m_CRES.append(v)
-
-    m_CRES = array(m_CRES)
-    return m_CRES
-
-
-
-
-
-
-def VABSvox(paramp, CONCN):
-    """ Specific absorbtion capacity by roots (micromole N.h-1.cm-1 root) eq. 8.36 p 161 """
-    """ paramp = plant parameters """
-    HATS = paramp['Vmax1']*CONCN / (paramp['Kmax1'] + CONCN) *10000*10
-    LATS = paramp['Vmax2']*CONCN / (paramp['Kmax2'] + CONCN) *10000*10
-    # facteur 10000*10 car parametres STICS prevu pour densite (pas longueur) couche LrarZ
-    return HATS+LATS
-
-
-def VABSvox_old(paramp, CONCN):
-    """ Specific absorbtion capacity by roots (micromole N.h-1.cm-1 root) eq. 8.36 p 161 """
-    """ paramp = plant parameters """
-    HATS = paramp['Vmax1']*CONCN / (paramp['Kmax1'] + CONCN)
-    LATS = paramp['Vmax2']*CONCN / (paramp['Kmax2'] + CONCN)
-    return HATS+LATS
-
-
-def FLUXRACs(paramp, SN, ls_lrac):
-    """ list of potential active uptake rate (kg N. voxel-1, day-1) per root system per voxel - fluxTot=total uptake potential by all roots ; 
-    ls_frac_fluxrac = fraction de demande totale par voxel par systeme racinaire - eq. 8.37 p 161 """
-    #ls_lrac = ls_ roots (en m) -> convert en cm (*100)
-
-    MMA = 71.428 #142.85 #mole d'N.kg-1 (14 g.mole-1)
-    ls_flux_rac = []
-    fluxTot = SN.m_1*0.
-    for i in range(len(ls_lrac)):
-        VABS = VABSvox(paramp[i], SN.ConcN())
-        flux = VABS * ls_lrac[i] * 24. / (MMA * 10 ** 6 * 1000) #24h / mole-µmole / g-kg
-
-        ls_flux_rac.append(flux)
-        fluxTot = fluxTot + flux
-
-    #calcul des fractions par racine
-    ls_frac_fluxrac = []
-    for i in range(len(ls_flux_rac)):
-        ls_frac_fluxrac.append(ls_flux_rac[i] / (fluxTot + 10**-15) )#10**-15 pour eviter division par zero
-
-    return fluxTot, ls_frac_fluxrac
-    #renvoie demande flux total et fraction de demande par voxel par systeme racinaire?
-    #passer les densite de racines (i.e. ls_roots) plutot que les longueurs (comme STICS)?
-    #seuiller lrac  a une longuer efficace max? LVOPTg -> parametre
-
-
-def FLUXRACs_old(paramp, SN, ls_lrac):
-    """ list of potential active uptake rate (kg N. voxel-1, day-1) per root system per voxel - fluxTot=total uptake potential by all roots ;
-    ls_frac_fluxrac = fraction de demande totale par voxel par systeme racinaire - eq. 8.37 p 161 """
-    # ls_lrac = ls_ roots (en m) -> convert en cm (*100)
-
-    MMA = 142.85  # mole d'N.kg-1 (g.mole-1)
-    ls_flux_rac = []
-    fluxTot = SN.m_1 * 0.
-    for i in range(len(ls_lrac)):
-        VABS = VABSvox_old(paramp[i], SN.ConcN_old())
-        flux = VABS * ls_lrac[i] * 100. * 24. / (MMA * 10 ** 6)  # calcule car retombe pas sur coeff 33.6 indique p 161
-        ls_flux_rac.append(flux)
-        fluxTot = fluxTot + flux
-
-    # calcul des fractions par racine
-    ls_frac_fluxrac = []
-    for i in range(len(ls_flux_rac)):
-        ls_frac_fluxrac.append(ls_flux_rac[i] / (fluxTot + 10 ** -15))  # 10**-15 pour eviter division par zero
-
-    return fluxTot, ls_frac_fluxrac
-    # renvoie demande flux total et fraction de demande par voxel par systeme racinaire?
-    # passer les densite de racines (i.e. ls_roots) plutot que les longueurs?
-
-
-def Convective_Nflux(SN, ls_mWaterUptakePlt):
-    """ Eq. 8_34 p 160 - potential passive NO3 uptake with water flow"""
-    ls_conv = []
-    convtot = SN.m_1*0.
-    for i in range(len(ls_mWaterUptakePlt)):
-        flux_c = ls_mWaterUptakePlt[i] * SN.ConcNO3()
-        ls_conv.append(flux_c)
-        convtot = convtot+flux_c
-
-    return convtot, ls_conv
-    #renvoyer liste de fraction?
-
-def Diffusive_Nflux(SN, parSN, ls_lrac):
-    """ Eq. 8.35 p 161 """
-    #ls_lrac = ls_ roots (en m) -> convert en cm (*100)
-
-    ls_diff = []
-    difftot = SN.m_1*0.
-
-    FH = (SN.tsw_t - SN.m_QH20wp) / (SN.m_QH20fc - SN.m_QH20wp)
-    filtre = FH>0
-    filtre = filtre * 1. #remplace valeur negatives par zero
-    DIFE = parSN['DIFNg'] * FH * filtre
-    coeff = 4*pi**0.5
-    for i in range(len(ls_lrac)):
-        draci = (ls_lrac[i]*100.) / (SN.m_soil_vol*1000000.) #root density (cm.cm-3)
-        flux_d = coeff * DIFE * (SN.m_NO3 + SN.m_NH4) *sqrt(draci)
-        ls_diff.append(flux_d)
-        difftot = difftot + flux_d
-
-    return difftot, ls_diff
-    #a priori ls_diff pas utilise
-
-
-
-def Nsoil_supply(SN, parSN, ls_lrac, ls_mWaterUptakePlt):
-    """ Eq. 8.33 p 160 """
-    convtot, ls_conv = Convective_Nflux(SN, ls_mWaterUptakePlt)
-    difftot, ls_diff = Diffusive_Nflux(SN, parSN, ls_lrac)
-    ls_suptot = []
-    for i in range(len(ls_conv)):
-        ls_suptot.append(ls_conv[i] + ls_diff[i])
-
-    return convtot+difftot, ls_suptot
-    #a priori ls_suptot pas utilise
-
-
-
-def Potential_NuptakeTot(SN, parSN, paramp, ls_lrac, ls_mWaterUptakePlt):
-    """ Eq. 8.38 """
-    # philosophie: 
-    # assimilation de l'azote est active, via equation de Devienne (HATS, LATS)-> FLUXRACs( qui est mal nomme!)
-    # transport actif peut etre limitee par le flux d'azote a la racine et mobilite de l'N ds le sol (convectif + diffusif = soilNsupply) -> prend le min des 2
-    # in fine, n'est rellement preleve que l'N necessaire a la croissance (actual_N uptake) -> borne
-    epsilon = 10e-10
-
-    Ntot = (SN.m_NO3 + SN.m_NH4)*SN.m_obstarac
-    supNtot, ls_supNtot =  Nsoil_supply(SN, parSN, ls_lrac, ls_mWaterUptakePlt)
-    fluxTot, ls_frac_fluxrac = FLUXRACs(paramp, SN, ls_lrac)
-    ActUptakeN = SN.m_1*0.
-    idmin = SN.m_1*0 #code des facteur limitant uptake N (0=Ntot available, 2=passive soil supply, 1=Active root uptake, 3=No uptake)
-
-    for z in range(len(SN.dxyz[2])):
-        for x in range(len(SN.dxyz[0])):
-            for y in range(len(SN.dxyz[1])):
-                lslim = [Ntot[z][x][y], fluxTot[z][x][y], supNtot[z][x][y]] #mini des 3 sources d'N
-                minN = min(lslim)
-                id_min = lslim.index(minN)
-                if minN > epsilon:
-                    ActUptakeN[z][x][y] = minN
-                    idmin[z][x][y] = id_min
-                else:#no uptake below epsilon treshold
-                    ActUptakeN[z][x][y] = 0.
-                    idmin[z][x][y] = 3 #none of the three others
-
-    return ActUptakeN, idmin, ls_frac_fluxrac
-    # -> ajuste par voxel selon offre du sol et demande des plantes
-
-
-def Potential_NuptakeTot_Bis(SN, paramp, ls_lrac):
-    """ Eq. 8.38 """
-    # test pour compatibilite romain
-    # slmt determine par assimilation de l'azote est active, via equation de Devienne (HATS, LATS)-> FLUXRACs( qui est mal nomme!)
-
-    epsilon = 10e-10
-
-    Ntot = (SN.m_NO3 + SN.m_NH4)*SN.m_obstarac
-    #supNtot, ls_supNtot =  Nsoil_supply(SN, parSN, ls_lrac, ls_mWaterUptakePlt)
-    fluxTot, ls_frac_fluxrac = FLUXRACs(paramp, SN, ls_lrac)
-    ActUptakeN = SN.m_1*0.
-    idmin = SN.m_1*0 #code des facteur limitant uptake N (0=Ntot available, 1=passive soil supply, 2=Active root uptake, 3=No uptake)
-
-    for z in range(len(SN.dxyz[2])):
-        for x in range(len(SN.dxyz[0])):
-            for y in range(len(SN.dxyz[1])):
-                lslim = [Ntot[z][x][y], fluxTot[z][x][y]] #mini des 2 sources d'N
-                minN = min(lslim)
-                id_min = lslim.index(minN) # (0=Ntot available, 1=Active root uptake)
-                if minN > epsilon:
-                    ActUptakeN[z][x][y] = minN
-                    idmin[z][x][y] = id_min
-                else:#no uptake below epsilon treshold
-                    ActUptakeN[z][x][y] = 0.
-                    idmin[z][x][y] = 3 #none of the three others
-
-    return ActUptakeN, idmin, ls_frac_fluxrac
-
-def Potential_NuptakeTot_old(SN, parSN, paramp, ls_lrac, ls_mWaterUptakePlt):
-    """ Eq. 8.38 """
-    # philosophie:
-    # assimilation de l'azote est active, via equation de Devienne (HATS, LATS)-> FLUXRACs( qui est mal nomme!)
-    # transport actif peut etre limitee par le flux d'azote a la racine et mobilite de l'N ds le sol (convectif + diffusif = soilNsupply) -> prend le min des 2
-    # in fine, n'est rellement preleve que l'N necessaire a la croissance (actual_N uptake) -> borne
-    epsilon = 10e-10
-
-    Ntot = (SN.m_NO3 + SN.m_NH4)*SN.m_obstarac
-    supNtot, ls_supNtot =  Nsoil_supply(SN, parSN, ls_lrac, ls_mWaterUptakePlt)
-    fluxTot, ls_frac_fluxrac = FLUXRACs_old(paramp, SN, ls_lrac)
-    ActUptakeN = SN.m_1*0.
-    idmin = SN.m_1*0 #code des facteur limitant uptake N (0=Ntot available, 1=passive soil supply, 2=Active root uptake, 3=No uptake)
-
-    for z in range(len(SN.dxyz[2])):
-        for x in range(len(SN.dxyz[0])):
-            for y in range(len(SN.dxyz[1])):
-                lslim = [Ntot[z][x][y], supNtot[z][x][y], fluxTot[z][x][y]] #mini des 3 sources d'N
-                minN = min(lslim)
-                id_min = lslim.index(minN)
-                if minN > epsilon:
-                    ActUptakeN[z][x][y] = minN
-                    idmin[z][x][y] = id_min
-                else:#no uptake below epsilon treshold
-                    ActUptakeN[z][x][y] = 0.
-                    idmin[z][x][y] = 3 #none of the three others
-
-    return ActUptakeN, idmin, ls_frac_fluxrac
-    # -> ajuste par voxel selon offre du sol et demande des plantes
-
-
-def Distrib_Potential_Nuptake_Plt(SN, parSN, paramp_, ls_lrac, ls_mWaterUptakePlt):#ls_lrac, ls_mWaterUptakePlt):
-    """ Eq. 8.38 - distibue uptake entre NO3/NH4 et entre les differentes plantes"""
-    epsilon = 10e-12
-    PotUpNtot, idmin, ls_frac_fluxrac = Potential_NuptakeTot(SN, parSN, paramp_, ls_lrac, ls_mWaterUptakePlt)
-
-    #distribution de l'uptakeN par plante
-    ##ls_rac_tot = SN.m_1*0.
-    ##for rt in ls_lrac: 
-    ##   ls_rac_tot += rt
-
-    ls_Pot_Nuptake_plt = []
-    ##for rt in ls_lrac: 
-    ##    frac_rac_tot = rt / (ls_rac_tot +epsilon)
-    ##    ls_Pot_Nuptake_plt.append( frac_rac_tot * PotUpNtot)    
-
-    for rt in ls_frac_fluxrac:
-        ls_Pot_Nuptake_plt.append( rt * PotUpNtot)    
-
-
-    return PotUpNtot, ls_Pot_Nuptake_plt, idmin
-    #rq: distribution entre plante se fait en fonction de densite relative de longueur uniquementif relatifs?
-    #tenir compte des parametre de transport act: ls_frac_fluxrac de FLUXRACs?? -> OK =fait
-    # !! Manque confrontation a demande totale des plantes (8.39): uptake n'excede pas demande des pantes integree sur tout le profil!! -> a reprendre
-    # ls_demandeN a fournir!
-    #doner l'option de renvoyer zero si paramp, ls_lrac, ls_mWaterUptakePlt sont a None (pour faire tourner en sol nu facilement)
-
-
-
-def Distrib_Potential_Nuptake_Plt_Bis(SN, paramp_, ls_lrac):
-    """ Eq. 8.38 - distibue uptake entre NO3/NH4 et entre les differentes plantes"""
-    #test pour compatibilite romain
-
-    epsilon = 10e-12
-    PotUpNtot, idmin, ls_frac_fluxrac = Potential_NuptakeTot_Bis(SN, paramp_, ls_lrac)
-
-    ls_Pot_Nuptake_plt = []
-    for rt in ls_frac_fluxrac:
-        ls_Pot_Nuptake_plt.append( rt * PotUpNtot)
-
-
-    return PotUpNtot, ls_Pot_Nuptake_plt, idmin
-
-
-def Distrib_Potential_Nuptake_Plt_old(SN, parSN, paramp_, ls_lrac, ls_mWaterUptakePlt):#ls_lrac, ls_mWaterUptakePlt):
-    """ Eq. 8.38 - distibue uptake entre NO3/NH4 et entre les differentes plantes"""
-    epsilon = 10e-12
-    PotUpNtot, idmin, ls_frac_fluxrac = Potential_NuptakeTot_old(SN, parSN, paramp_, ls_lrac, ls_mWaterUptakePlt)
-
-    #distribution de l'uptakeN par plante
-    ##ls_rac_tot = SN.m_1*0.
-    ##for rt in ls_lrac:
-    ##   ls_rac_tot += rt
-
-    ls_Pot_Nuptake_plt = []
-    ##for rt in ls_lrac:
-    ##    frac_rac_tot = rt / (ls_rac_tot +epsilon)
-    ##    ls_Pot_Nuptake_plt.append( frac_rac_tot * PotUpNtot)
-
-    for rt in ls_frac_fluxrac:
-        ls_Pot_Nuptake_plt.append( rt * PotUpNtot)
-
-
-    return PotUpNtot, ls_Pot_Nuptake_plt, idmin
-    #rq: distribution entre plante se fait en fonction de densite relative de longueur uniquementif relatifs?
-    #tenir compte des parametre de transport act: ls_frac_fluxrac de FLUXRACs?? -> OK =fait
-    # !! Manque confrontation a demande totale des plantes (8.39): uptake n'excede pas demande des pantes integree sur tout le profil!! -> a reprendre
-    # ls_demandeN a fournir!
-    #doner l'option de renvoyer zero si paramp, ls_lrac, ls_mWaterUptakePlt sont a None (pour faire tourner en sol nu facilement)
-
-
-def Actual_Nuptake_plt(SN, ls_Pot_Nuptake_plt, ls_demandeN):
-    """ Eq. 8.39, 8.40 p162 """
-    #caclule de demande sur offre par plante! -> ls_DQN
-    ls_DQ_N = []
-    for i in range(len(ls_demandeN)):
-        DQ = min(ls_demandeN[i] / sum(ls_Pot_Nuptake_plt[i]), 1.) #plafonne a ratio a 1: preleve uniquement a hauteur de demande de la plante!
-        ls_DQ_N.append(DQ)
-
-    #calcul d'un actual uptake par plante et recalcul total
-    ls_Act_Nuptake_plt = []
-    ActUpNtot = SN.m_1*0.
-    for i in range(len(ls_Pot_Nuptake_plt)):
-        Act_Nuptake_i = ls_Pot_Nuptake_plt[i] * ls_DQ_N[i]
-        ls_Act_Nuptake_plt.append(Act_Nuptake_i)
-        ActUpNtot = ActUpNtot + Act_Nuptake_i
-
-    ### retire les nitrates et ammomium rellement preleves du sol
-    ##frac_NO3 =  SN.m_NO3 / (SN.m_NO3 + SN.m_NH4 + 10**-15)
-    ##SN.m_NO3 = SN.m_NO3 - frac_NO3*ActUpNtot
-    ##SN.m_NH4 = SN.m_NH4 - (1. - frac_NO3)*ActUpNtot
-    ###bilan
-    ##SN.bilanN['cumUptakePlt'].append(ActUpNtot/SN.soilSurface() *10000)
-
-    return ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N
-
-
-def Actual_Nuptake_plt_Bis(SN, ls_Pot_Nuptake_plt, ls_PltN):
-    """  """
-    # calcul en fonction de feedback statut plante = frein a l'uptake si N suffisant
-    # ls_PltN = ls_NNI si optNNI=True (sinon, concentration en N des racines)
-
-    ls_frein_N = []
-    for i in range(len(ls_PltN)):
-
-        # A passer en parametre (valeurs de NNI ou de Npc racine min et max)
-        treshmaxN = 1.0 #NNI  et au dessus -> frein=0 / peut aussi etre teneur en N des racines
-        treshminN = 0.8 #NNI et en dessous -> frein=1 / peut aussi etre teneur en N des racines
-
-        if ls_PltN[i] > treshmaxN:
-            frein = 0.
-        elif ls_PltN[i] < treshminN:
-            frein = 1.
-        else:
-            frein = (ls_PltN[i] - treshminN) / (treshmaxN - treshminN)
-
-        ls_frein_N.append(frein)
-
-    #calcul d'un actual uptake par plante et recalcul total
-    ls_Act_Nuptake_plt = []
-    ActUpNtot = SN.m_1*0.
-    for i in range(len(ls_Pot_Nuptake_plt)):
-        Act_Nuptake_i = ls_Pot_Nuptake_plt[i] * ls_frein_N[i]
-        ls_Act_Nuptake_plt.append(Act_Nuptake_i)
-        ActUpNtot = ActUpNtot + Act_Nuptake_i
-
-    #print('frein', ls_frein_N, ls_PltN)
-    ### retire les nitrates et ammomium rellement preleves du sol
-    ##frac_NO3 =  SN.m_NO3 / (SN.m_NO3 + SN.m_NH4 + 10**-15)
-    ##SN.m_NO3 = SN.m_NO3 - frac_NO3*ActUpNtot
-    ##SN.m_NH4 = SN.m_NH4 - (1. - frac_NO3)*ActUpNtot
-    ###bilan
-    ##SN.bilanN['cumUptakePlt'].append(ActUpNtot/SN.soilSurface() *10000)
-
-    return ActUpNtot, ls_Act_Nuptake_plt, ls_frein_N
-
-
-def Actual_Nuptake_plt_old(SN, ls_Pot_Nuptake_plt, ls_demandeN):
-    """ Eq. 8.39, 8.40 p162 """
-    #caclule de demande sur offre par plante! -> ls_DQN
-    ls_DQ_N = []
-    for i in range(len(ls_demandeN)):
-        DQ = min(ls_demandeN[i] / sum(ls_Pot_Nuptake_plt[i]), 1.) #plafonne a ratio a 1: preleve uniquement a hauteur de demande de la plante!
-        ls_DQ_N.append(DQ)
-
-    #calcul d'un actual uptake par plante et recalcul total
-    ls_Act_Nuptake_plt = []
-    ActUpNtot = SN.m_1*0.
-    for i in range(len(ls_Pot_Nuptake_plt)):
-        Act_Nuptake_i = ls_Pot_Nuptake_plt[i] * ls_DQ_N[i]
-        ls_Act_Nuptake_plt.append(Act_Nuptake_i)
-        ActUpNtot = ActUpNtot + Act_Nuptake_i
-
-    ### retire les nitrates et ammomium rellement preleves du sol
-    ##frac_NO3 =  SN.m_NO3 / (SN.m_NO3 + SN.m_NH4 + 10**-15)
-    ##SN.m_NO3 = SN.m_NO3 - frac_NO3*ActUpNtot
-    ##SN.m_NH4 = SN.m_NH4 - (1. - frac_NO3)*ActUpNtot
-    ###bilan
-    ##SN.bilanN['cumUptakePlt'].append(ActUpNtot/SN.soilSurface() *10000)
-
-    return ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N
-
 
 
 
 
 def step_bilanWN_solVGL(S, par_SN, meteo_j,  mng_j, ParamP, ls_epsi, ls_roots, ls_demandeN_bis, opt_residu, opt_Nuptake):
-    """ daily step for soil W and N balance from meteo, management and L-egume lsystem inputs"""
+    """
+        
+    """
+    #""" daily step for soil W and N balance from meteo, management and L-egume lsystem inputs"""
 
     # testRL = updateRootDistrib(invar['RLTot'][0], ls_systrac[0], lims_sol)
     # ls_roots = rtd.build_ls_roots_mult(invar['RLTot'], ls_systrac, lims_sol) #ancien calcul base sur SRL fixe

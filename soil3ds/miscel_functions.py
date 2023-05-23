@@ -92,7 +92,7 @@ def pF(h):
 
 
 
-##gerer sol evapo 
+## soil evaporation
 
 def bEV(ACLIMc, ARGIs, HXs):
     """
@@ -485,4 +485,68 @@ def soil_EV_STICS(Et0, Precip, epsi, previous_state=[0., 0., 0.], leafAlbedo=0.1
 #map_Evap0 = array([[1.5]]) ## faire une fonction qui le genere initialement
 #m_frac_evap = distrib_evapNC(m_soil_vox, m_soil_vol, map_Evap0, ZESX=0.3)
 
+
+
+
+
+########## diverses fonction - soil nitrogen balance
+
+
+
+## soil N supply
+
+
+def Convective_Nflux(SN, ls_mWaterUptakePlt):
+    """
+        
+    """
+    #""" Eq. 8_34 p 160 - potential passive NO3 uptake with water flow"""
+    ls_conv = []
+    convtot = SN.m_1*0.
+    for i in range(len(ls_mWaterUptakePlt)):
+        flux_c = ls_mWaterUptakePlt[i] * SN.ConcNO3()
+        ls_conv.append(flux_c)
+        convtot = convtot+flux_c
+
+    return convtot, ls_conv
+    #renvoyer liste de fraction?
+
+def Diffusive_Nflux(SN, parSN, ls_lrac):
+    """
+        
+    """
+    #""" Eq. 8.35 p 161 """
+    #ls_lrac = ls_ roots (en m) -> convert en cm (*100)
+
+    ls_diff = []
+    difftot = SN.m_1*0.
+
+    FH = (SN.tsw_t - SN.m_QH20wp) / (SN.m_QH20fc - SN.m_QH20wp)
+    filtre = FH>0
+    filtre = filtre * 1. #remplace valeur negatives par zero
+    DIFE = parSN['DIFNg'] * FH * filtre
+    coeff = 4*pi**0.5
+    for i in range(len(ls_lrac)):
+        draci = (ls_lrac[i]*100.) / (SN.m_soil_vol*1000000.) #root density (cm.cm-3)
+        flux_d = coeff * DIFE * (SN.m_NO3 + SN.m_NH4) *sqrt(draci)
+        ls_diff.append(flux_d)
+        difftot = difftot + flux_d
+
+    return difftot, ls_diff
+    #a priori ls_diff pas utilise
+
+
+def Nsoil_supply(SN, parSN, ls_lrac, ls_mWaterUptakePlt):
+    """
+        
+    """
+    #""" Eq. 8.33 p 160 """
+    convtot, ls_conv = Convective_Nflux(SN, ls_mWaterUptakePlt)
+    difftot, ls_diff = Diffusive_Nflux(SN, parSN, ls_lrac)
+    ls_suptot = []
+    for i in range(len(ls_conv)):
+        ls_suptot.append(ls_conv[i] + ls_diff[i])
+
+    return convtot+difftot, ls_suptot
+    #a priori ls_suptot pas utilise
 

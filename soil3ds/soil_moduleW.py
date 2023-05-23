@@ -153,8 +153,23 @@ class Soil(object):
         ys = np.cumsum(np.array(self.dxyz[1])) - self.dxyz[1][0] + self.pattern[0][1] / 100
         zs = -np.cumsum(np.array(self.dxyz[2])) + self.dxyz[2][0]
         self.corners = [xs,ys,zs]#m
+    
+    
+    #####  update / examine soil object #####
+    
+    def soilSurface(self):
+        """ Compute soil surface from voxel size and number (m2)
+    
+        """
+        return sum(self.dxyz[0])*sum(self.dxyz[1])
 
-
+    def get_vox_coordinates(self, z, x, y):
+        """
+    
+        """
+        #""" to get the corner coordinates of a voxel from his IDs"""
+        return np.array([self.corners[0][x], self.corners[1][y], self.corners[2][z]])
+    
     def build_teta_m(self, par_sol, key='teta_fc'):
         """
     
@@ -187,7 +202,6 @@ class Soil(object):
         self.m_QH20sat = multiply(self.m_soil_vol, self.m_teta_sat)*1000. #quantite totale max d'eau dans le sol a saturation 
         
 
-
     def init_asw(self, HRp_init=None):
         """
     
@@ -216,31 +230,6 @@ class Soil(object):
         """
         self.asw_t = self.tsw_t - self.m_QH20wp
 
-    def set_mat_obstarac(self):
-        """
-    
-        """
-        #""" definit une matrice de proportion de voxel concerne par obstrarac"""
-        
-        if self.obstarac is None or type(self.obstarac)!=type(array([0.])):#pas d'obstarac
-            mat_obstarac = 1. * self.m_1
-        else: #obstrac = matrice 2D de valeurs negatives (m)
-            ls_prof = [0.]
-            for i in self.dxyz[2]:
-                ls_prof.append(ls_prof[-1] - i)
-
-            mat_obstarac = 1. * self.m_1
-            for x in range(len(self.dxyz[0])):
-                for y in range(len(self.dxyz[1])):
-                    obstXY = self.obstarac[x, y]
-                    for z in range(len(self.dxyz[2])):
-                        if ls_prof[z] > obstXY >= ls_prof[z + 1]:
-                            ratio = (obstXY - ls_prof[z]) / (ls_prof[z + 1] - ls_prof[z])
-                            mat_obstarac[z, x, y] = ratio
-                        elif obstXY > ls_prof[z + 1]:
-                            mat_obstarac[z, x, y] = 0.
-        return mat_obstarac
-
     def update_ftsw(self):
         """
     
@@ -250,7 +239,6 @@ class Soil(object):
         negs = ftsw >0.
         self.ftsw_t = negs * 1. *ftsw * self.m_obstarac #pour eviter valeurs negatives
 
-    
     def HRv(self):
         """
     
@@ -285,7 +273,74 @@ class Soil(object):
         #seuilmax = (self.m_QH20max - self.m_QH20min) * (1 - self.m_frac_evapZ) + self.m_QH20min
         #return (self.tsw_t - seuilmax) / (self.m_QH20fc - seuilmax)
         return (self.tsw_t - self.m_QH20min) / (self.m_QH20fc - self.m_QH20min)
+    
+    
+    def set_mat_obstarac(self):
+        """
+    
+        """
+        #""" definit une matrice de proportion de voxel concerne par obstrarac"""
+        
+        if self.obstarac is None or type(self.obstarac)!=type(array([0.])):#pas d'obstarac
+            mat_obstarac = 1. * self.m_1
+        else: #obstrac = matrice 2D de valeurs negatives (m)
+            ls_prof = [0.]
+            for i in self.dxyz[2]:
+                ls_prof.append(ls_prof[-1] - i)
 
+            mat_obstarac = 1. * self.m_1
+            for x in range(len(self.dxyz[0])):
+                for y in range(len(self.dxyz[1])):
+                    obstXY = self.obstarac[x, y]
+                    for z in range(len(self.dxyz[2])):
+                        if ls_prof[z] > obstXY >= ls_prof[z + 1]:
+                            ratio = (obstXY - ls_prof[z]) / (ls_prof[z + 1] - ls_prof[z])
+                            mat_obstarac[z, x, y] = ratio
+                        elif obstXY > ls_prof[z + 1]:
+                            mat_obstarac[z, x, y] = 0.
+        return mat_obstarac
+    
+    
+    def ls_1storder_vox(self, x,y,z, opt=1):
+        """
+        
+        """
+
+        #""" definit liste de voxels concomittents de 1er ordre / considere sol thorique, opt=1 renvoie uniquement voxel pour ecoulement vertical direct"""
+        ## por gerer infiltrations 
+        
+        dxyz = self.dxyz
+        
+        lx,ly = len(dxyz[0]), len(dxyz[1])
+        if lx<3 or ly<3 or opt==1: #pas au moins 9 voxel ou ecoulement direct (opt=1)
+            return [[x,y,z]]
+        else: 
+            if x==0: #bord gauche
+                if y>0 and y<ly-1:#pas coin
+                    return [[lx-1, y+1, z], [x, y+1, z], [x+1, y+1, z], [lx-1, y, z], [x, y, z], [x+1, y, z], [lx-1, y-1, z], [x, y-1, z], [x+1, y-1, z]]
+                elif y==0:#coin bas
+                    return [[lx-1, y+1, z], [x, y+1, z], [x+1, y+1, z], [lx-1, y, z], [x, y, z], [x+1, y, z], [lx-1, ly-1, z], [x, ly-1, z], [x+1, ly-1, z]]
+                elif y==ly-1:#coin haut
+                    return [[lx-1, 0, z], [x, 0, z], [x+1, 0, z], [lx-1, y, z], [x, y, z], [x+1, y, z], [lx-1, y-1, z], [x, y-1, z], [x+1, y-1, z]]
+            elif x == lx-1:#bord droit
+                if y>0 and y<ly-1:#pas coin
+                    return [[x-1, y+1, z], [x, y+1, z], [0, y+1, z], [x-1, y, z], [x, y, z], [0, y, z], [x-1, y-1, z], [x, y-1, z], [0, y-1, z]]
+                elif y==0:#coin bas
+                    return [[x-1, y+1, z], [x, y+1, z], [0, y+1, z], [x-1, y, z], [x, y, z], [0, y, z], [x-1, ly-1, z], [x, ly-1, z], [0, ly-1, z]]
+                elif y==ly-1:#coin haut
+                    return [[x-1, 0, z], [x, 0, z], [0, 0, z], [x-1, y, z], [x, y, z], [0, y, z], [x-1, y-1, z], [x, y-1, z], [0, y-1, z]]
+            elif y==0:#cote bas sans les coins
+                return [[x-1, y+1, z], [x, y+1, z], [x+1, y+1, z], [x-1, y, z], [x, y, z], [x+1, y, z], [x-1, ly-1, z], [x, ly-1, z], [x+1, ly-1, z]]
+            elif y==ly-1:#cote haut sans les coins
+                return [[x-1, 0, z], [x, 0, z], [x+1, 0, z], [x-1, y, z], [x, y, z], [x+1, y, z], [x-1, y-1, z], [x, y-1, z], [x+1, y-1, z]]
+            else: #au centre
+                return [[x-1, y+1, z], [x, y+1, z], [x+1, y+1, z], [x-1, y, z], [x, y, z], [x+1, y, z], [x-1, y-1, z], [x, y-1, z], [x+1, y-1, z]]
+
+        #ls_1storder_vox(S.dxyz, 0,0,0, opt='1')
+    
+    
+    #####  soil evaporation functions #####
+    
     def distrib_frac_evap(self, ZESX=0.3, CFES=1.):
         """
     
@@ -388,43 +443,7 @@ class Soil(object):
         #S.tsw_t - demandeEvapOK
 
 
-    def ls_1storder_vox(self, x,y,z, opt=1):
-        """
-        
-        """
-
-        #""" definit liste de voxels concomittents de 1er ordre / considere sol thorique, opt=1 renvoie uniquement voxel pour ecoulement vertical direct"""
-        ## por gerer infiltrations 
-        
-        dxyz = self.dxyz
-        
-        lx,ly = len(dxyz[0]), len(dxyz[1])
-        if lx<3 or ly<3 or opt==1: #pas au moins 9 voxel ou ecoulement direct (opt=1)
-            return [[x,y,z]]
-        else: 
-            if x==0: #bord gauche
-                if y>0 and y<ly-1:#pas coin
-                    return [[lx-1, y+1, z], [x, y+1, z], [x+1, y+1, z], [lx-1, y, z], [x, y, z], [x+1, y, z], [lx-1, y-1, z], [x, y-1, z], [x+1, y-1, z]]
-                elif y==0:#coin bas
-                    return [[lx-1, y+1, z], [x, y+1, z], [x+1, y+1, z], [lx-1, y, z], [x, y, z], [x+1, y, z], [lx-1, ly-1, z], [x, ly-1, z], [x+1, ly-1, z]]
-                elif y==ly-1:#coin haut
-                    return [[lx-1, 0, z], [x, 0, z], [x+1, 0, z], [lx-1, y, z], [x, y, z], [x+1, y, z], [lx-1, y-1, z], [x, y-1, z], [x+1, y-1, z]]
-            elif x == lx-1:#bord droit
-                if y>0 and y<ly-1:#pas coin
-                    return [[x-1, y+1, z], [x, y+1, z], [0, y+1, z], [x-1, y, z], [x, y, z], [0, y, z], [x-1, y-1, z], [x, y-1, z], [0, y-1, z]]
-                elif y==0:#coin bas
-                    return [[x-1, y+1, z], [x, y+1, z], [0, y+1, z], [x-1, y, z], [x, y, z], [0, y, z], [x-1, ly-1, z], [x, ly-1, z], [0, ly-1, z]]
-                elif y==ly-1:#coin haut
-                    return [[x-1, 0, z], [x, 0, z], [0, 0, z], [x-1, y, z], [x, y, z], [0, y, z], [x-1, y-1, z], [x, y-1, z], [0, y-1, z]]
-            elif y==0:#cote bas sans les coins
-                return [[x-1, y+1, z], [x, y+1, z], [x+1, y+1, z], [x-1, y, z], [x, y, z], [x+1, y, z], [x-1, ly-1, z], [x, ly-1, z], [x+1, ly-1, z]]
-            elif y==ly-1:#cote haut sans les coins
-                return [[x-1, 0, z], [x, 0, z], [x+1, 0, z], [x-1, y, z], [x, y, z], [x+1, y, z], [x-1, y-1, z], [x, y-1, z], [x+1, y-1, z]]
-            else: #au centre
-                return [[x-1, y+1, z], [x, y+1, z], [x+1, y+1, z], [x-1, y, z], [x, y, z], [x+1, y, z], [x-1, y-1, z], [x, y-1, z], [x+1, y-1, z]]
-
-        #ls_1storder_vox(S.dxyz, 0,0,0, opt='1')
-
+    #####  water infiltration #####
 
     def infil_layer(self, tsw_temp, in_ , idz, opt=1):#in_=map_PI, 
         """
@@ -484,6 +503,8 @@ class Soil(object):
         #distrib_PI(asw_t, m_QH20max, map_PI)
 
 
+    #####  plant water uptake #####
+
     def water_uptakeVox(self, ls_masked_asw, ls_roots_eff, ls_transp, idx, idy, idz):
         """
         
@@ -531,19 +552,7 @@ class Soil(object):
         #sum(distrib_water_uptakeNC(asw_t, ls_masked_asw, ls_roots_eff, ls_Et0)), sum(ls_Et0)
 
 
-    def soilSurface(self):
-        """
-    
-        """
-        #""" compute soil surface (m2) """
-        return sum(self.dxyz[0])*sum(self.dxyz[1])
-
-    def get_vox_coordinates(self, z, x, y):
-        """
-    
-        """
-        #""" to get the corner coordinates of a voxel from his IDs"""
-        return np.array([self.corners[0][x], self.corners[1][y], self.corners[2][z]])
+    #####  Daily loop #####
 
     def stepWBmc(self, Et0, ls_roots, ls_epsi, Rain, Irrig, previous_state, ZESX=0.3, leafAlbedo=0.15, U=5., b=0.63, FTSWThreshold=0.4, treshEffRoots=0.5, opt=1):
         """
