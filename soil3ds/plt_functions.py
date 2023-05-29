@@ -17,7 +17,7 @@ from soil3ds.miscel_functions import * #soil3ds miscellaneous soil functions
 ########## diverse plant fonctions - soil water balance
 
 
-def Transpi_NC(Et0, ls_epsi, ls_FTSW, leafAlbedo=0.15, FTSWThreshold=0.4):
+def Transpi_NC(Et0, ls_epsi, ls_FTSW, paramp = {"leafAlbedo":0.15, "FTSWThreshold":0.4}):
     """
     
     """
@@ -36,18 +36,19 @@ def Transpi_NC(Et0, ls_epsi, ls_FTSW, leafAlbedo=0.15, FTSWThreshold=0.4):
         # faut introduire crop coefficient KMAXp cf eq. 7.7 -> pour le moment limite a Et0 (reference gazon)
 
       
-        if (ls_FTSW[i] > FTSWThreshold):#previousTSW/TTSW
+        if (ls_FTSW[i] > paramp["FTSWThreshold"]):#previousTSW/TTSW
             # la transpiration de la plante est faite a son potentielle
             Ks = 1.
         else:
             # regulation
             # la quantite d'eau presente dans le sol n'est pas suffisante pour
             # que la transpiration de plante se fasse a son maximum   
-            Ks = ls_FTSW[i]/FTSWThreshold
+            Ks = ls_FTSW[i]/paramp["FTSWThreshold"]
 
         ls_transp.append(Ks*potentialTranspiration)
 
     return ls_transp
+    # leafAlbedo pas necessaire dans cette version
 
 #Transpi_NC(2., [0.4], [0.8], leafAlbedo=0.15, FTSWThreshold=0.4)
 
@@ -472,7 +473,7 @@ def Actual_Nuptake_plt(SN, ls_Pot_Nuptake_plt, ls_demandeN):
     ##SN.m_NO3 = SN.m_NO3 - frac_NO3*ActUpNtot
     ##SN.m_NH4 = SN.m_NH4 - (1. - frac_NO3)*ActUpNtot
     ###bilan
-    ##SN.bilanN['cumUptakePlt'].append(ActUpNtot/SN.soilSurface() *10000)
+    ##SN.bilanN['cumUptakePlt'].append(ActUpNtot/SN.soilSurface *10000)
 
     return ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N
 
@@ -514,7 +515,7 @@ def Actual_Nuptake_plt_Bis(SN, ls_Pot_Nuptake_plt, ls_PltN):
     ##SN.m_NO3 = SN.m_NO3 - frac_NO3*ActUpNtot
     ##SN.m_NH4 = SN.m_NH4 - (1. - frac_NO3)*ActUpNtot
     ###bilan
-    ##SN.bilanN['cumUptakePlt'].append(ActUpNtot/SN.soilSurface() *10000)
+    ##SN.bilanN['cumUptakePlt'].append(ActUpNtot/SN.soilSurface *10000)
 
     return ActUpNtot, ls_Act_Nuptake_plt, ls_frein_N
 
@@ -544,7 +545,7 @@ def Actual_Nuptake_plt_old(SN, ls_Pot_Nuptake_plt, ls_demandeN):
     ##SN.m_NO3 = SN.m_NO3 - frac_NO3*ActUpNtot
     ##SN.m_NH4 = SN.m_NH4 - (1. - frac_NO3)*ActUpNtot
     ###bilan
-    ##SN.bilanN['cumUptakePlt'].append(ActUpNtot/SN.soilSurface() *10000)
+    ##SN.bilanN['cumUptakePlt'].append(ActUpNtot/SN.soilSurface *10000)
 
     return ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N
 

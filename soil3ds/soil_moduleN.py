@@ -77,8 +77,50 @@ from soil3ds.soil_moduleW import * #soil3ds installe comme module
 
 
 class SoilN(Soil):
-    """
-    
+    """ Main class for the soilN object of the 'soil3ds' model
+
+    The class includes descriptions of soil properties and methods to compute nitrogen balance adpated for a 3D grid from STICS model.
+    The class inherits from 'Soil' class which includes descriptions of soil physical properties and methods to compute water balance
+
+    SoilN object Attributes:
+        :CALCs (float): Calcareous content in topsoil layer - value for non calcareous soils (p220 STICS-book) - (unit: %)
+        :pHeau (float): Soil water pH
+        :ARG (float): Clay content in topsoil layer
+
+        :Corg (nd.array): ... (unit: kg C per voxel)
+        :Norg (nd.array): ... (unit: kg N per voxel)
+        :InertCorg (nd.array): ... (unit: kg C per voxel)
+        :InertNorg (nd.array): ... (unit: kg N per voxel)
+        :K2HUM (nd.array): ...
+        :m_MO (nd.array): ...
+        :m_CNHUM (nd.array): ...
+        :m_NH4 (nd.array): ...  (unit: kg N-NH4 dans le voxel)
+        :m_NO3 (nd.array): ...  (unit: kg N-NO3 dans le voxel)
+        :m_Tsol (nd.array): ... (unit: degrees Celsius)
+
+        :N2ONitrif (float): ... (unit: kg N)
+        :N2ODenitrif (float): ... (unit: kg N)
+        :lixiNO3 (float): ... (unit: kg N)
+
+        :bilanC (dict): ...
+        :bilanN (dict): ...
+
+
+    Main methods:
+
+        * ``__init__``: initializes and builds static object for the rest of simulation
+        * :meth:`ConcNO3`:
+
+
+    Soil mineralisation methods:
+
+        * :meth:`Pot_rate_SOMMin`:
+        * :meth:`SOMMin_RespT`:
+
+
+
+
+
     """
     
     def __init__(self, par_sol, parSN, soil_number , dxyz, vDA,  vCN, vMO, vARGIs, vNO3, vNH4,  vCALCs, Tsol, obstarac=None, pattern8=[[0,0],[100.,100.]]):
@@ -213,8 +255,27 @@ class SoilN(Soil):
         MMA = 142.85  # mole d'N.kg-1 (g.mole-1)
         moleN = (self.m_NO3 + self.m_NH4) / (MMA) * 10 ** 6  # micromole d'N
         return moleN / (self.tsw_t * self.m_vox_surf) * 10000  # remis pour conc sur 1ha pour coller au parametrage de sTICS
-    
-    
+
+    def init_memory_EV(self, parSN):
+        """
+
+        """
+        # """ inititalise memory variables and parameters to compute soil evaporation """
+        self.Uval = parSN['q0']
+        HXs = self.m_teta_fc[
+            0, 0, 0]  # par_sol[str(vsoilnumbers[0])]['teta_fc']  # humidite a la capacite au champ de l'horizon de surface
+        self.b_ = bEV(parSN['ACLIMc'], parSN['ARGIs'], HXs)
+        self.stateEV = [0., 0.,
+                        0.]  # pour le calcul de l'evaporation du sol (memoire du cumul evapore depuis derniere PI)
+        # marche seulement pour solN (car faut parSN)
+
+    def update_memory_EV(self, new_vals):
+        """
+
+        """
+        self.stateEV = new_vals
+
+
     def Pot_rate_SOMMin(self, CALCs, ARGIs, par):
         """
         
@@ -223,24 +284,6 @@ class SoilN(Soil):
         K2HUMi = par['FMIN1G']*exp(-par['FMIN2G']*ARGIs)/(1+par['FMIN3G']*CALCs)
         return K2HUMi
         #!! revoir ARGIs et CALCs!!
-
-    def init_memory_EV(self, parSN):
-        """
-        
-        """
-        #""" inititalise memory variables and parameters to compute soil evaporation """
-        self.Uval = parSN['q0']
-        HXs = self.m_teta_fc[0,0,0] #par_sol[str(vsoilnumbers[0])]['teta_fc']  # humidite a la capacite au champ de l'horizon de surface
-        self.b_ = bEV(parSN['ACLIMc'], parSN['ARGIs'], HXs)
-        self.stateEV = [0., 0., 0.]  # pour le calcul de l'evaporation du sol (memoire du cumul evapore depuis derniere PI)
-        # marche seulement pour solN (car faut parSN)
-
-    def update_memory_EV(self, new_vals):
-        """
-        
-        """
-        self.stateEV = new_vals
-
 
     def SOMMin_RespT(self, par):
         """
@@ -288,8 +331,8 @@ class SoilN(Soil):
         self.m_MO = self.Corg*1.72 # pas vraiment utile
         self.m_NH4 = self.m_NH4 + dN_NH4 #verif unite!!! ici en kg d'N dans le voxel de sol ->OK
         #Update bilanCN
-        self.bilanN['cumMinN'].append(sum3(dN_NH4) / self.soilSurface() *10000)
-        self.bilanC['cumMinC'].append(sum3(dC_NH4) / self.soilSurface() *10000)
+        self.bilanN['cumMinN'].append(sum3(dN_NH4) / self.soilSurface *10000)
+        self.bilanC['cumMinC'].append(sum3(dC_NH4) / self.soilSurface *10000)
 
     def init_residues(self, vCNRESt=[], vAmount=[], vProps=[], vWC=[], vCC=[], forced_Cres=None):
         """
@@ -314,7 +357,7 @@ class SoilN(Soil):
             self.addResMat(vAmount[i], vProps[i], vWC[i], vCC[i], forced_Cres) #utilise fonction de distribution verticale par default, mais peut forcer une matrice donnee
 
         # bilan!! -> a revoir (pour le moment gere seulement qd tous les residus sont aplliques en meme temps-> OK : MxResMat() pemet d'initiliser en meme temps (meme a zeo) puis d'ajouter qd on veut un amount
-        self.bilanN['initialNres'] = sum(self.ls_NRES()) / self.soilSurface() * 10000
+        self.bilanN['initialNres'] = sum(self.ls_NRES()) / self.soilSurface * 10000
 
         #CO2 resp
         self.CO2respSoil = 0. #separer (kg de C par le volume total de sol) #rq: suppose aucune recapture
@@ -343,7 +386,7 @@ class SoilN(Soil):
         #Ccontent (carbon content; propostion)
         #Vprop : list of proportion per horizon (distribution assumed homogeneous for a given horizon) -> same number of elements than dz
         
-        Q = (Amount/10000.)*self.soilSurface()*1000.  #kg of fresh matter
+        Q = (Amount/10000.)*self.soilSurface*1000.  #kg of fresh matter
         QC = Q*(1-Wcontent)*Ccontent #kg of C
         nbcase_layer = len(self.dxyz[0])*len(self.dxyz[1])
 
@@ -372,12 +415,12 @@ class SoilN(Soil):
             cres = self.VdistribResidues(Amount, Vprop, Wcontent, Ccontent)
             self.ls_CRES.append(cres)
             #bilan
-            self.bilanC['initialCres'] += sum(cres)/ self.soilSurface() *10000
+            self.bilanC['initialCres'] += sum(cres)/ self.soilSurface *10000
             self.bilanN['NminfromNres'].append([])  # ajoute une liste vide pour le residu
         else: #pour gerer le cas ou passera une matrice (3D) deja faite a partir de maquettes
             self.ls_CRES.append(forced_Cres)
             #bilan
-            self.bilanC['initialCres'] += sum(forced_Cres)/ self.soilSurface() *10000
+            self.bilanC['initialCres'] += sum(forced_Cres)/ self.soilSurface *10000
             self.bilanN['NminfromNres'].append([])  # ajoute une liste vide pour le residu
 
     def Pot_rate_ResidueMin(self, res_id, par):
@@ -449,7 +492,7 @@ class SoilN(Soil):
             DCO2 = DCRESi-DCBioi
             self.CO2respSoil = self.CO2respSoil - sum3(DCO2)#ou + si garde DCRESi positif
             #bilan
-            self.bilanC['cumCO2Res1'].append(- sum3(DCO2)/ self.soilSurface() *10000)
+            self.bilanC['cumCO2Res1'].append(- sum3(DCO2)/ self.soilSurface *10000)
 
             #flux de N
             #ajouter a NH4 le complement N de CO2 emission?
@@ -463,9 +506,9 @@ class SoilN(Soil):
             self.m_NH4 = self.m_NH4 - f_NH4*Ndemandi
             self.m_NO3 = self.m_NO3 - f_NO3*Ndemandi
             #bilan
-            cumNRes1.append(- sum3(DNCO2) / self.soilSurface() *10000)
-            cumNRes2.append(- sum3(Ndemandi)/ self.soilSurface() *10000)
-            self.bilanN['NminfromNres'][i].append(- sum3(DNCO2) / self.soilSurface() *10000)
+            cumNRes1.append(- sum3(DNCO2) / self.soilSurface *10000)
+            cumNRes2.append(- sum3(Ndemandi)/ self.soilSurface *10000)
+            self.bilanN['NminfromNres'][i].append(- sum3(DNCO2) / self.soilSurface *10000)
 
         self.bilanN['cumNRes1'].append(sum(cumNRes1))#pour ajouter uniquement cumul journalier de tous les residus
         self.bilanN['cumNRes2'].append(sum(cumNRes2))
@@ -486,7 +529,7 @@ class SoilN(Soil):
             DCO2 = DCBioi - DCHUM
             self.CO2respSoil = self.CO2respSoil + sum3(DCO2)
             #bilan
-            self.bilanC['cumCO2Res2'].append(sum3(DCO2)/ self.soilSurface() *10000)
+            self.bilanC['cumCO2Res2'].append(sum3(DCO2)/ self.soilSurface *10000)
 
             #flux de N
             #equilibre Norg 
@@ -496,7 +539,7 @@ class SoilN(Soil):
             self.m_NH4 = self.m_NH4 + DCO2/self.parResi['CNBio'][i] + Neccesi 
             
             #bilan
-            cumNRes3.append(sum3(DCO2/self.parResi['CNBio'][i] + Neccesi)/ self.soilSurface() *10000)
+            cumNRes3.append(sum3(DCO2/self.parResi['CNBio'][i] + Neccesi)/ self.soilSurface *10000)
 
         self.bilanN['cumNRes3'].append(sum(cumNRes3))
 
@@ -531,8 +574,8 @@ class SoilN(Soil):
         cres = mat_res * Ccontent / 1000.  # conversion #kg of C per voxel
         self.ls_CRES[idres] += cres
         # bilan
-        self.bilanC['initialCres'] += sum(cres) / self.soilSurface() * 10000
-        self.bilanN['initialNres'] += sum(self.ls_CRES[idres] / self.parResi['CNRESt'][idres]) / self.soilSurface() * 10000
+        self.bilanC['initialCres'] += sum(cres) / self.soilSurface * 10000
+        self.bilanN['initialNres'] += sum(self.ls_CRES[idres] / self.parResi['CNRESt'][idres]) / self.soilSurface * 10000
 
     # suppose CsurN comme residu existant; a faire (?) cree noueau residu si tres different? ajuster bilan C/N # faire evoluer lrd parametres des reisdus selon C/N vrai?
 
@@ -594,7 +637,7 @@ class SoilN(Soil):
         self.m_NH4 = self.m_NH4 - TNITRIF
         dN2ONitrif = sum3(TNITRIF-NITRIF)
         self.N2ONitrif = self.N2ONitrif + dN2ONitrif
-        self.bilanN['cumN2O'].append(dN2ONitrif / self.soilSurface() *10000) #UpdateNminbalance
+        self.bilanN['cumN2O'].append(dN2ONitrif / self.soilSurface *10000) #UpdateNminbalance
 
 
     def infil_layerNO3(self, in_N, out_Water , idz, opt=1):
@@ -661,11 +704,11 @@ class SoilN(Soil):
         self.m_NH4[0,:,:] = self.m_NH4[0,:,:] + mapN_fertNH4
 
         #bilans
-        self.bilanN['cumRain'].append(sum(mapN_Rain)/ self.soilSurface() *10000) 
-        self.bilanN['cumIrrig'].append(sum(mapN_Irrig)/ self.soilSurface() *10000)
-        self.bilanN['cumfertNO3'].append(sum(mapN_fertNO3)/ self.soilSurface() *10000) 
-        self.bilanN['cumfertNH4'].append(sum(mapN_fertNH4)/ self.soilSurface() *10000)
-        self.bilanN['cumLix'].append(Lix / self.soilSurface() *10000) 
+        self.bilanN['cumRain'].append(sum(mapN_Rain)/ self.soilSurface *10000) 
+        self.bilanN['cumIrrig'].append(sum(mapN_Irrig)/ self.soilSurface *10000)
+        self.bilanN['cumfertNO3'].append(sum(mapN_fertNO3)/ self.soilSurface *10000) 
+        self.bilanN['cumfertNH4'].append(sum(mapN_fertNH4)/ self.soilSurface *10000)
+        self.bilanN['cumLix'].append(Lix / self.soilSurface *10000) 
      
 
     def mask_PROFUM(self, parSN):
@@ -715,7 +758,7 @@ class SoilN(Soil):
         #Keys for totals: 'InputCtot', 'OutputCtot'
         #"""
         
-        surfsolref = self.soilSurface()
+        surfsolref = self.soilSurface
         self.bilanC = {}
         #Humus
         self.bilanC['intialInertC'] = sum3(self.InertCorg) / surfsolref *10000
@@ -733,15 +776,15 @@ class SoilN(Soil):
         # autres termes avec microbio et residus a ajouter!
 
     #def UpdateCbalance(self, dCMin):
-    #    surfsolref = self.soilSurface()
-    #    self.bilanC['cumMinC'].append(sum3(dCMin) / self.soilSurface() *10000)
+    #    surfsolref = self.soilSurface
+    #    self.bilanC['cumMinC'].append(sum3(dCMin) / self.soilSurface *10000)
     #    # autres termes avec microbio et residus a ajouter!!
 
     def CloseCbalance(self, print_=1):
         """
         
         """
-        surfsolref = self.soilSurface()
+        surfsolref = self.soilSurface
         #Humus Mineralisation
         #input  
         self.bilanC['InputCtot'] = self.bilanC['intialInertC'] + self.bilanC['intialActiveC'] + self.bilanC['initialCZygo'] + self.bilanC['initialCres']
@@ -793,11 +836,11 @@ class SoilN(Soil):
         #"""
         
         self.bilanN = {}
-        self.bilanN['intialInertN'] = sum3(self.InertNorg) / self.soilSurface() *10000
-        self.bilanN['intialActiveN'] = sum3(self.Norg-self.InertNorg) / self.soilSurface() *10000
+        self.bilanN['intialInertN'] = sum3(self.InertNorg) / self.soilSurface *10000
+        self.bilanN['intialActiveN'] = sum3(self.Norg-self.InertNorg) / self.soilSurface *10000
         self.bilanN['cumMinN'] = []
-        self.bilanN['intialNO3'] = sum3(self.m_NO3) / self.soilSurface() *10000
-        self.bilanN['intialNH4'] = sum3(self.m_NH4) / self.soilSurface() *10000
+        self.bilanN['intialNO3'] = sum3(self.m_NO3) / self.soilSurface *10000
+        self.bilanN['intialNH4'] = sum3(self.m_NH4) / self.soilSurface *10000
         self.bilanN['cumLix'], self.bilanN['cumN2O'] = [],[]
         self.bilanN['cumRain'] = []
         self.bilanN['cumIrrig'] = []
@@ -810,8 +853,8 @@ class SoilN(Soil):
         self.bilanN['NminfromNresCum'] = []
 
         try:
-            self.bilanN['initialNZygo'] = sum(self.ls_NBio())/ self.soilSurface() *10000
-            self.bilanN['initialNres'] = sum(self.ls_NRES())/ self.soilSurface() *10000
+            self.bilanN['initialNZygo'] = sum(self.ls_NBio())/ self.soilSurface *10000
+            self.bilanN['initialNres'] = sum(self.ls_NRES())/ self.soilSurface *10000
         except:#si pas de residus ajoute
             self.bilanN['initialNZygo'] = 0.
             self.bilanN['initialNres'] = 0.
@@ -820,13 +863,13 @@ class SoilN(Soil):
 
 
     #def UpdateNorgbalance(self, dNMin):
-    #    surfsolref = self.soilSurface()
+    #    surfsolref = self.soilSurface
     #    self.bilanN['cumMinN'].append(sum3(dNMin) / surfsolref *10000)
     #    # autres termes avec microbio et residus a ajouter!!
 
     #distribue dans differentes fonctions
     #def UpdateNminbalance(self, Lix, dN2O):
-    #    surfsolref = self.soilSurface()
+    #    surfsolref = self.soilSurface
     #    self.bilanN['cumLix'].append(Lix / surfsolref *10000)
     #    self.bilanN['cumN2O'].append(dN2O/ surfsolref *10000)
     #    # autres termes avec plantes...
@@ -836,7 +879,7 @@ class SoilN(Soil):
         
         """
         
-        surfsolref = self.soilSurface()
+        surfsolref = self.soilSurface
         #N org humus
         self.bilanN['FinalInertN'] = sum3(self.InertNorg) / surfsolref *10000
         self.bilanN['FinalActiveN'] = sum3(self.Norg-self.InertNorg) / surfsolref *10000
@@ -967,8 +1010,8 @@ class SoilN(Soil):
         self.m_NO3 = self.m_NO3 - frac_NO3*ActUpNtot
         self.m_NH4 = self.m_NH4 - (1. - frac_NO3)*ActUpNtot
         #bilan
-        self.bilanN['cumUptakePlt'].append(ActUpNtot/self.soilSurface() *10000)
-        self.bilanN['azomes'].append((sum(self.m_NO3)+sum(self.m_NH4))/self.soilSurface() *10000)
+        self.bilanN['cumUptakePlt'].append(ActUpNtot/self.soilSurface *10000)
+        self.bilanN['azomes'].append((sum(self.m_NO3)+sum(self.m_NH4))/self.soilSurface *10000)
 
         return ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N, idmin
 
@@ -1035,3 +1078,71 @@ def step_bilanWN_solVGL(S, par_SN, meteo_j,  mng_j, ParamP, ls_epsi, ls_roots, l
 
 
 
+def default_parSN():
+    """ Creates a default parameter dictionnary 'parSN' for defining the STICS parameters necessary for computing N balance
+
+        Keys of the dictionnary are  parameters for a given soil object:
+
+            * 'FMIN1G' :       (day-1) (p145)
+            * 'FMIN2G' :       (%ARGIS-1) para pot rate min a ARGIs (p145)
+            * 'FMIN3G' :       (% CALC-1)para pot rate min a CALCss (p145)
+            * 'FINERTG' :      0.65 = default fraction of N pool inactive for minearlisation (p145) (could be smaller in grassland & forest)
+            * 'PROFHUMs' :     (cm) depth of soil contributing to SOM mineralisation #-> peut constituer un masque pour considerer certaines couches ou pas default value p220
+            * 'HMinMg' :       Humidite min de mineralisation (prop of Field Capacity) #value p 142 (cite Rodrigo et al. 1997)
+            * 'HoptMg' :       Humidite opt de mineralisation (prop of Field capacity) #value p 142 (cite Rodrigo et al. 1997)
+            * 'TRefg' :        reference temperature (degreC)
+            * 'FTEMHAg' :      asymptotic value of FTH (seen as a logistic response)
+            * 'FTEMHg' :       (K-1)
+            * 'FTEMHB' :
+            * 'FNXg' :         (day-1) maximum fraction of NH4 transformed by nitrification every day in the nitrification layer(default value in STICS parameter excel file; 0.5 p149 for tropical soils)
+            * 'PHMinNITg' :    pH min de nitrification (prop of Field Capacity) #value p149
+            * 'PHMaxNITg' :    pH max de nitrification (prop of Field Capacity) #value p149
+            * 'HMinNg' :       Humidite min de nitrification #value p149
+            * 'HoptNg' :       Humidite opt de nitrification  #value p149
+            * 'TNITMINg' :     Temperature min de nitrification #  (degreC)value p151
+            * 'TNITOPTg' :     Temperature opt de nitrification #  (degreC)value p151
+            * 'TNITMAXg' :     Temperature max de nitrification #  (degreC)value p151
+            * 'RATIONITs' :    proportion of nitrtified NH4 converted to N2O (pas trouve de valeur par defaut - p151) #0-> N2O pas active
+            * 'DIFNg' :        N diffusion coefficient at field capacity (cm2.day-1, p 161)
+
+    :return: Default 'parSN' parameter dictionnary
+
+    .. code-block:: python
+
+        geometry = {
+                    "scenes" : [scene0, scene1, scene2, ...] ,
+                    "domain" : ((xmin, ymin), (xmax, ymax))
+                    }
+
+    """
+    # parameters 'WCST' and 'gamma_theo' are not used / necessary in current model version
+
+    par_SN = {}
+    par_SN['FMIN1G'] = 0.0006  # (day-1) (p145)
+    par_SN['FMIN2G'] = 0.0272  # (%ARGIS-1) para pot rate min a ARGIs (p145)
+    par_SN['FMIN3G'] = 0.0167  # (% CALC-1)para pot rate min a CALCss (p145)
+
+    par_SN['FINERTG'] = 0.65  # 0.65 = default fraction of stable pool (p145) should be smaller in grassland & forest
+    par_SN['PROFHUMs'] = 30.  # (cm) depth of soil contributing to SOM mineralisation #-> peut constituer un masque pour considerer certaines couches ou pas default value p220
+
+    par_SN['HMinMg'] = 0.3  # Humidite min de mineralisation (prop of Field Capacity) #value p 142 (cite Rodrigo et al. 1997)
+    par_SN['HoptMg'] = 1.  # Humidite opt de mineralisation (prop of Field capacity) #value p 142 (cite Rodrigo et al. 1997)
+
+    par_SN['TRefg'] = 15.  # reference temperature
+    par_SN['FTEMHAg'] = 25.  # asymptotic value of FTH (seen as a logistic response)
+    par_SN['FTEMHg'] = 0.120  # (K-1)
+    par_SN['FTEMHB'] = 145.
+
+    par_SN['FNXg'] = 0.5  # (day-1) maximum fraction of NH4 transformed by nitrification every day in the nitrification layer(default value in STICS parameter excel file; 0.5 p149 for tropical soils)
+    par_SN['PHMinNITg'] = 3.  # pH min de nitrification (prop of Field Capacity) #value p149
+    par_SN['PHMaxNITg'] = 5.5  # pH max de nitrification (prop of Field Capacity) #value p149
+    par_SN['HMinNg'] = 0.67  # Humidite min de nitrification #value p149
+    par_SN['HoptNg'] = 1.  # Humidite opt de nitrification  #value p149
+    par_SN['TNITMINg'] = 5.  # Temperature min de nitrification #  (degreC)value p151
+    par_SN['TNITOPTg'] = 20.  # Temperature opt de nitrification #  (degreC)value p151
+    par_SN['TNITMAXg'] = 45.  # Temperature max de nitrification #  (degreC)value p151
+    par_SN['RATIONITs'] = 0.  # proportion of nitrtified NH4 converted to N2O (pas trouve de valeur par defaut - p151) #0-> N2O pas active
+    par_SN['DIFNg'] = 0.018  # N diffusion coefficient at field capacity (cm2.day-1, p 161)
+
+    return par_SN
+    # ajouter parametre hydriques generaux?
