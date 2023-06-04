@@ -63,7 +63,7 @@ class Soil(object):
     :type soil_number: list
     :param dxyz: List of three lists indicating voxel discretization along [x,y,z] axes (unit: m), default to 1 m3 in 10 vertical layers
     :type dxyz: list
-    :param vDA: List of nz soil bulk density along soil depth (unit: g.cm-3), delault to [1.2]*10
+    :param vDA: List of nz soil bulk density along soil depth (unit: g.cm-3), default to [1.2]*10
     :type vDA: list
     :param ZESX: STICS parameter ZESX - (unit: m), default to 0.3
     :type ZESX: float
@@ -744,8 +744,9 @@ class Soil(object):
 
     #####  Daily loop #####
 
-    def stepWBmc(self, Et0, ls_roots, ls_epsi, Rain, Irrig, previous_state, ZESX=0.3, leafAlbedo=0.15, U=5., b=0.63, FTSWThreshold=0.4, treshEffRoots=0.5, opt_infil=1):
-        """ Compute daily step Soil water balance
+    def stepWBmc(self, Et0, ls_roots, ls_epsi, Rain, Irrig, previous_state, ZESX=0.3, leafAlbedo=0.15, U=5., b=0.63, FTSWThreshold=0.4, treshEffRoots=0.5, opt=1):
+        """ Compute daily step Soil water balance -
+        Apply a sequence: Plant transipration and soil evaporation -> Rain and Irrigation application -> Water infiltration and Drainage
 
         :param Et0: Daily potential evapotranspiration (unit: mm)
         :type Et0: float
@@ -757,7 +758,7 @@ class Soil(object):
         :type Rain: float
         :param Irrig: Daily irrigation (unit: mm)
         :type Irrig: float
-        :param previous_state: List of previous day memory states for computing soil evaporation
+        :param previous_state: List of memory variables storing cumulative previous day evaporation used for computing daily soil evaporation
         :type previous_state: list
         :param ZESX: STICS parameter ZESX - (unit: m), default to 0.3
         :type ZESX: float
@@ -821,7 +822,7 @@ class Soil(object):
         map_PI = self.m_1[0]*Precip/float(len(self.dxyz[0])*len(self.dxyz[1]))
         # 1) applique pluie et calcule D0 (drainage sans transpi pour saturer)
         ##m, D0 = distrib_PI(self.asw_t, self.m_QH20max, map_PI, self.dxyz,opt)
-        m, ls_D0 = self.distrib_PI(self.tsw_t, map_PI, opt_infil)
+        m, ls_D0 = self.distrib_PI(self.tsw_t, map_PI, opt)
         D0 = ls_D0[-1]
         # 2) retire evapo et transpi
         self.tsw_t = m 
@@ -961,6 +962,17 @@ def default_par_sol():
             * 'DA': soil bulk density (unit: g.cm-3)
 
     :return: Default 'par_sol' parameter dictionnary
+
+    .. code-block:: python
+
+        par_sol = {
+                    '1': {'soil number': '1', 'soil type': 'H5cm - ASCHYD11', 'teta_sat': 0.55, 'teta_fc': 0.479,
+                    'teta_wp': 0.380, 'teta_ad': 0.340, 'DA': 1.36},
+
+                    '2': {'soil number': '2', 'soil type': 'H10cm - ASCHYD11', 'teta_sat': 0.55, 'teta_fc': 0.347,
+                    'teta_wp': 0.275, 'teta_ad': 0.248, 'DA': 1.36}
+                    }
+
 
     """
     # parameters 'WCST' and 'gamma_theo' are not used / necessary in current model version

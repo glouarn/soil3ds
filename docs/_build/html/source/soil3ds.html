@@ -187,7 +187,7 @@
 <li><p><strong>par_sol</strong> (<em>dict</em>) – A dictionnary defining water humidity thresholds for each soil type necessary to build the Soil object</p></li>
 <li><p><strong>soil_number</strong> (<em>list</em>) – List of nz soil type IDs along soil depth, default to [1]*10</p></li>
 <li><p><strong>dxyz</strong> (<em>list</em>) – List of three lists indicating voxel discretization along [x,y,z] axes (unit: m), default to 1 m3 in 10 vertical layers</p></li>
-<li><p><strong>vDA</strong> (<em>list</em>) – List of nz soil bulk density along soil depth (unit: g.cm-3), delault to [1.2]*10</p></li>
+<li><p><strong>vDA</strong> (<em>list</em>) – List of nz soil bulk density along soil depth (unit: g.cm-3), default to [1.2]*10</p></li>
 <li><p><strong>ZESX</strong> (<em>float</em>) – STICS parameter ZESX - (unit: m), default to 0.3</p></li>
 <li><p><strong>CFES</strong> (<em>float</em>) – STICS parameter CFES - (unitless), default to 1.</p></li>
 <li><p><strong>obstarac</strong> (<em>list</em>) – List of nz voxel fractions affected by ‘obstarac’ along soil depth, default to None (no root obstacles)</p></li>
@@ -725,8 +725,9 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleW.Soil.stepWBmc">
-<span class="sig-name descname"><span class="pre">stepWBmc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Et0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_roots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_epsi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Irrig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ZESX</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leafAlbedo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.63</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FTSWThreshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treshEffRoots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_infil</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleW.html#Soil.stepWBmc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleW.Soil.stepWBmc" title="Permalink to this definition"></a></dt>
-<dd><p>Compute daily step Soil water balance</p>
+<span class="sig-name descname"><span class="pre">stepWBmc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Et0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_roots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_epsi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Irrig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ZESX</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leafAlbedo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.63</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FTSWThreshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treshEffRoots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleW.html#Soil.stepWBmc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleW.Soil.stepWBmc" title="Permalink to this definition"></a></dt>
+<dd><p>Compute daily step Soil water balance -
+Apply a sequence: Plant transipration and soil evaporation -&gt; Rain and Irrigation application -&gt; Water infiltration and Drainage</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -735,7 +736,7 @@
 <li><p><strong>ls_epsi</strong> (<em>list</em>) – List of individual plant daily fraction of incoming global radiation interception (0-1 fraction)</p></li>
 <li><p><strong>Rain</strong> (<em>float</em>) – Daily rain (unit: mm)</p></li>
 <li><p><strong>Irrig</strong> (<em>float</em>) – Daily irrigation (unit: mm)</p></li>
-<li><p><strong>previous_state</strong> (<em>list</em>) – List of previous day memory states for computing soil evaporation</p></li>
+<li><p><strong>previous_state</strong> (<em>list</em>) – List of memory variables storing cumulative previous day evaporation used for computing daily soil evaporation</p></li>
 <li><p><strong>ZESX</strong> (<em>float</em>) – STICS parameter ZESX - (unit: m), default to 0.3</p></li>
 <li><p><strong>leafAlbedo</strong> (<em>float</em>) – STICS parameter leafAlbedo - (0-1 fraction), default to 0.15</p></li>
 <li><p><strong>U</strong> (<em>float</em>) – Total topsoil water reservoir accessible to evaporation (unit: mm), default to 5.</p></li>
@@ -820,6 +821,15 @@ and used for computing water balance - Example with 4 possible soil layers / typ
 <dd class="field-odd"><p>Default ‘par_sol’ parameter dictionnary</p>
 </dd>
 </dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">par_sol</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;1&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;soil number&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;soil type&#39;</span><span class="p">:</span> <span class="s1">&#39;H5cm - ASCHYD11&#39;</span><span class="p">,</span> <span class="s1">&#39;teta_sat&#39;</span><span class="p">:</span> <span class="mf">0.55</span><span class="p">,</span> <span class="s1">&#39;teta_fc&#39;</span><span class="p">:</span> <span class="mf">0.479</span><span class="p">,</span>
+            <span class="s1">&#39;teta_wp&#39;</span><span class="p">:</span> <span class="mf">0.380</span><span class="p">,</span> <span class="s1">&#39;teta_ad&#39;</span><span class="p">:</span> <span class="mf">0.340</span><span class="p">,</span> <span class="s1">&#39;DA&#39;</span><span class="p">:</span> <span class="mf">1.36</span><span class="p">},</span>
+
+            <span class="s1">&#39;2&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;soil number&#39;</span><span class="p">:</span> <span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="s1">&#39;soil type&#39;</span><span class="p">:</span> <span class="s1">&#39;H10cm - ASCHYD11&#39;</span><span class="p">,</span> <span class="s1">&#39;teta_sat&#39;</span><span class="p">:</span> <span class="mf">0.55</span><span class="p">,</span> <span class="s1">&#39;teta_fc&#39;</span><span class="p">:</span> <span class="mf">0.347</span><span class="p">,</span>
+            <span class="s1">&#39;teta_wp&#39;</span><span class="p">:</span> <span class="mf">0.275</span><span class="p">,</span> <span class="s1">&#39;teta_ad&#39;</span><span class="p">:</span> <span class="mf">0.248</span><span class="p">,</span> <span class="s1">&#39;DA&#39;</span><span class="p">:</span> <span class="mf">1.36</span><span class="p">}</span>
+            <span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -846,275 +856,889 @@ and used for computing water balance - Example with 4 possible soil layers / typ
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">soil3ds.soil_moduleN.</span></span><span class="sig-name descname"><span class="pre">SoilN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par_sol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">soil_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dxyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vDA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vCN</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vMO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vARGIs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vNO3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vNH4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vCALCs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tsol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obstarac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern8</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[[0,</span> <span class="pre">0],</span> <span class="pre">[100.0,</span> <span class="pre">100.0]]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#soil3ds.soil_moduleW.Soil" title="soil3ds.soil_moduleW.Soil"><code class="xref py py-class docutils literal notranslate"><span class="pre">Soil</span></code></a></p>
 <p>Main class for the soilN object of the ‘soil3ds’ model</p>
-<p>The class includes descriptions of soil properties and methods to compute nitrogen balance adpated for a 3D grid from STICS model.
+<p>The class <a class="reference internal" href="#soil3ds.soil_moduleN.SoilN" title="soil3ds.soil_moduleN.SoilN"><code class="xref py py-class docutils literal notranslate"><span class="pre">soil3ds.soil_moduleN.SoilN</span></code></a> includes descriptions of soil properties and methods to compute nitrogen balance adpated for a 3D grid from STICS model.
 The class inherits from ‘Soil’ class which includes descriptions of soil physical properties and methods to compute water balance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>par_sol</strong> (<em>dict</em>) – A dictionnary defining water humidity thresholds for each soil type necessary to build the Soil object</p></li>
+<li><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p></li>
+<li><p><strong>soil_number</strong> (<em>list</em>) – List of nz soil type IDs along soil depth</p></li>
+<li><p><strong>dxyz</strong> (<em>list</em>) – List of three lists indicating voxel discretization along [x,y,z] axes (unit: m)</p></li>
+<li><p><strong>vDA</strong> (<em>list</em>) – List of nz soil bulk density along soil depth (unit: g.cm-3)</p></li>
+<li><p><strong>vCN</strong> (<em>list</em>) – List of nz soil C:N ratio along soil depth (unitless)</p></li>
+<li><p><strong>vMO</strong> (<em>list</em>) – List of nz soil soil organic matter concentration along soil depth (unit: g C.kg soil-1)</p></li>
+<li><p><strong>vARGIs</strong> (<em>list</em>) – List of nz soil soil clay content along soil depth (unit: %)</p></li>
+<li><p><strong>vNO3</strong> (<em>list</em>) – List of nz soil soil nitrate content along soil depth to initialize ‘m_NO3’ (unit: kg N-NO3.ha-1)</p></li>
+<li><p><strong>vNH4</strong> (<em>list</em>) – List of nz soil soil ammonium content along soil depth to initialize ‘m_NH4’ (unit: kg N-NH4.ha-1)</p></li>
+<li><p><strong>vCALCs</strong> (<em>list</em>) – List of nz soil calcacerous content along soil depth (unit: %)</p></li>
+<li><p><strong>Tsol</strong> (<em>float</em>) – Daily average topsoil temperature (unit: degree Celsius)</p></li>
+<li><p><strong>obstarac</strong> (<em>list</em>) – List of nz voxel fractions affected by ‘obstarac’ along soil depth, default to None (no root obstacles)</p></li>
+<li><p><strong>pattern8</strong> (<em>list</em>) – list of two [x,y] points defining the soil limits (unit: cm), default to [[0,0], [100,100]]</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="simple">
-<dt>SoilN object Attributes:</dt><dd><dl class="field-list simple">
+<dt>SoilN object Attributes:</dt><dd><ul class="simple">
+<li><dl class="field-list simple">
 <dt class="field-odd">CALCs (float)<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Calcareous content in topsoil layer - value for non calcareous soils (p220 STICS-book) - (unit: %)</p>
 </dd>
-<dt class="field-even">pHeau (float)<span class="colon">:</span></dt>
-<dd class="field-even"><p>Soil water pH</p>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">pHeau (float)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Soil water pH</p>
 </dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
 <dt class="field-odd">ARG (float)<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Clay content in topsoil layer</p>
 </dd>
-<dt class="field-even">Corg (nd.array)<span class="colon">:</span></dt>
-<dd class="field-even"><p>… (unit: kg C per voxel)</p>
-</dd>
-<dt class="field-odd">Norg (nd.array)<span class="colon">:</span></dt>
-<dd class="field-odd"><p>… (unit: kg N per voxel)</p>
-</dd>
-<dt class="field-even">InertCorg (nd.array)<span class="colon">:</span></dt>
-<dd class="field-even"><p>… (unit: kg C per voxel)</p>
-</dd>
-<dt class="field-odd">InertNorg (nd.array)<span class="colon">:</span></dt>
-<dd class="field-odd"><p>… (unit: kg N per voxel)</p>
-</dd>
-<dt class="field-even">K2HUM (nd.array)<span class="colon">:</span></dt>
-<dd class="field-even"><p>…</p>
-</dd>
-<dt class="field-odd">m_MO (nd.array)<span class="colon">:</span></dt>
-<dd class="field-odd"><p>…</p>
-</dd>
-<dt class="field-even">m_CNHUM (nd.array)<span class="colon">:</span></dt>
-<dd class="field-even"><p>…</p>
-</dd>
-<dt class="field-odd">m_NH4 (nd.array)<span class="colon">:</span></dt>
-<dd class="field-odd"><p>…  (unit: kg N-NH4 dans le voxel)</p>
-</dd>
-<dt class="field-even">m_NO3 (nd.array)<span class="colon">:</span></dt>
-<dd class="field-even"><p>…  (unit: kg N-NO3 dans le voxel)</p>
-</dd>
-<dt class="field-odd">m_Tsol (nd.array)<span class="colon">:</span></dt>
-<dd class="field-odd"><p>… (unit: degrees Celsius)</p>
-</dd>
-<dt class="field-even">N2ONitrif (float)<span class="colon">:</span></dt>
-<dd class="field-even"><p>… (unit: kg N)</p>
-</dd>
-<dt class="field-odd">N2ODenitrif (float)<span class="colon">:</span></dt>
-<dd class="field-odd"><p>… (unit: kg N)</p>
-</dd>
-<dt class="field-even">lixiNO3 (float)<span class="colon">:</span></dt>
-<dd class="field-even"><p>… (unit: kg N)</p>
-</dd>
-<dt class="field-odd">bilanC (dict)<span class="colon">:</span></dt>
-<dd class="field-odd"><p>…</p>
-</dd>
-<dt class="field-even">bilanN (dict)<span class="colon">:</span></dt>
-<dd class="field-even"><p>…</p>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">stateEV (list)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of memory variables storing cumulative previous day evaporation used for computing daily soil evaporation</p>
 </dd>
 </dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">Uval (float)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Total topsoil water reservoir accessible to evaporation (unit: mm)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">b (float)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Empirical coefficient for soil evaporation (unitless)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">Corg (nd.array)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of size [nz,nx,ny] storing voxel soil organic Carbon content (unit: kg C per voxel)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">Norg (nd.array)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of size [nz,nx,ny] storing voxel soil organic Nitrogen content (unit: kg N per voxel)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">InertCorg (nd.array)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of size [nz,nx,ny] storing voxel soil inert organic Carbon content (unit: kg C per voxel)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">InertNorg (nd.array)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of size [nz,nx,ny] storing voxel soil inert organic Nitrogen content (unit: kg N per voxel)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">K2HUM (nd.array)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of size [nz,nx,ny] storing voxel Potential rate of SOM mineralisation (unit: …)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">m_MO (nd.array)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of size [nz,nx,ny] storing voxel soil organic matter (SOM) concentration (unit: g C.kg soil-1)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">m_CNHUM (nd.array)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of size [nz,nx,ny] storing voxel soil C:N ratio (unitless)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">m_NH4 (nd.array)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of size [nz,nx,ny] storing voxel content in mineral N-NH4  (unit: kg N-NH4 per voxel)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">m_NO3 (nd.array)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of size [nz,nx,ny] storing voxel content in mineral N-N03  (unit: kg N-NO3 per voxel)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">m_Tsol (nd.array)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of size [nz,nx,ny] storing voxel daily average temperature (unit: degree Celsius)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">ls_CRES (list)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List storing [nz,nx,ny] ‘m_CRES’ arrays by type of residue (unit: kg C per voxel)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">ls_CBio (list)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List storing [nz,nx,ny] ‘m_CBio’ arrays by type of residue (unit: kg C per voxel)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">parResi (dict)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionnary storing the mineralisation parameters of all soil organic residues</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">CO2respSoil (float)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cumulative amount of C-CO2 respired from all soil residues (unit: kg C)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">N2ONitrif (float)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cumulative amount of N-N2O emitted from nitification reactions (unit: kg N)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">N2ODenitrif (float)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cumulative amount of N-N2O emitted from denitification reactions (unit: kg N)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">lixiNO3 (float)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cumulative amount of N-NO3 tranferred below bottom soil layer (unit: kg N)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">bilanC (dict)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionnary storing soil Carbon balance daily outputs</p>
+</dd>
+</dl>
+</li>
+<li><dl class="field-list simple">
+<dt class="field-odd">bilanN (dict)<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionnary storing soil Nitrogen balance daily outputs</p>
+</dd>
+</dl>
+</li>
+</ul>
 </dd>
 </dl>
 <p>Main methods:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">__init__</span></code>: initializes and builds static object for the rest of simulation</p></li>
-<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ConcNO3" title="soil3ds.soil_moduleN.SoilN.ConcNO3"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ConcNO3()</span></code></a>:</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ConcNO3" title="soil3ds.soil_moduleN.SoilN.ConcNO3"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ConcNO3()</span></code></a>: Calculation of the nitrate concentration (unit: kg N.mm-1)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ConcN" title="soil3ds.soil_moduleN.SoilN.ConcN"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ConcN()</span></code></a>: Calculation of the molar concentration of mineral nitrogen (unit: micromole N.L-1)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ConcN_old" title="soil3ds.soil_moduleN.SoilN.ConcN_old"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ConcN_old()</span></code></a>: Calculation of the molar concentration of mineral nitrogen - former calulation to account for 1 Ha</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.init_memory_EV" title="soil3ds.soil_moduleN.SoilN.init_memory_EV"><code class="xref py py-meth docutils literal notranslate"><span class="pre">init_memory_EV()</span></code></a>: Inititalise attributes corresponding to memory variables and parameters to compute soil evaporation</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.update_memory_EV" title="soil3ds.soil_moduleN.SoilN.update_memory_EV"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_memory_EV()</span></code></a>: Update ‘stateEV’ attribute with new list of memory variables</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.updateTsol" title="soil3ds.soil_moduleN.SoilN.updateTsol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">updateTsol()</span></code></a>: Update daily soil temperature array ‘m_Tsol’</p></li>
 </ul>
 </div></blockquote>
 <p>Soil mineralisation methods:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.Pot_rate_SOMMin" title="soil3ds.soil_moduleN.SoilN.Pot_rate_SOMMin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Pot_rate_SOMMin()</span></code></a>:</p></li>
-<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.SOMMin_RespT" title="soil3ds.soil_moduleN.SoilN.SOMMin_RespT"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SOMMin_RespT()</span></code></a>:</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.mask_PROFUM" title="soil3ds.soil_moduleN.SoilN.mask_PROFUM"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask_PROFUM()</span></code></a>: Compute a [nz,nx,ny] mask array to apply ‘PROFHUMs’ mineralisation parameter</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.Pot_rate_SOMMin" title="soil3ds.soil_moduleN.SoilN.Pot_rate_SOMMin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Pot_rate_SOMMin()</span></code></a>: Compute Potential rate of SOM mineralisation (unit: kg N.day-1)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.SOMMin_RespT" title="soil3ds.soil_moduleN.SoilN.SOMMin_RespT"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SOMMin_RespT()</span></code></a>: Compute response of mineralisation rate to soil temperature (0-1 fraction)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.SOMMin_RespHum" title="soil3ds.soil_moduleN.SoilN.SOMMin_RespHum"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SOMMin_RespHum()</span></code></a>: Compute response of mineralisation rate to soil relative humidity ‘HRv’</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.Act_rate_SOMMin" title="soil3ds.soil_moduleN.SoilN.Act_rate_SOMMin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Act_rate_SOMMin()</span></code></a>: Compute Actual rate of SOM mineralisation (unit: kg N.day-1)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.stepNB" title="soil3ds.soil_moduleN.SoilN.stepNB"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stepNB()</span></code></a>: Compute daily step for SOM mineralisation and update SoilN object</p></li>
+</ul>
+</div></blockquote>
+<p>Residue mineralisation methods:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.init_residues" title="soil3ds.soil_moduleN.SoilN.init_residues"><code class="xref py py-meth docutils literal notranslate"><span class="pre">init_residues()</span></code></a>: Initialise ‘parResi’ attribute for the properties of soil residues</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.addResPAR" title="soil3ds.soil_moduleN.SoilN.addResPAR"><code class="xref py py-meth docutils literal notranslate"><span class="pre">addResPAR()</span></code></a>: Add a new set of residue parameters to input dictionary of type ‘parResi’</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.VdistribResidues" title="soil3ds.soil_moduleN.SoilN.VdistribResidues"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VdistribResidues()</span></code></a>:  Distribute a new residue in a [nz,nx,ny] ‘m_CRES’ array assuming horizontal homogeneity (unit: kg C per Voxel)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.addResMat" title="soil3ds.soil_moduleN.SoilN.addResMat"><code class="xref py py-meth docutils literal notranslate"><span class="pre">addResMat()</span></code></a>: Update ‘ls_CRES’, ‘bilanC’ and ‘bilanN’ attributes when adding a new residue</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.Pot_rate_ResidueMin" title="soil3ds.soil_moduleN.SoilN.Pot_rate_ResidueMin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Pot_rate_ResidueMin()</span></code></a>: Compute the rate of residue mineralisation consirering soil water and temperature effects (unit: kg C.day-1)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.Pot_Ndemand_microbialBio" title="soil3ds.soil_moduleN.SoilN.Pot_Ndemand_microbialBio"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Pot_Ndemand_microbialBio()</span></code></a>: Compute total microbial N demand for all residues (unit: kg de N per voxel)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.FN_factor" title="soil3ds.soil_moduleN.SoilN.FN_factor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">FN_factor()</span></code></a>: Compute ‘FN’ reduction factor related to Nmin availability to support residue mineralisation (0-1 fraction)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.FBIO_factor" title="soil3ds.soil_moduleN.SoilN.FBIO_factor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">FBIO_factor()</span></code></a>: Compute ‘FBIO’ reduction factor (0-1 fraction)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ls_NRES" title="soil3ds.soil_moduleN.SoilN.ls_NRES"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ls_NRES()</span></code></a>: Compute a list of [nz,nx,ny] arrays storing residue N distribution per type of residue (unit: kg N per voxel)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ls_NBio" title="soil3ds.soil_moduleN.SoilN.ls_NBio"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ls_NBio()</span></code></a>: Compute a list of [nz,nx,ny] arrays storing microbial N distribution per type of residue (unit: kg N per voxel)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.mixResMat" title="soil3ds.soil_moduleN.SoilN.mixResMat"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mixResMat()</span></code></a>: Mix a new input residue [nz,nx,ny] array with an existing residue type in ‘parResi’ and ‘ls_CRES’ attributes</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.stepResidueMin" title="soil3ds.soil_moduleN.SoilN.stepResidueMin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stepResidueMin()</span></code></a>: Compute daily Carbon and Nitrogen fluxes associated with mineralisation of all residues</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.stepMicrobioMin" title="soil3ds.soil_moduleN.SoilN.stepMicrobioMin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stepMicrobioMin()</span></code></a>: Compute daily Carbon and Nitrogen fluxes associated with microbial biomass of all residues</p></li>
+</ul>
+</div></blockquote>
+<p>Soil nitrification methods:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.Nitrif_RespHum" title="soil3ds.soil_moduleN.SoilN.Nitrif_RespHum"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Nitrif_RespHum()</span></code></a>: Compute response of nitrification rate to soil Humidity ‘HRv’ (0-1 fraction)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.Nitrif_RespPH" title="soil3ds.soil_moduleN.SoilN.Nitrif_RespPH"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Nitrif_RespPH()</span></code></a>: Compute response of nitrification rate to soil pH (0-1 fraction)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.Nitrif_RespT" title="soil3ds.soil_moduleN.SoilN.Nitrif_RespT"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Nitrif_RespT()</span></code></a>: Compute response of nitrification rate to soil temperature (0-1 fraction)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.stepNitrif" title="soil3ds.soil_moduleN.SoilN.stepNitrif"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stepNitrif()</span></code></a>: Compute daily N fluxes associated to NH4+ nitrification</p></li>
+</ul>
+</div></blockquote>
+<p>Nitrates infiltration methods:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.infil_layerNO3" title="soil3ds.soil_moduleN.SoilN.infil_layerNO3"><code class="xref py py-meth docutils literal notranslate"><span class="pre">infil_layerNO3()</span></code></a>: Compute nitrate infiltration for soil layer idz</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.distrib_NO3" title="soil3ds.soil_moduleN.SoilN.distrib_NO3"><code class="xref py py-meth docutils literal notranslate"><span class="pre">distrib_NO3()</span></code></a>: Distribute nitrate infiltration into the soil grid from mineralisation and/or fertilizer distribution map at the soil surface</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.stepNINFILT" title="soil3ds.soil_moduleN.SoilN.stepNINFILT"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stepNINFILT()</span></code></a>: Compute daily N fluxes associated to nitrate infiltration and fertilizer application</p></li>
+</ul>
+</div></blockquote>
+<p>Plant N uptake methods:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.stepNuptakePlt" title="soil3ds.soil_moduleN.SoilN.stepNuptakePlt"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stepNuptakePlt()</span></code></a>: Compute daily N fluxes associated to plant mineral N uptake</p></li>
+</ul>
+</div></blockquote>
+<p>Nitrogen and Carbon balance :</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.OpenCbalance" title="soil3ds.soil_moduleN.SoilN.OpenCbalance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">OpenCbalance()</span></code></a>: Initialise bilanC attribute, a dictionary storing carbon balance information</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.CloseCbalance" title="soil3ds.soil_moduleN.SoilN.CloseCbalance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CloseCbalance()</span></code></a>: Finalise calculation of whole simulation variables in bilanC attribute</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.PrintCbalance" title="soil3ds.soil_moduleN.SoilN.PrintCbalance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PrintCbalance()</span></code></a>: Print a summary table of bilanC attribute</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.OpenNbalance" title="soil3ds.soil_moduleN.SoilN.OpenNbalance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">OpenNbalance()</span></code></a>: Initialise bilanN attribute, a dictionary storing nitrogen balance information</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.CloseNbalance" title="soil3ds.soil_moduleN.SoilN.CloseNbalance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CloseNbalance()</span></code></a>: Finalise calculation of whole simulation variables in bilanN attribute</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.PrintNbalance" title="soil3ds.soil_moduleN.SoilN.PrintNbalance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PrintNbalance()</span></code></a>: Print a summary table of bilanN attribute</p></li>
 </ul>
 </div></blockquote>
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.Act_rate_SOMMin">
-<span class="sig-name descname"><span class="pre">Act_rate_SOMMin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Act_rate_SOMMin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Act_rate_SOMMin" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">Act_rate_SOMMin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Act_rate_SOMMin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Act_rate_SOMMin" title="Permalink to this definition"></a></dt>
+<dd><p>Compute Actual rate of SOM mineralisation (unit: kg N.day-1)
+(STICS book, Eq. 8.1, p 142)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>‘K2i’, basal voxel mineralisation rate (unit: kg N.day-1)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.CloseCbalance">
 <span class="sig-name descname"><span class="pre">CloseCbalance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">print_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.CloseCbalance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.CloseCbalance" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Finalise calculation of whole simulation variables in bilanC attribute</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.CloseNbalance">
 <span class="sig-name descname"><span class="pre">CloseNbalance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">print_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.CloseNbalance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.CloseNbalance" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Finalise calculation of whole simulation variables in bilanC attribute</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.ConcN">
 <span class="sig-name descname"><span class="pre">ConcN</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.ConcN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.ConcN" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Calculation of the molar concentration of mineral nitrogen (unit: micromole N.L-1)
+(STICS book, Eq. 8.36, p 161)</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.ConcNO3">
 <span class="sig-name descname"><span class="pre">ConcNO3</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.ConcNO3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.ConcNO3" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Calculation of the nitrate concentration (unit: kg N.mm-1)
+(STICS book, Eq. 8.34, p 160)</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.ConcN_old">
 <span class="sig-name descname"><span class="pre">ConcN_old</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.ConcN_old"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.ConcN_old" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Calculation of the molar concentration of mineral nitrogen - former calulation to account for 1 Ha</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.FBIO_factor">
-<span class="sig-name descname"><span class="pre">FBIO_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.FBIO_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.FBIO_factor" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">FBIO_factor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.FBIO_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.FBIO_factor" title="Permalink to this definition"></a></dt>
+<dd><p>Compute ‘FBIO’ reduction factor (0-1 fraction), default to 1. -
+(STICS book, Eq. 8.11, p 147)</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.FN_factor">
-<span class="sig-name descname"><span class="pre">FN_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.FN_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.FN_factor" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">FN_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.FN_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.FN_factor" title="Permalink to this definition"></a></dt>
+<dd><p>Compute ‘FN’ reduction factor related to Nmin availability to support residue mineralisation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.Nitrif_RespHum">
-<span class="sig-name descname"><span class="pre">Nitrif_RespHum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Nitrif_RespHum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Nitrif_RespHum" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">Nitrif_RespHum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Nitrif_RespHum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Nitrif_RespHum" title="Permalink to this definition"></a></dt>
+<dd><p>Compute response of nitrification rate to soil Humidity ‘HRv’ (0-1 fraction) -
+(STICS book, Eq. 8.14, p 150)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>‘FHN’, a relative factor  accounting for soil humidity on nitrification (0-1 fraction)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.Nitrif_RespPH">
-<span class="sig-name descname"><span class="pre">Nitrif_RespPH</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Nitrif_RespPH"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Nitrif_RespPH" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">Nitrif_RespPH</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Nitrif_RespPH"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Nitrif_RespPH" title="Permalink to this definition"></a></dt>
+<dd><p>Compute response of nitrification rate to soil pH (0-1 fraction) -
+(STICS book, Eq. 8.13, p 150)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>‘FPHN’, a relative factor  accounting for soil pH on nitrification (0-1 fraction)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.Nitrif_RespT">
-<span class="sig-name descname"><span class="pre">Nitrif_RespT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Nitrif_RespT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Nitrif_RespT" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">Nitrif_RespT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Nitrif_RespT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Nitrif_RespT" title="Permalink to this definition"></a></dt>
+<dd><p>Compute response of nitrification rate to soil temperature (0-1 fraction) -
+(STICS book, Eq. 8.15, p 151)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>‘FTN’, a relative factor  accounting for soil temperature on nitrification (0-1 fraction)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.OpenCbalance">
 <span class="sig-name descname"><span class="pre">OpenCbalance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.OpenCbalance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.OpenCbalance" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Initialise bilanC attribute, a dictionary storing carbon balance information</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Keys for simulation inputs:</dt><dd><ul>
+<li><p>‘intialInertC’:</p></li>
+<li><p>‘intialActiveC’:</p></li>
+<li><p>‘initialCres’:</p></li>
+<li><p>‘initialCZygo’:</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Keys for simulation outputs:</dt><dd><ul>
+<li><p>‘FinalInertC’:</p></li>
+<li><p>‘FinalActiveC’:</p></li>
+<li><p>‘finalCres’:</p></li>
+<li><p>‘finalCZygo’:</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Keys for simulation totals:</dt><dd><ul>
+<li><p>‘InputCtot’:</p></li>
+<li><p>‘OutputCtot’:</p></li>
+<li><p>‘MinCtot’:</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Keys for daily inputs/outputs :</dt><dd><ul>
+<li><p>‘cumMinC’:</p></li>
+<li><p>‘cumCO2Res1’:</p></li>
+<li><p>‘cumCO2Res2’:</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.OpenNbalance">
 <span class="sig-name descname"><span class="pre">OpenNbalance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.OpenNbalance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.OpenNbalance" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Initialise bilanN attribute, a dictionary storing nitrogen balance information</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Keys for simulation inputs:</dt><dd><ul>
+<li><p>‘intialInertN’:</p></li>
+<li><p>‘intialActiveN’:</p></li>
+<li><p>‘intialNO3’:</p></li>
+<li><p>‘intialNH4’:</p></li>
+<li><p>‘initialNres’:</p></li>
+<li><p>‘initialNZygo’:</p></li>
+<li><p>‘TotNRain’:</p></li>
+<li><p>‘TotNIrrig’:</p></li>
+<li><p>‘TotFertNO3’:</p></li>
+<li><p>‘TotFertNH4’:</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Keys for simulation outputs:</dt><dd><ul>
+<li><p>‘FinalInertN’:</p></li>
+<li><p>‘FinalActiveN’:</p></li>
+<li><p>‘FinalNO3’:</p></li>
+<li><p>‘FinalNH4’:</p></li>
+<li><p>‘finalNres’:</p></li>
+<li><p>‘finalNZygo’:</p></li>
+<li><p>‘Lixtot’:</p></li>
+<li><p>‘N2Otot’:</p></li>
+<li><p>‘TotUptPlt’:</p></li>
+<li><p>‘HumusMinNtot’:</p></li>
+<li><p>‘ResidueMinNtot’:</p></li>
+<li><p>‘MinNtot’:</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Keys for simulation totals:</dt><dd><ul>
+<li><p>‘InputNtot’:</p></li>
+<li><p>‘InputNmintot’:</p></li>
+<li><p>‘OutputNtot’:</p></li>
+<li><p>‘OutputNmintot’:</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Keys for daily inputs/outputs :</dt><dd><ul>
+<li><p>‘cumMinN’:</p></li>
+<li><p>‘cumRain’:</p></li>
+<li><p>‘cumIrrig’:</p></li>
+<li><p>‘cumfertNO3’:</p></li>
+<li><p>‘cumfertNH4’:</p></li>
+<li><p>‘cumUptakePlt’:</p></li>
+<li><p>‘azomes’:</p></li>
+<li><p>‘cumLix’:</p></li>
+<li><p>‘cumN2O’:</p></li>
+<li><p>‘cumNRes1’:</p></li>
+<li><p>‘cumNRes2’:</p></li>
+<li><p>‘cumNRes3’:</p></li>
+<li><p>‘NminfromNresCum’:</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.Pot_Ndemand_microbialBio">
-<span class="sig-name descname"><span class="pre">Pot_Ndemand_microbialBio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Pot_Ndemand_microbialBio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Pot_Ndemand_microbialBio" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">Pot_Ndemand_microbialBio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Pot_Ndemand_microbialBio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Pot_Ndemand_microbialBio" title="Permalink to this definition"></a></dt>
+<dd><p>Compute total microbial N demand for all residues (unit: kg de N per voxel)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>an array of size [nz,nx,ny] storing total microbial N demand to support residue mineralisation (unit: kg de N per voxel)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nd.array</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.Pot_rate_ResidueMin">
-<span class="sig-name descname"><span class="pre">Pot_rate_ResidueMin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Pot_rate_ResidueMin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Pot_rate_ResidueMin" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">Pot_rate_ResidueMin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Pot_rate_ResidueMin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Pot_rate_ResidueMin" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the potential rate of residue mineralisation consirering soil water and temperature effects (unit: kg C.day-1)
+(STICS book, Eq. 8.7, p 146)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res_id</strong> (<em>int</em>) – residue ID in ‘parResi’ dict</p></li>
+<li><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Potential rate of residue mineralisation (unit: kg C.day-1)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.Pot_rate_SOMMin">
-<span class="sig-name descname"><span class="pre">Pot_rate_SOMMin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">CALCs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ARGIs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Pot_rate_SOMMin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Pot_rate_SOMMin" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">Pot_rate_SOMMin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">CALCs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ARGIs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.Pot_rate_SOMMin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.Pot_rate_SOMMin" title="Permalink to this definition"></a></dt>
+<dd><p>Compute Potential rate of SOM mineralisation (unit: kg N.day-1)
+(STICS book, Eq. 8.5, p 145)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>CALCs</strong> (<em>float</em>) – Voxel calcacerous content (unit: %)</p></li>
+<li><p><strong>ARGIs</strong> (<em>float</em>) – Voxel clay content (unit: %)</p></li>
+<li><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Voxel potential rate of SOM mineralisation ‘K2HUMi’ (unit: kg N.day-1)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.PrintCbalance">
 <span class="sig-name descname"><span class="pre">PrintCbalance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.PrintCbalance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.PrintCbalance" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Print a summary table of bilanC attribute</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.PrintNbalance">
 <span class="sig-name descname"><span class="pre">PrintNbalance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.PrintNbalance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.PrintNbalance" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Print a summary table of bilanN attribute</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.SOMMin_RespHum">
-<span class="sig-name descname"><span class="pre">SOMMin_RespHum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.SOMMin_RespHum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.SOMMin_RespHum" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">SOMMin_RespHum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.SOMMin_RespHum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.SOMMin_RespHum" title="Permalink to this definition"></a></dt>
+<dd><p>Compute response of mineralisation rate to soil relative humidity ‘HRv’
+(STICS book, Eq. 8.2, p 143)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>‘FH’, a relative factor  accounting for soil water effect on basal mineralisation (0-1 fraction)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.SOMMin_RespT">
-<span class="sig-name descname"><span class="pre">SOMMin_RespT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.SOMMin_RespT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.SOMMin_RespT" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">SOMMin_RespT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.SOMMin_RespT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.SOMMin_RespT" title="Permalink to this definition"></a></dt>
+<dd><p>Compute response of mineralisation rate to soil temperature
+(STICS book, Eq. 8.3, p 143) - described as a sigmoid process (FTH)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>‘FTH’, a relative factor  accounting for temperature effect on basal mineralisation (0-1 fraction)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.VdistribResidues">
 <span class="sig-name descname"><span class="pre">VdistribResidues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Amount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vprop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Wcontent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ccontent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.VdistribResidues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.VdistribResidues" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Distribute a new residue in a [nz,nx,ny] ‘m_CRES’ array assuming horizontal homogeneity (unit: kg C per Voxel)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Amount</strong> (<em>float</em>) – Fresh amount of the residue (unit: T fresh matter.ha-1)</p></li>
+<li><p><strong>Vprop</strong> (<em>list</em>) – List of nz residue proportion by vertical soil layer</p></li>
+<li><p><strong>Wcontent</strong> (<em>float</em>) – Residue water content (0-1 fraction of fresh weight), default to 0.8</p></li>
+<li><p><strong>Ccontent</strong> (<em>float</em>) – Residue carbon content (0-1 fraction of dry weight), default to 0.42</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>‘m_CRES’, a [nz,nx,ny] array describing residue C distribution into the soil (unit: kg C per Voxel)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nd.array</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.addResMat">
 <span class="sig-name descname"><span class="pre">addResMat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Amount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vprop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Wcontent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ccontent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forced_Cres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.addResMat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.addResMat" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Update ‘ls_CRES’, ‘bilanC’ and ‘bilanN’ attributes when adding a new residue</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Amount</strong> (<em>float</em>) – Fresh amount of the residue (unit: T fresh matter.ha-1)</p></li>
+<li><p><strong>Vprop</strong> (<em>list</em>) – List of nz residue proportion by vertical soil layer</p></li>
+<li><p><strong>Wcontent</strong> (<em>float</em>) – Residue water content (0-1 fraction of fresh weight), default to 0.8</p></li>
+<li><p><strong>Ccontent</strong> (<em>float</em>) – Residue carbon content (0-1 fraction of dry weight), default to 0.42</p></li>
+<li><p><strong>forced_Cres</strong> (<em>nd.array</em>) – A [nz,nx,ny] array to use as forced input to ‘ls_CRES’, default to None</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.addResPAR">
-<span class="sig-name descname"><span class="pre">addResPAR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CNRes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.addResPAR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.addResPAR" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">addResPAR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CNRes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.addResPAR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.addResPAR" title="Permalink to this definition"></a></dt>
+<dd><p>Add a new set of residue parameters to input dictionary  -
+Parameters calculated according to Nicolardot et al. (2001) as functions of residue CN ratio</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dic</strong> (<em>dict</em>) – A dictionnary of type ‘parResi’</p></li>
+<li><p><strong>CNRes</strong> (<em>float</em>) – CN ratio of the new residue</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated dictionnary of type ‘parResi’</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.distrib_NO3">
-<span class="sig-name descname"><span class="pre">distrib_NO3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_outWater</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.distrib_NO3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.distrib_NO3" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">distrib_NO3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map_N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_outWater</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_infil</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.distrib_NO3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.distrib_NO3" title="Permalink to this definition"></a></dt>
+<dd><p>Distribute nitrate infiltration into the soil grid from mineralisation and/or fertilizer distribution map at the soil surface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>map_N</strong> (<em>nd.array</em>) – Input infiltration N-NO3 array at soil surface (unit: kg N per voxel)</p></li>
+<li><p><strong>ls_outWater</strong> (<em>list</em>) – List of nz output infiltration water array of size [nx,ny] by layer (unit: mm)</p></li>
+<li><p><strong>opt_infil</strong> (<em>int</em>) – Option indicating if infiltration is vertical (=1) or distributed between first order voxels of the layer below (=2), default=1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>matNO3_t, out_N</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.infil_layerNO3">
-<span class="sig-name descname"><span class="pre">infil_layerNO3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_Water</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.infil_layerNO3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.infil_layerNO3" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">infil_layerNO3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_Water</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_infil</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.infil_layerNO3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.infil_layerNO3" title="Permalink to this definition"></a></dt>
+<dd><p>Compute nitrate infiltration for soil layer idz</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_N</strong> (<em>nd.array</em>) – Input infiltration N-NO3 array of size [nx,ny] coming from (idz-1) layer (unit: kg N per voxel)</p></li>
+<li><p><strong>out_Water</strong> (<em>nd.array</em>) – Output infiltration water array of size [nx,ny] going to (idz+1) layer (unit: mm)</p></li>
+<li><p><strong>idz</strong> (<em>int</em>) – z value of voxel/layer ID in grid [nz, nx, ny]</p></li>
+<li><p><strong>opt_infil</strong> (<em>int</em>) – Option indicating if infiltration is vertical (=1) or distributed between first order voxels of the layer below (=2), default=1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>new, out_N</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.init_memory_EV">
 <span class="sig-name descname"><span class="pre">init_memory_EV</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.init_memory_EV"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.init_memory_EV" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Inititalise attributes corresponding to memory variables and parameters to compute soil evaporation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.init_residues">
-<span class="sig-name descname"><span class="pre">init_residues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vCNRESt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vAmount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vProps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vWC</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vCC</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forced_Cres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.init_residues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.init_residues" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">init_residues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vCNRESt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vAmount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vProps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vWC</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vCC</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forced_Cres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.init_residues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.init_residues" title="Permalink to this definition"></a></dt>
+<dd><p>Initialise ‘parResi’ attribute for the properties of soil residues</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p></li>
+<li><p><strong>vCNRESt</strong> (<em>list</em>) – A list of CN ratio for the different types of residues, default to empty list</p></li>
+<li><p><strong>vAmount</strong> (<em>list</em>) – A list of fresh amounts for the different types of residues (unit: T fresh matter.ha-1), default to empty list</p></li>
+<li><p><strong>vProps</strong> (<em>list</em>) – A list of residue proportion by soil layer for the different types of residues (0-1 fractions), default to empty list</p></li>
+<li><p><strong>vWC</strong> (<em>list</em>) – A list of water content for the different types of residues (0-1 fraction), default to empty list</p></li>
+<li><p><strong>vCC</strong> (<em>list</em>) – A list of carbon content for the different types of residues (0-1 fraction), default to empty list</p></li>
+<li><p><strong>forced_Cres</strong> (<em>list</em>) – A list  of [nz,nx,ny] arrays to use as forced input to ‘ls_CRES’, default to None</p></li>
+</ul>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">parResi</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;CNRESt&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;CNBio&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;KRES&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;YRES&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;KBio&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;HRES&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;TRefg&#39;</span><span class="p">:</span> <span class="mf">15.</span><span class="p">,</span>
+            <span class="s1">&#39;FTEMHAg&#39;</span><span class="p">:</span> <span class="mf">12.</span><span class="p">,</span>
+            <span class="s1">&#39;FTEMHg&#39;</span><span class="p">:</span> <span class="mf">0.103</span><span class="p">,</span>
+            <span class="s1">&#39;FTEMHB&#39;</span><span class="p">:</span> <span class="mf">52.</span><span class="p">,</span>
+            <span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.ls_NBio">
 <span class="sig-name descname"><span class="pre">ls_NBio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.ls_NBio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.ls_NBio" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Compute a list of [nz,nx,ny] arrays storing microbial N distribution per type of residue (unit: kg N per voxel)</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.ls_NRES">
 <span class="sig-name descname"><span class="pre">ls_NRES</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.ls_NRES"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.ls_NRES" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Compute a list of [nz,nx,ny] arrays storing residue N distribution per type of residue (unit: kg N per voxel)</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.mask_PROFUM">
 <span class="sig-name descname"><span class="pre">mask_PROFUM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.mask_PROFUM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.mask_PROFUM" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Compute a [nz,nx,ny] mask array to apply ‘PROFHUMs’ mineralisation parameter over soil depth</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>…</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nd.array</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.mixResMat">
 <span class="sig-name descname"><span class="pre">mixResMat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat_res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idres</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ccontent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.mixResMat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.mixResMat" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Mix a new input residue [nz,nx,ny] array with an existing residue type in ‘parResi’ and ‘ls_CRES’ attributes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mat_res</strong> (<em>nd.array</em>) – An input residue array of size [nz,nx,ny] (unit: g dry matter per voxel)</p></li>
+<li><p><strong>idres</strong> (<em>int</em>) – residue ID in ‘parResi’ dict</p></li>
+<li><p><strong>Ccontent</strong> (<em>float</em>) – Residue carbon content (0-1 fraction of dry weight), default to 0.42</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.stepMicrobioMin">
-<span class="sig-name descname"><span class="pre">stepMicrobioMin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.stepMicrobioMin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.stepMicrobioMin" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">stepMicrobioMin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.stepMicrobioMin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.stepMicrobioMin" title="Permalink to this definition"></a></dt>
+<dd><p>Compute Daily Carbon and Nitrogen fluxes associated with microbial biomass of all residues -</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.stepNB">
-<span class="sig-name descname"><span class="pre">stepNB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.stepNB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.stepNB" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">stepNB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.stepNB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.stepNB" title="Permalink to this definition"></a></dt>
+<dd><p>Compute daily step for SOM mineralisation and update SoilN object</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.stepNINFILT">
-<span class="sig-name descname"><span class="pre">stepNINFILT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapN_Rain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapN_Irrig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapN_fertNO3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapN_fertNH4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_outWater</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.stepNINFILT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.stepNINFILT" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">stepNINFILT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapN_Rain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapN_Irrig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapN_fertNO3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapN_fertNH4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_outWater</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_infil</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.stepNINFILT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.stepNINFILT" title="Permalink to this definition"></a></dt>
+<dd><p>Compute daily N fluxes associated to nitrate infiltration and fertilizer application</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mapN_Rain</strong> (<em>nd.array</em>) – Input N from rain in a array of size [nx,ny] at soil surface (unit: kg N per voxel)</p></li>
+<li><p><strong>mapN_Irrig</strong> (<em>nd.array</em>) – Input N from irrigation water in a array of size [nx,ny] at soil surface (unit: kg N per voxel)</p></li>
+<li><p><strong>mapN_fertNO3</strong> (<em>nd.array</em>) – Input N from NO3- fertilizers in a array of size [nx,ny] at soil surface (unit: kg N per voxel)</p></li>
+<li><p><strong>mapN_fertNH4</strong> (<em>nd.array</em>) – Input N from NH4+ fertilizers in a array of size [nx,ny] at soil surface (unit: kg N per voxel)</p></li>
+<li><p><strong>ls_outWater</strong> (<em>list</em>) – List of nz output infiltration water array of size [nx,ny] by layer (unit: mm)</p></li>
+<li><p><strong>opt_infil</strong> (<em>int</em>) – Option indicating if infiltration is vertical (=1) or distributed between first order voxels of the layer below (=2), default=1</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.stepNitrif">
-<span class="sig-name descname"><span class="pre">stepNitrif</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.stepNitrif"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.stepNitrif" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">stepNitrif</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.stepNitrif"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.stepNitrif" title="Permalink to this definition"></a></dt>
+<dd><p>Compute daily N fluxes associated to NH4+ nitrification -
+(STICS book, Eq. 8.12 and 8.16, p 151)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.stepNuptakePlt">
-<span class="sig-name descname"><span class="pre">stepNuptakePlt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[{}]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_lrac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_mWaterUptakePlt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_demandeN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optNuptake</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'LocalTransporter'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.stepNuptakePlt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.stepNuptakePlt" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">stepNuptakePlt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[{}]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_lrac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_mWaterUptakePlt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_demandeN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optNuptake</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.stepNuptakePlt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.stepNuptakePlt" title="Permalink to this definition"></a></dt>
+<dd><p>Compute daily N fluxes associated to plant mineral N uptake</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p></li>
+<li><p><strong>paramp</strong> (<em>list</em>) – List of individual plant parameters</p></li>
+<li><p><strong>ls_lrac</strong> (<em>list</em>) – List of [z,x,y] arrays for root length distribution per individual plant - equivalent to ‘ls_roots’ (unit: m)</p></li>
+<li><p><strong>ls_mWaterUptakePlt</strong> (<em>list</em>) – List of [z,x,y] arrays for water uptake per individual plant (unit: mm)</p></li>
+<li><p><strong>ls_demandeN</strong> (<em>list</em>) – List of plant Nitrogen status per individual plant ; for optNuptake=0, a list of plant NNI (unitless); for optNuptake=1, a list of root N concentration (unit: %)</p></li>
+<li><p><strong>optNuptake</strong> (<em>int</em>) – Options for computing plant mineral N uptake, either 0: ‘original STICS’ (minimum of plant demand, plant uptake capacity and soil provision) or 1: ‘LocalTransporters’ (plant uptake from root transporters)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N, idmin</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.stepResidueMin">
-<span class="sig-name descname"><span class="pre">stepResidueMin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.stepResidueMin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.stepResidueMin" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">stepResidueMin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.stepResidueMin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.stepResidueMin" title="Permalink to this definition"></a></dt>
+<dd><p>Compute Daily Carbon and Nitrogen fluxes associated with mineralisation of all residues -</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.updateTsol">
-<span class="sig-name descname"><span class="pre">updateTsol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tair</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.updateTsol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.updateTsol" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">updateTsol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tair</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optTsol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.updateTsol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.updateTsol" title="Permalink to this definition"></a></dt>
+<dd><p>Update daily soil temperature array ‘m_Tsol’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Tair</strong> (<em>float</em>) – Daily air temperature</p></li>
+<li><p><strong>optTsol</strong> (<em>int</em>) – Option for computing soil temperature, default to 1 (1:assume Tsol=Tair)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.update_memory_EV">
 <span class="sig-name descname"><span class="pre">update_memory_EV</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_vals</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.update_memory_EV"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.update_memory_EV" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Update ‘stateEV’ attribute with new list of memory variables</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -1124,13 +1748,12 @@ The class inherits from ‘Soil’ class which includes descriptions of soil phy
 <dd><p>Creates a default parameter dictionnary ‘parSN’ for defining the STICS parameters necessary for computing N balance</p>
 <blockquote>
 <div><p>Keys of the dictionnary are  parameters for a given soil object:</p>
-<blockquote>
-<div><ul class="simple">
+<dl class="simple">
+<dt>General STICS Nitrogen parameters</dt><dd><ul class="simple">
 <li><p>‘FMIN1G’ :       (day-1) (p145)</p></li>
 <li><p>‘FMIN2G’ :       (%ARGIS-1) para pot rate min a ARGIs (p145)</p></li>
 <li><p>‘FMIN3G’ :       (% CALC-1)para pot rate min a CALCss (p145)</p></li>
 <li><p>‘FINERTG’ :      0.65 = default fraction of N pool inactive for minearlisation (p145) (could be smaller in grassland &amp; forest)</p></li>
-<li><p>‘PROFHUMs’ :     (cm) depth of soil contributing to SOM mineralisation #-&gt; peut constituer un masque pour considerer certaines couches ou pas default value p220</p></li>
 <li><p>‘HMinMg’ :       Humidite min de mineralisation (prop of Field Capacity) #value p 142 (cite Rodrigo et al. 1997)</p></li>
 <li><p>‘HoptMg’ :       Humidite opt de mineralisation (prop of Field capacity) #value p 142 (cite Rodrigo et al. 1997)</p></li>
 <li><p>‘TRefg’ :        reference temperature (degreC)</p></li>
@@ -1148,16 +1771,54 @@ The class inherits from ‘Soil’ class which includes descriptions of soil phy
 <li><p>‘RATIONITs’ :    proportion of nitrtified NH4 converted to N2O (pas trouve de valeur par defaut - p151) #0-&gt; N2O pas active</p></li>
 <li><p>‘DIFNg’ :        N diffusion coefficient at field capacity (cm2.day-1, p 161)</p></li>
 </ul>
-</div></blockquote>
+</dd>
+<dt>soil specific water and nitrogen parameters</dt><dd><ul class="simple">
+<li><p>‘ZESX’ :          Maximal depth of soil affected by evaporation (unit: m)</p></li>
+<li><p>‘CFES’ :          Shape parameter to define relative contribution of soil depth to evaporation (unitless; 1. = proportional to soil depth)</p></li>
+<li><p>‘q0’ :            Cumulative evaporation treshold indicating the end of maximum evaporation rate (unit: mm)</p></li>
+<li><p>‘Norg’ :          Soil Organic N content in the topsoil layer (unit: g N.kg-1 soil)</p></li>
+<li><p>‘PROFHUMs’ :      Depth of soil contributing to SOM mineralisation #-&gt; peut constituer un masque pour considerer certaines couches ou pas default value p220 (unit: cm)</p></li>
+<li><p>‘pH’ :            Soil pH (unit: pH unit)</p></li>
+<li><p>‘ACLIMc’ :        Climatic demand of soil evaporation parameter (unit: mm)</p></li>
+<li><p>‘concrr’ :        nitrate concentration in rainfall (unit: kg N.m-2.mm-1)</p></li>
+</ul>
+</dd>
+</dl>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Default ‘parSN’ parameter dictionnary</p>
 </dd>
 </dl>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">geometry</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;scenes&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="n">scene0</span><span class="p">,</span> <span class="n">scene1</span><span class="p">,</span> <span class="n">scene2</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="p">,</span>
-            <span class="s2">&quot;domain&quot;</span> <span class="p">:</span> <span class="p">((</span><span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">),</span> <span class="p">(</span><span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">parSN</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;FMIN1G&#39;</span> <span class="p">:</span> <span class="mf">0.0006</span><span class="p">,</span>
+            <span class="s1">&#39;FMIN2G&#39;</span> <span class="p">:</span> <span class="mf">0.0272</span><span class="p">,</span>
+            <span class="s1">&#39;FMIN3G&#39;</span> <span class="p">:</span> <span class="mf">0.0167</span><span class="p">,</span>
+            <span class="s1">&#39;FINERTG&#39;</span> <span class="p">:</span> <span class="mf">0.65</span><span class="p">,</span>
+            <span class="s1">&#39;HMinMg&#39;</span> <span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+            <span class="s1">&#39;HoptMg&#39;</span> <span class="p">:</span> <span class="mf">1.</span><span class="p">,</span>
+            <span class="s1">&#39;TRefg&#39;</span> <span class="p">:</span>  <span class="mf">15.</span> <span class="p">,</span>
+            <span class="s1">&#39;FTEMHAg&#39;</span> <span class="p">:</span> <span class="mf">25.</span> <span class="p">,</span>
+            <span class="s1">&#39;FTEMHg&#39;</span> <span class="p">:</span>  <span class="mf">0.12</span> <span class="p">,</span>
+            <span class="s1">&#39;FTEMHB&#39;</span> <span class="p">:</span> <span class="mf">145.</span><span class="p">,</span>
+            <span class="s1">&#39;FNXg&#39;</span> <span class="p">:</span>   <span class="mf">0.5</span><span class="p">,</span>
+            <span class="s1">&#39;PHMinNITg&#39;</span> <span class="p">:</span>  <span class="mf">3.</span> <span class="p">,</span>
+            <span class="s1">&#39;PHMaxNITg&#39;</span> <span class="p">:</span> <span class="mf">5.5</span> <span class="p">,</span>
+            <span class="s1">&#39;HMinNg&#39;</span> <span class="p">:</span> <span class="mf">0.67</span><span class="p">,</span>
+            <span class="s1">&#39;HoptNg&#39;</span> <span class="p">:</span> <span class="mf">1.</span><span class="p">,</span>
+            <span class="s1">&#39;TNITMINg&#39;</span> <span class="p">:</span> <span class="mf">5.</span><span class="p">,</span>
+            <span class="s1">&#39;TNITOPTg&#39;</span> <span class="p">:</span> <span class="mf">20.</span><span class="p">,</span>
+            <span class="s1">&#39;TNITMAXg&#39;</span> <span class="p">:</span>  <span class="mf">45.</span><span class="p">,</span>
+            <span class="s1">&#39;RATIONITs&#39;</span> <span class="p">:</span> <span class="mf">0.</span><span class="p">,</span>
+            <span class="s1">&#39;DIFNg&#39;</span> <span class="p">:</span>  <span class="mf">0.018</span><span class="p">,</span>
+            <span class="s1">&#39;ZESX&#39;</span> <span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
+            <span class="s1">&#39;CFES&#39;</span> <span class="p">:</span> <span class="mf">1.</span><span class="p">,</span>
+            <span class="s1">&#39;q0&#39;</span> <span class="p">:</span>  <span class="mf">9.42</span><span class="p">,</span>
+            <span class="s1">&#39;Norg&#39;</span> <span class="p">:</span> <span class="mf">1.1</span><span class="p">,</span>
+            <span class="s1">&#39;PROFHUMs&#39;</span> <span class="p">:</span> <span class="mf">30.</span><span class="p">,</span>
+            <span class="s1">&#39;pH&#39;</span> <span class="p">:</span> <span class="mf">7.1</span><span class="p">,</span>
+            <span class="s1">&#39;ACLIMc&#39;</span> <span class="p">:</span> <span class="mf">26.</span><span class="p">,</span>
+            <span class="s1">&#39;concrr&#39;</span> <span class="p">:</span> <span class="mf">0.000002</span>
             <span class="p">}</span>
 </pre></div>
 </div>
@@ -1178,7 +1839,41 @@ The class inherits from ‘Soil’ class which includes descriptions of soil phy
 <dl class="py function">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.step_bilanWN_solVGL">
 <span class="sig-prename descclassname"><span class="pre">soil3ds.soil_moduleN.</span></span><span class="sig-name descname"><span class="pre">step_bilanWN_solVGL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par_SN</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meteo_j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mng_j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ParamP</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_epsi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_roots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_demandeN_bis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_residu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_Nuptake</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#step_bilanWN_solVGL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.step_bilanWN_solVGL" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Daily step for soil Water and Nitrogen balance from L-egume lsystem inputs, meteo and management</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>S</strong> (<cite>soil3ds.soil_moduleN.SoilN</cite>) – Previous day SoilN object</p></li>
+<li><p><strong>par_SN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p></li>
+<li><p><strong>meteo_j</strong> (<em>dict</em>) – A dictionnary containing daily meterorological data</p></li>
+<li><p><strong>mng_j</strong> (<em>dict</em>) – A dictionnary containing daily management of irrigation and N fertilisation</p></li>
+<li><p><strong>ParamP</strong> (<em>list</em>) – List of individual plant parameters for the L-egume model</p></li>
+<li><p><strong>ls_epsi</strong> (<em>list</em>) – List of individual plant daily fraction of incoming global radiation interception (0-1 fraction)</p></li>
+<li><p><strong>ls_roots</strong> (<em>list</em>) – List of [z,x,y] arrays for root length distribution per individual plant (unit: m)</p></li>
+<li><p><strong>ls_demandeN_bis</strong> (<em>list</em>) – List of individual plant Nitrogen demand</p></li>
+<li><p><strong>opt_residu</strong> (<em>int</em>) – Option to activate calculation of residue mineralisation (0=deactivate or 1=activate)</p></li>
+<li><p><strong>opt_Nuptake</strong> (<em>int</em>) – Option to define the calculation of plant N uptake (0:’STICS’, 1:’LocalTransporter’, 2:’old’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt>[S,  new_stateEV, ls_ftsw, ls_transp, ls_Act_Nuptake_plt, temps_sol]</dt><dd><ul>
+<li><p>S (<cite>soil3ds.soil_moduleN.SoilN</cite>): Updated SoilN object</p></li>
+<li><p>new_stateEV (list): Updated memory variables to compute soil transpiration</p></li>
+<li><p>ls_ftsw (list): List of daily ftsw by individual plants (0-1 fraction)</p></li>
+<li><p>ls_transp (list): List of daily transpiration by individual plants (unit: mm)</p></li>
+<li><p>ls_Act_Nuptake_plt (list):  List of Array of size [nz,nx,ny] storing voxel daily individual plant mineral N uptake (unit: kg N per voxel.plant-1.day-1)</p></li>
+<li><p>temps_sol (list): List of other output variables [evapo_tot, Drainage, ls_m_transpi, m_evap, ActUpNtot, ls_DQ_N, idmin]</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 <section id="module-soil3ds">

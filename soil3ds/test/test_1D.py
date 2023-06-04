@@ -11,8 +11,7 @@ import soil3ds
 import os
 
 path_ = os.path.dirname(os.path.abspath(soil3ds.__file__))  # path ou trouver les inputs
-path_leg = os.path.join(path_, 'test',
-                        'inputs')  # r'C:\devel\l-egume\l-egume\input'#r'C:\devel\grassland'#r'H:\devel\grassland\grassland\L-gume' #r'C:\devel\grassland'
+path_leg = os.path.join(path_, 'test', 'inputs')  # r'C:\devel\l-egume\l-egume\input'#r'C:\devel\grassland'#r'H:\devel\grassland\grassland\L-gume' #r'C:\devel\grassland'
 
 import IOxls
 
@@ -70,7 +69,7 @@ def init_sol(inis, meteo_j, par_sol, par_SN, Lsol, discret_solXY, dz_sol, patter
         # lims_sol = rtd.lims_soil(pattern8, dxyz=[[Lsol], [largsol], [dz_sol/100.]*ncouches_sol])
 
     if opt_residu == 1:  # initialisatio de residus
-        S.init_residues(vCNRESt, vAmount, vProps, vWC, vCC)
+        S.init_residues(par_SN, vCNRESt, vAmount, vProps, vWC, vCC)
 
     # print 'sol', sum(S.m_NO3), sum(S.m_NH4), sum(S.m_QH20fc)-sum(S.m_QH20wp)
 

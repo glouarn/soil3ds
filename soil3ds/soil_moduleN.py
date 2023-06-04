@@ -22,153 +22,188 @@
 from soil3ds.soil_moduleW import * #soil3ds installe comme module
 
 
-##changement version3
-#depend de soil_module5
-#ajout entree  obstarac + effet obstrac sur dispo Nmin pour uptke plante->OK
-#debug L708 dans #stepNuptakePlt -> test des None avec is et pas ==
-#retirer dependence a R -> a priori pas utilise
-#debug FN_factor: ajout d'un epsilon pour eviter division par zero
-#ajout d'une methode mixResMat() pour ger ajour d'un redisu deja existant
-#ajout d'un bilanN['NminfromNres'] pour comptabiliser Nmin produit par chaque type de residu (liste de liste), temporel et son equivalent cumule bilanN['NminfromNresCum']
-#modif des bilanN['cumNRes123'] pour les avoir en journalier (et pas en vrac de tous les residus
-#debug bilanN['NminfromNresCum'] dans closeNbalance qd pas de residus (try:)
-
-#Afaire:
-
-
-#revoir test uni
-
-
-
-
-## changements version 2bis
-#depend de soil_module3 ->OK, en fait soil_module4 (pour couplage avec plante)
-#pour init, besoin de : par_sol, soil_number = [13]*10, dxyz = [[1.], [1.], [0.2]*10], vDA=[1.2]*10, ZESX=0.3, CFES=1.
-# -> rajouter vDA, ZESX, CFES ; a initialisation du sol
-# -> retire DA en dur + passer pHeau et CALCs en parametres pour initialisation de sol N
-# -> passer vecteur de profil vMO[z], vCN[z], parSN, vNH4[z], vNO3[z] = utilise a l'initialisation, mais pas passer en parametre (variables gloable
-# modifier partout ou DA, HR() qui etaient utilise -> OK, sequence test fonctionne
-# cree methode mask_PROFUM(par_SN) pour appliquer humification sur profhum uniquement
-# filtre de PROFHUM-> OK
-# applique sur Corg/Norg, plutot que sur KH2HUM
-# mettre intitalisation des m_NO3 / m_NH4 aux bonnes unite!! (init en kg d'N.ha-1)-> a passer en kg d'N sur la bonne surface ->OK
-# cree methode updateTsol pour mettre a jour m_Tsol
-# ajoute InertCorg, InertNorg pour les retirer des pools actifs de MO
-# debug stepNitrif -> retirer de NH4 convertie etait oubli! -> OK
-# debug flux d'N ds le sol: flux lixiviation etaient pas bon -> pb dans distrib_NO3 -> correction OK, bilan equilibre
-# ajout de fonctions pour ouvrir / clore / afficher bilan C et N -> base sur 2 dictionnaires qui stockent la dynamqiue des variables
-# bilan C N avec et sans residus -> OK
-# ajout des methode ls_NRES() et ls_NBio() qui etaient necessaire au bilan Norg
-#ajout d'entree differencie d'azote mineral pour rain, riirigation, fertlizers dans stepNINFILT
-
-
-#ajout de prelevement d'N plante :stepNuptakePlt() et toutes les fonctions assoiees
-
-#Rq! !! PAs de garde fou pour empecher m_N4 et m_NO3 de passer sous zero!
-# peut arriver avec residus (stepMicrobioMin: besoin de Neccessi) -> verif
-
-#23/02/18
-#ajoute la sortie de idmin dans stepNuptakePlt (pour faciliter deboggage)
-#change Distrib_Potential_Nuptake_Plt pour fair la partition en fonction des activites d'absorption d'N mineral, pas uniquement des longueurs de racines
-
-
-#decrire les differentes matrices!!
-
-
-
 class SoilN(Soil):
     """ Main class for the soilN object of the 'soil3ds' model
 
-    The class includes descriptions of soil properties and methods to compute nitrogen balance adpated for a 3D grid from STICS model.
+    The class :class:`soil3ds.soil_moduleN.SoilN` includes descriptions of soil properties and methods to compute nitrogen balance adpated for a 3D grid from STICS model.
     The class inherits from 'Soil' class which includes descriptions of soil physical properties and methods to compute water balance
 
+    :param par_sol: A dictionnary defining water humidity thresholds for each soil type necessary to build the Soil object
+    :type par_sol: dict
+    :param parSN: A dictionnary defining general soil parameters derived from STICS
+    :type parSN: dict
+    :param soil_number: List of nz soil type IDs along soil depth
+    :type soil_number: list
+    :param dxyz: List of three lists indicating voxel discretization along [x,y,z] axes (unit: m)
+    :type dxyz: list
+    :param vDA: List of nz soil bulk density along soil depth (unit: g.cm-3)
+    :type vDA: list
+    :param vCN: List of nz soil C:N ratio along soil depth (unitless)
+    :type vCN: list
+    :param vMO: List of nz soil soil organic matter concentration along soil depth (unit: g C.kg soil-1)
+    :type vMO: list
+    :param vARGIs: List of nz soil soil clay content along soil depth (unit: %)
+    :type vARGIs: list
+    :param vNO3: List of nz soil soil nitrate content along soil depth to initialize 'm_NO3' (unit: kg N-NO3.ha-1)
+    :type vNO3: list
+    :param vNH4: List of nz soil soil ammonium content along soil depth to initialize 'm_NH4' (unit: kg N-NH4.ha-1)
+    :type vNH4: list
+    :param vCALCs: List of nz soil calcacerous content along soil depth (unit: %)
+    :type vCALCs: list
+    :param Tsol: Daily average topsoil temperature (unit: degree Celsius)
+    :type Tsol: float
+    :param obstarac: List of nz voxel fractions affected by 'obstarac' along soil depth, default to None (no root obstacles)
+    :type obstarac: list
+    :param pattern8: list of two [x,y] points defining the soil limits (unit: cm), default to [[0,0], [100,100]]
+    :type pattern8: list
+
+
     SoilN object Attributes:
-        :CALCs (float): Calcareous content in topsoil layer - value for non calcareous soils (p220 STICS-book) - (unit: %)
-        :pHeau (float): Soil water pH
-        :ARG (float): Clay content in topsoil layer
+        * :CALCs (float): Calcareous content in topsoil layer - value for non calcareous soils (p220 STICS-book) - (unit: %)
+        * :pHeau (float): Soil water pH
+        * :ARG (float): Clay content in topsoil layer
 
-        :Corg (nd.array): ... (unit: kg C per voxel)
-        :Norg (nd.array): ... (unit: kg N per voxel)
-        :InertCorg (nd.array): ... (unit: kg C per voxel)
-        :InertNorg (nd.array): ... (unit: kg N per voxel)
-        :K2HUM (nd.array): ...
-        :m_MO (nd.array): ...
-        :m_CNHUM (nd.array): ...
-        :m_NH4 (nd.array): ...  (unit: kg N-NH4 dans le voxel)
-        :m_NO3 (nd.array): ...  (unit: kg N-NO3 dans le voxel)
-        :m_Tsol (nd.array): ... (unit: degrees Celsius)
+        * :stateEV (list): List of memory variables storing cumulative previous day evaporation used for computing daily soil evaporation
+        * :Uval (float): Total topsoil water reservoir accessible to evaporation (unit: mm)
+        * :b (float): Empirical coefficient for soil evaporation (unitless)
 
-        :N2ONitrif (float): ... (unit: kg N)
-        :N2ODenitrif (float): ... (unit: kg N)
-        :lixiNO3 (float): ... (unit: kg N)
+        * :Corg (nd.array): Array of size [nz,nx,ny] storing voxel soil organic Carbon content (unit: kg C per voxel)
+        * :Norg (nd.array): Array of size [nz,nx,ny] storing voxel soil organic Nitrogen content (unit: kg N per voxel)
+        * :InertCorg (nd.array): Array of size [nz,nx,ny] storing voxel soil inert organic Carbon content (unit: kg C per voxel)
+        * :InertNorg (nd.array): Array of size [nz,nx,ny] storing voxel soil inert organic Nitrogen content (unit: kg N per voxel)
+        * :K2HUM (nd.array): Array of size [nz,nx,ny] storing voxel Potential rate of SOM mineralisation (unit: ...)
+        * :m_MO (nd.array): Array of size [nz,nx,ny] storing voxel soil organic matter (SOM) concentration (unit: g C.kg soil-1)
+        * :m_CNHUM (nd.array): Array of size [nz,nx,ny] storing voxel soil C:N ratio (unitless)
+        * :m_NH4 (nd.array): Array of size [nz,nx,ny] storing voxel content in mineral N-NH4  (unit: kg N-NH4 per voxel)
+        * :m_NO3 (nd.array): Array of size [nz,nx,ny] storing voxel content in mineral N-N03  (unit: kg N-NO3 per voxel)
+        * :m_Tsol (nd.array): Array of size [nz,nx,ny] storing voxel daily average temperature (unit: degree Celsius)
 
-        :bilanC (dict): ...
-        :bilanN (dict): ...
+        * :ls_CRES (list): List storing [nz,nx,ny] 'm_CRES' arrays by type of residue (unit: kg C per voxel)
+        * :ls_CBio (list): List storing [nz,nx,ny] 'm_CBio' arrays by type of residue (unit: kg C per voxel)
+        * :parResi (dict): A dictionnary storing the mineralisation parameters of all soil organic residues
+
+        * :CO2respSoil (float): Cumulative amount of C-CO2 respired from all soil residues (unit: kg C)
+        * :N2ONitrif (float): Cumulative amount of N-N2O emitted from nitification reactions (unit: kg N)
+        * :N2ODenitrif (float): Cumulative amount of N-N2O emitted from denitification reactions (unit: kg N)
+        * :lixiNO3 (float): Cumulative amount of N-NO3 tranferred below bottom soil layer (unit: kg N)
+
+        * :bilanC (dict): Dictionnary storing soil Carbon balance daily outputs
+        * :bilanN (dict): Dictionnary storing soil Nitrogen balance daily outputs
 
 
     Main methods:
 
         * ``__init__``: initializes and builds static object for the rest of simulation
-        * :meth:`ConcNO3`:
-
+        * :meth:`ConcNO3`: Calculation of the nitrate concentration (unit: kg N.mm-1)
+        * :meth:`ConcN`: Calculation of the molar concentration of mineral nitrogen (unit: micromole N.L-1)
+        * :meth:`ConcN_old`: Calculation of the molar concentration of mineral nitrogen - former calulation to account for 1 Ha
+        * :meth:`init_memory_EV`: Inititalise attributes corresponding to memory variables and parameters to compute soil evaporation
+        * :meth:`update_memory_EV`: Update 'stateEV' attribute with new list of memory variables
+        * :meth:`updateTsol`: Update daily soil temperature array 'm_Tsol'
 
     Soil mineralisation methods:
 
-        * :meth:`Pot_rate_SOMMin`:
-        * :meth:`SOMMin_RespT`:
+        * :meth:`mask_PROFUM`: Compute a [nz,nx,ny] mask array to apply 'PROFHUMs' mineralisation parameter
+        * :meth:`Pot_rate_SOMMin`: Compute Potential rate of SOM mineralisation (unit: kg N.day-1)
+        * :meth:`SOMMin_RespT`: Compute response of mineralisation rate to soil temperature (0-1 fraction)
+        * :meth:`SOMMin_RespHum`: Compute response of mineralisation rate to soil relative humidity 'HRv'
+        * :meth:`Act_rate_SOMMin`: Compute Actual rate of SOM mineralisation (unit: kg N.day-1)
+        * :meth:`stepNB`: Compute daily step for SOM mineralisation and update SoilN object
 
+    Residue mineralisation methods:
 
+        * :meth:`init_residues`: Initialise 'parResi' attribute for the properties of soil residues
+        * :meth:`addResPAR`: Add a new set of residue parameters to input dictionary of type 'parResi'
+        * :meth:`VdistribResidues`:  Distribute a new residue in a [nz,nx,ny] 'm_CRES' array assuming horizontal homogeneity (unit: kg C per Voxel)
+        * :meth:`addResMat`: Update 'ls_CRES', 'bilanC' and 'bilanN' attributes when adding a new residue
+        * :meth:`Pot_rate_ResidueMin`: Compute the rate of residue mineralisation consirering soil water and temperature effects (unit: kg C.day-1)
+        * :meth:`Pot_Ndemand_microbialBio`: Compute total microbial N demand for all residues (unit: kg de N per voxel)
+        * :meth:`FN_factor`: Compute 'FN' reduction factor related to Nmin availability to support residue mineralisation (0-1 fraction)
+        * :meth:`FBIO_factor`: Compute 'FBIO' reduction factor (0-1 fraction)
+        * :meth:`ls_NRES`: Compute a list of [nz,nx,ny] arrays storing residue N distribution per type of residue (unit: kg N per voxel)
+        * :meth:`ls_NBio`: Compute a list of [nz,nx,ny] arrays storing microbial N distribution per type of residue (unit: kg N per voxel)
+        * :meth:`mixResMat`: Mix a new input residue [nz,nx,ny] array with an existing residue type in 'parResi' and 'ls_CRES' attributes
+        * :meth:`stepResidueMin`: Compute daily Carbon and Nitrogen fluxes associated with mineralisation of all residues
+        * :meth:`stepMicrobioMin`: Compute daily Carbon and Nitrogen fluxes associated with microbial biomass of all residues
 
+    Soil nitrification methods:
 
+        * :meth:`Nitrif_RespHum`: Compute response of nitrification rate to soil Humidity 'HRv' (0-1 fraction)
+        * :meth:`Nitrif_RespPH`: Compute response of nitrification rate to soil pH (0-1 fraction)
+        * :meth:`Nitrif_RespT`: Compute response of nitrification rate to soil temperature (0-1 fraction)
+        * :meth:`stepNitrif`: Compute daily N fluxes associated to NH4+ nitrification
+
+    Nitrates infiltration methods:
+
+        * :meth:`infil_layerNO3`: Compute nitrate infiltration for soil layer idz
+        * :meth:`distrib_NO3`: Distribute nitrate infiltration into the soil grid from mineralisation and/or fertilizer distribution map at the soil surface
+        * :meth:`stepNINFILT`: Compute daily N fluxes associated to nitrate infiltration and fertilizer application
+
+    Plant N uptake methods:
+
+        * :meth:`stepNuptakePlt`: Compute daily N fluxes associated to plant mineral N uptake
+
+    Nitrogen and Carbon balance :
+
+        * :meth:`OpenCbalance`: Initialise bilanC attribute, a dictionary storing carbon balance information
+        * :meth:`CloseCbalance`: Finalise calculation of whole simulation variables in bilanC attribute
+        * :meth:`PrintCbalance`: Print a summary table of bilanC attribute
+        * :meth:`OpenNbalance`: Initialise bilanN attribute, a dictionary storing nitrogen balance information
+        * :meth:`CloseNbalance`: Finalise calculation of whole simulation variables in bilanN attribute
+        * :meth:`PrintNbalance`: Print a summary table of bilanN attribute
 
     """
     
     def __init__(self, par_sol, parSN, soil_number , dxyz, vDA,  vCN, vMO, vARGIs, vNO3, vNH4,  vCALCs, Tsol, obstarac=None, pattern8=[[0,0],[100.,100.]]):
+        """ Initializes and builds static SoilN object for the rest of simulation
+
         """
-        par_sol SN contient en plus pour l'azote:
-            'FMIN1G'        #(day-1) (p145)
-            'FMIN2G'        #(%ARGIS-1) para pot rate min a ARGIs (p145)
-            'FMIN3G'        #(% CALC-1)para pot rate min a CALCss (p145)
-            'FINERTG'       #0.65 = default fraction of N pool inactive for minearlisation (p145) (could be smaller in grassland & forest)
-            'PROFHUMs'      # (cm) depth of soil contributing to SOM mineralisation #-> peut constituer un masque pour considerer certaines couches ou pas default value p220
-            'HMinMg'        #Humidite min de mineralisation (prop of Field Capacity) #value p 142 (cite Rodrigo et al. 1997)
-            'HoptMg'        #Humidite opt de mineralisation (prop of Field capacity) #value p 142 (cite Rodrigo et al. 1997)
-            'TRefg'         #reference temperature (degreC)
-            'FTEMHAg'       #asymptotic value of FTH (seen as a logistic response)
-            'FTEMHg'        #(K-1) 
-            'FTEMHB'
-            'FNXg'          #(day-1) maximum fraction of NH4 transformed by nitrification every day in the nitrification layer(default value in STICS parameter excel file; 0.5 p149 for tropical soils)
-            'PHMinNITg'     #pH min de nitrification (prop of Field Capacity) #value p149
-            'PHMaxNITg'     #pH max de nitrification (prop of Field Capacity) #value p149
-            'HMinNg'        #Humidite min de nitrification #value p149
-            'HoptNg'        #Humidite opt de nitrification  #value p149
-            'TNITMINg'      #Temperature min de nitrification #  (degreC)value p151
-            'TNITOPTg'      #Temperature opt de nitrification #  (degreC)value p151
-            'TNITMAXg'      #Temperature max de nitrification #  (degreC)value p151
-            'RATIONITs'     #proportion of nitrtified NH4 converted to N2O (pas trouve de valeur par defaut - p151) #0-> N2O pas active
-            'DIFNg'         #N diffusion coefficient at field capacity (cm2.day-1, p 161)
-        
-        CALCs
-        pHeau
-        ARGIs
-        m_Tsol
+        # """
+        # par_sol SN contient en plus pour l'azote:
+        #     'FMIN1G'        #(day-1) (p145)
+        #     'FMIN2G'        #(%ARGIS-1) para pot rate min a ARGIs (p145)
+        #     'FMIN3G'        #(% CALC-1)para pot rate min a CALCss (p145)
+        #     'FINERTG'       #0.65 = default fraction of N pool inactive for minearlisation (p145) (could be smaller in grassland & forest)
+        #     'PROFHUMs'      # (cm) depth of soil contributing to SOM mineralisation #-> peut constituer un masque pour considerer certaines couches ou pas default value p220
+        #     'HMinMg'        #Humidite min de mineralisation (prop of Field Capacity) #value p 142 (cite Rodrigo et al. 1997)
+        #     'HoptMg'        #Humidite opt de mineralisation (prop of Field capacity) #value p 142 (cite Rodrigo et al. 1997)
+        #     'TRefg'         #reference temperature (degreC)
+        #     'FTEMHAg'       #asymptotic value of FTH (seen as a logistic response)
+        #     'FTEMHg'        #(K-1)
+        #     'FTEMHB'
+        #     'FNXg'          #(day-1) maximum fraction of NH4 transformed by nitrification every day in the nitrification layer(default value in STICS parameter excel file; 0.5 p149 for tropical soils)
+        #     'PHMinNITg'     #pH min de nitrification (prop of Field Capacity) #value p149
+        #     'PHMaxNITg'     #pH max de nitrification (prop of Field Capacity) #value p149
+        #     'HMinNg'        #Humidite min de nitrification #value p149
+        #     'HoptNg'        #Humidite opt de nitrification  #value p149
+        #     'TNITMINg'      #Temperature min de nitrification #  (degreC)value p151
+        #     'TNITOPTg'      #Temperature opt de nitrification #  (degreC)value p151
+        #     'TNITMAXg'      #Temperature max de nitrification #  (degreC)value p151
+        #     'RATIONITs'     #proportion of nitrtified NH4 converted to N2O (pas trouve de valeur par defaut - p151) #0-> N2O pas active
+        #     'DIFNg'         #N diffusion coefficient at field capacity (cm2.day-1, p 161)
+        #
+        # CALCs
+        # pHeau
+        # ARGIs
+        # m_Tsol
+        #
+        # Corg: (kg C dans le voxel)
+        # Norg: (kg N dans le voxel)
+        # InertCorg: (kg C dans le voxel)
+        # InertNorg: (kg N dans le voxel)
+        # m_NH4: (kg N NH4 dans le voxel)
+        # m_NO3: (kg N NO3 dans le voxel)
+        # m_MO
+        # m_CNHUM
+        #
+        # K2HUM
+        # N2ONitrif
+        # N2ODenitrif
+        # lixiNO3
+        #
+        # bilanC et bilanN: dictionnaires contenant les variables dynamiques et les cumuls necessaire a l'etablissement des bilans C et N (kg C/N.ha-1)
+        # """
 
-        Corg: (kg C dans le voxel)
-        Norg: (kg N dans le voxel)
-        InertCorg: (kg C dans le voxel) 
-        InertNorg: (kg N dans le voxel)
-        m_NH4: (kg N NH4 dans le voxel)
-        m_NO3: (kg N NO3 dans le voxel)
-        m_MO
-        m_CNHUM
-
-        K2HUM
-        N2ONitrif
-        N2ODenitrif
-        lixiNO3
-
-        bilanC et bilanN: dictionnaires contenant les variables dynamiques et les cumuls necessaire a l'etablissement des bilans C et N (kg C/N.ha-1)
-        """
         #initialisation sol et teneur en eau
         Soil.__init__(self,par_sol, soil_number, dxyz, vDA, parSN['ZESX'], parSN['CFES'], obstarac, pattern8)
         self.compute_teta_lim(par_sol)
@@ -222,20 +257,23 @@ class SoilN(Soil):
         self.N2ONitrif, self.N2ODenitrif = 0., 0. #kg N for the whole soil volume
         self.lixiNO3 = 0. #kg N
         #reprendre les Temperature avec un modele plus elabore!! ici = Tair!
-    
+
+
+    #####  Main methods : initialise/ update / examine soilN object #####
     
     def ConcNO3(self):
-        """
+        """ Calculation of the nitrate concentration (unit: kg N.mm-1)
+        (STICS book, Eq. 8.34, p 160)
         
         """
-        #""" calculation of the nitrate concentration (kg N.mm-1) by voxel - 8.34 p 160 """
         #mm d'eau libre? (eau liee retiree -  pas dans les eaux de drainage)?
         #non - rq: dans devienne-baret (2000): utilise toute l'eau du sol pour calcul de concentration
         return self.m_NO3 / self.tsw_t#(S.tsw_t - S.m_QH20min + 0.00000001)
 
     
     def ConcN(self):
-        """
+        """ Calculation of the molar concentration of mineral nitrogen (unit: micromole N.L-1)
+        (STICS book, Eq. 8.36, p 161)
         
         """
         #""" calculation of the molar concentration of mineral nitrogen (micromole N.L-1) by voxel - 8.36 p 161 """
@@ -247,7 +285,7 @@ class SoilN(Soil):
 
 
     def ConcN_old(self):
-        """
+        """ Calculation of the molar concentration of mineral nitrogen - former calulation to account for 1 Ha
         
         """
         #""" calculation of the molar concentration of mineral nitrogen (micromole N.L-1) by voxel - 8.36 p 161 """
@@ -256,53 +294,132 @@ class SoilN(Soil):
         moleN = (self.m_NO3 + self.m_NH4) / (MMA) * 10 ** 6  # micromole d'N
         return moleN / (self.tsw_t * self.m_vox_surf) * 10000  # remis pour conc sur 1ha pour coller au parametrage de sTICS
 
+
     def init_memory_EV(self, parSN):
-        """
+        """ Inititalise attributes corresponding to memory variables and parameters to compute soil evaporation
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
 
         """
-        # """ inititalise memory variables and parameters to compute soil evaporation """
+        # """  """
         self.Uval = parSN['q0']
-        HXs = self.m_teta_fc[
-            0, 0, 0]  # par_sol[str(vsoilnumbers[0])]['teta_fc']  # humidite a la capacite au champ de l'horizon de surface
+        HXs = self.m_teta_fc[0, 0, 0]  # par_sol[str(vsoilnumbers[0])]['teta_fc']  # humidite a la capacite au champ de l'horizon de surface
         self.b_ = bEV(parSN['ACLIMc'], parSN['ARGIs'], HXs)
-        self.stateEV = [0., 0.,
-                        0.]  # pour le calcul de l'evaporation du sol (memoire du cumul evapore depuis derniere PI)
+        self.stateEV = [0., 0., 0.]  # pour le calcul de l'evaporation du sol (memoire du cumul evapore depuis derniere PI)
         # marche seulement pour solN (car faut parSN)
 
+
     def update_memory_EV(self, new_vals):
-        """
+        """ Update 'stateEV' attribute with new list of memory variables
 
         """
         self.stateEV = new_vals
 
 
-    def Pot_rate_SOMMin(self, CALCs, ARGIs, par):
-        """
-        
-        """
-        #""" Potential rate of SOM mineralisation - eq. 8.5 p145 """
-        K2HUMi = par['FMIN1G']*exp(-par['FMIN2G']*ARGIs)/(1+par['FMIN3G']*CALCs)
-        return K2HUMi
-        #!! revoir ARGIs et CALCs!!
+    def updateTsol(self, Tair, optTsol=1):
+        """ Update daily soil temperature array 'm_Tsol'
 
-    def SOMMin_RespT(self, par):
+        :param Tair: Daily air temperature
+        :type Tair: float
+        :param optTsol: Option for computing soil temperature, default to 1 (1:assume Tsol=Tair)
+        :type optTsol: int
+
         """
-        
+
+        if optTsol==1:
+            self.m_Tsol = self.m_1 * Tair
+        else:
+            self.m_Tsol = None
+            # A ameliorer avec options bilan d'E! et TCULT!
+
+
+    #####  soil mineralisation functions #####
+
+
+    def mask_PROFUM(self, parSN):
+        """ Compute a [nz,nx,ny] mask array to apply 'PROFHUMs' mineralisation parameter over soil depth
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
+
+        :return: ...
+        :rtype: nd.array
+
+        """
+        # """ pour creer un mask pour profhum """
+        PROFHUM = parSN['PROFHUMs'] / 100.  # in m
+        limz = [0.]
+        for i in range(len(self.dxyz[2])):
+            limz.append(limz[-1] + self.dxyz[2][i])
+
+        limz = array(limz)
+
+        v = limz < PROFHUM
+        v = v * 1.
+        v = v.tolist()
+        idlim = v.index(0)
+        limz[idlim - 1]
+        v[idlim] = (PROFHUM - limz[idlim - 1]) / (limz[idlim] - limz[idlim - 1])
+        v = v[1:]  # mask 1D
+
+        # applique a matrice sol
+        res = self.m_1 * 1.
+        for i in range(len(v)):
+            res[i, :, :] = res[i, :, :] * v[i]
+
+        return res
+
+
+    def Pot_rate_SOMMin(self, CALCs, ARGIs, parSN):
+        """ Compute Potential rate of SOM mineralisation (unit: kg N.day-1)
+        (STICS book, Eq. 8.5, p 145)
+
+        :param CALCs: Voxel calcacerous content (unit: %)
+        :type CALCs: float
+        :param ARGIs: Voxel clay content (unit: %)
+        :type ARGIs: float
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
+
+        :return: Voxel potential rate of SOM mineralisation 'K2HUMi' (unit: kg N.day-1)
+        :rtype: float
+        """
+
+        K2HUMi = parSN['FMIN1G']*exp(-parSN['FMIN2G']*ARGIs)/(1+parSN['FMIN3G']*CALCs)
+        return K2HUMi
+        #? revoir ARGIs et CALCs depuis objet sol -> non laisse la possibilite d'adapter le calcul en fonction de profondeur
+
+    def SOMMin_RespT(self, parSN):
+        """ Compute response of mineralisation rate to soil temperature
+        (STICS book, Eq. 8.3, p 143) - described as a sigmoid process (FTH)
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
+
+        :return: 'FTH', a relative factor  accounting for temperature effect on basal mineralisation (0-1 fraction)
+        :rtype: float
         """
         #""" reponse de la mineralisation (ammonification) de la SOM a la temperature - described as a sigmoid process (FTH) - Eq 8.3 p143 et (pour residus FTR p146-147) """
         if self.m_Tsol.min()<=0.:#min(min(min(self.m_Tsol)))<=0.:
             FTH=0.*self.m_1
         else:
-            FTH = par['FTEMHAg'] / (1 + par['FTEMHB']*exp(-par['FTEMHg']*self.m_Tsol))
+            FTH = parSN['FTEMHAg'] / (1 + parSN['FTEMHB']*exp(-parSN['FTEMHg']*self.m_Tsol))
         return FTH 
 
-    def SOMMin_RespHum(self, par):
-        """
-        
+    def SOMMin_RespHum(self, parSN):
+        """ Compute response of mineralisation rate to soil relative humidity 'HRv'
+        (STICS book, Eq. 8.2, p 143)
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
+
+        :return: 'FH', a relative factor  accounting for soil water effect on basal mineralisation (0-1 fraction)
+        :rtype: float
         """
         #""" reponse de la mineralisation (ammonification) de la SOM a l'humidite relative (FH) - Eq. 8.2 p 143 - aussi utilise pour residus """
         HR = self.HRv()
-        FH = (HR - par['HMinMg']*100) / (par['HoptMg']*100 - par['HMinMg']*100)
+        FH = (HR - parSN['HMinMg']*100) / (parSN['HoptMg']*100 - parSN['HMinMg']*100)
         for i in range(len(FH)):
             for j in range(len(FH[i])):
                 for k in range(len(FH[i][j])):
@@ -312,19 +429,26 @@ class SoilN(Soil):
                         FH[i][j][k]=1.
         return FH
 
-    def Act_rate_SOMMin (self, par):
-        """
+    def Act_rate_SOMMin(self, parSN):
+        """ Compute Actual rate of SOM mineralisation (unit: kg N.day-1)
+        (STICS book, Eq. 8.1, p 142)
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
+
+        :return: 'K2i', basal voxel mineralisation rate (unit: kg N.day-1)
+        :rtype: float
         
         """
-        return self.K2HUM*self.SOMMin_RespHum(par)*self.SOMMin_RespT(par)
+        return self.K2HUM*self.SOMMin_RespHum(parSN)*self.SOMMin_RespT(parSN)
 
-    def stepNB(self, par):
-        """
+    def stepNB(self, parSN):
+        """ Compute daily step for SOM mineralisation and update SoilN object
         
         """
         #Mineralisation of soil organic matter
         NHUM = self.Norg - self.InertNorg#* (1-par['FINERTG']) #!!! *PROFHUMs : mask pour retirer profondeur ou mineralisation pas significative???
-        dN_NH4 = NHUM * self.Act_rate_SOMMin(par)
+        dN_NH4 = NHUM * self.Act_rate_SOMMin(parSN)
         dC_NH4 = dN_NH4*self.m_CNHUM
         self.Norg = self.Norg - dN_NH4
         self.Corg = self.Corg - dC_NH4 #suppose CN constant/pas affecte par SOM mineralisation!
@@ -334,15 +458,52 @@ class SoilN(Soil):
         self.bilanN['cumMinN'].append(sum3(dN_NH4) / self.soilSurface *10000)
         self.bilanC['cumMinC'].append(sum3(dC_NH4) / self.soilSurface *10000)
 
-    def init_residues(self, vCNRESt=[], vAmount=[], vProps=[], vWC=[], vCC=[], forced_Cres=None):
-        """
-        
+
+    #####  Residues mineralisation functions #####
+
+
+    def init_residues(self, parSN, vCNRESt=[], vAmount=[], vProps=[], vWC=[], vCC=[], forced_Cres=None):
+        """ Initialise 'parResi' attribute for the properties of soil residues
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
+        :param vCNRESt: A list of CN ratio for the different types of residues, default to empty list
+        :type vCNRESt: list
+        :param vAmount: A list of fresh amounts for the different types of residues (unit: T fresh matter.ha-1), default to empty list
+        :type vAmount: list
+        :param vProps: A list of residue proportion by soil layer for the different types of residues (0-1 fractions), default to empty list
+        :type vProps: list
+        :param vWC: A list of water content for the different types of residues (0-1 fraction), default to empty list
+        :type vWC: list
+        :param vCC: A list of carbon content for the different types of residues (0-1 fraction), default to empty list
+        :type vCC: list
+        :param forced_Cres: A list  of [nz,nx,ny] arrays to use as forced input to 'ls_CRES', default to None
+        :type forced_Cres: list
+
+
+        .. code-block:: python
+
+            self.parResi = {
+                        'CNRESt': [],
+                        'CNBio': [],
+                        'KRES': [],
+                        'YRES': [],
+                        'KBio': [],
+                        'HRES': [],
+                        'TRefg': 15.,
+                        'FTEMHAg': 12.,
+                        'FTEMHg': 0.103,
+                        'FTEMHB': 52.,
+                        }
+
         """
         #""" initialisation des compartiments en relation avec gestion des residus """
         #dictionnaire de parametres des residus
         self.parResi = {}
         self.parResi['CNRESt'], self.parResi['CNBio'], self.parResi['KRES'], self.parResi['YRES'], self.parResi['KBio'], self.parResi['HRES'] = [],[],[],[],[],[]
-        self.parResi['TRefg'] = 15. #reference temperature 
+
+        # same temperature and humidity response for all residues (Recous et al., 1995, p147)
+        self.parResi['TRefg'] = parSN['TRefg']#15. #reference temperature
         self.parResi['FTEMHAg'] = 12. #asymptotic value of FTR (seen as a logistic response) p147
         self.parResi['FTEMHg'] = 0.103 #(K-1) p147
         self.parResi['FTEMHB'] = 52. #from eq 8.3
@@ -356,29 +517,50 @@ class SoilN(Soil):
         for i in range(len(vAmount)):
             self.addResMat(vAmount[i], vProps[i], vWC[i], vCC[i], forced_Cres) #utilise fonction de distribution verticale par default, mais peut forcer une matrice donnee
 
-        # bilan!! -> a revoir (pour le moment gere seulement qd tous les residus sont aplliques en meme temps-> OK : MxResMat() pemet d'initiliser en meme temps (meme a zeo) puis d'ajouter qd on veut un amount
+        #update bilanN
         self.bilanN['initialNres'] = sum(self.ls_NRES()) / self.soilSurface * 10000
 
         #CO2 resp
         self.CO2respSoil = 0. #separer (kg de C par le volume total de sol) #rq: suppose aucune recapture
 
-    def addResPAR(self, par, CNRes):
-        """
-        
+
+    def addResPAR(self, dic, CNRes):
+        """ Add a new set of residue parameters to input dictionary  -
+        Parameters calculated according to Nicolardot et al. (2001) as functions of residue CN ratio
+
+        :param dic: A dictionnary of type 'parResi'
+        :type dic: dict
+        :param CNRes: CN ratio of the new residue
+        :type CNRes: float
+
+        :return: Updated dictionnary of type 'parResi'
+        :rtype: dict
         """
         #""" add a new series of parammeters for a residue according to Nicolardot et al. (2001) in function of its CN ratio"""
-        par['CNRESt'].append(CNRes) #CSURNRESt C/N des residus #liste pour les different residus 
-        par['CNBio'].append(max(7.8, 16.1-123./CNRes)) #CN ratio of the zymogeneous biomass -> fontion du CN des residus (eq. 8.6) -> des biomasses microbiennes associee a chaque type de residu?
-        par['KRES'].append(0.07+1.94/CNRes) # decomposition rate constant (day-1- normalised day at 15dC) from organic residue to microbil biomass?  (fig 8.4 p146) -> fonction de CNRESt
-        par['YRES'].append(0.62) # Assimilation yield of residue-C by microbial biomass - partition parameter between CO2 and microbil biomass (fig 8.4 p146) -> constant
-        par['KBio'].append(0.0110) # decomposition rate constant (day-1 - normalised day at 15dC) from microbial biomass to humus? (fig 8.4 p146) -> constant
-        par['HRES'].append(1-(0.69*CNRes)/(11.2+CNRes)) #  partition parameter between CO2 and humus - Humification rate of microbial biomass -(fig 8.4 p146) -> fonction de CNRESt
-        return par
+        dic['CNRESt'].append(CNRes) #CSURNRESt C/N des residus #liste pour les different residus
+        dic['CNBio'].append(max(7.8, 16.1-123./CNRes)) #CN ratio of the zymogeneous biomass -> fontion du CN des residus (eq. 8.6) -> des biomasses microbiennes associee a chaque type de residu?
+        dic['KRES'].append(0.07+1.94/CNRes) # decomposition rate constant (day-1- normalised day at 15dC) from organic residue to microbil biomass?  (fig 8.4 p146) -> fonction de CNRESt
+        dic['YRES'].append(0.62) # Assimilation yield of residue-C by microbial biomass - partition parameter between CO2 and microbil biomass (fig 8.4 p146) -> constant
+        dic['KBio'].append(0.0110) # decomposition rate constant (day-1 - normalised day at 15dC) from microbial biomass to humus? (fig 8.4 p146) -> constant
+        dic['HRES'].append(1-(0.69*CNRes)/(11.2+CNRes)) #  partition parameter between CO2 and humus - Humification rate of microbial biomass -(fig 8.4 p146) -> fonction de CNRESt
+        return dic
 
 
     def VdistribResidues(self, Amount, Vprop, Wcontent=0.8,Ccontent=0.42):
-        """
-            
+        """ Distribute a new residue in a [nz,nx,ny] 'm_CRES' array assuming horizontal homogeneity (unit: kg C per Voxel)
+
+        :param Amount: Fresh amount of the residue (unit: T fresh matter.ha-1)
+        :type Amount: float
+        :param Vprop: List of nz residue proportion by vertical soil layer
+        :type Vprop: list
+        :param Wcontent: Residue water content (0-1 fraction of fresh weight), default to 0.8
+        :type Wcontent: float
+        :param Ccontent: Residue carbon content (0-1 fraction of dry weight), default to 0.42
+        :type Ccontent: float
+
+        :return: 'm_CRES', a [nz,nx,ny] array describing residue C distribution into the soil (unit: kg C per Voxel)
+        :rtype: nd.array
+
         """
         #"""initialise CRES (Amount of decompasble C in the residue) for a given amount/gratient """
         #Amount (T fresh matter.ha-1)
@@ -406,7 +588,18 @@ class SoilN(Soil):
         
 
     def addResMat(self, Amount, Vprop, Wcontent=0.8,Ccontent=0.42, forced_Cres=None):
-        """
+        """ Update 'ls_CRES', 'bilanC' and 'bilanN' attributes when adding a new residue
+
+        :param Amount: Fresh amount of the residue (unit: T fresh matter.ha-1)
+        :type Amount: float
+        :param Vprop: List of nz residue proportion by vertical soil layer
+        :type Vprop: list
+        :param Wcontent: Residue water content (0-1 fraction of fresh weight), default to 0.8
+        :type Wcontent: float
+        :param Ccontent: Residue carbon content (0-1 fraction of dry weight), default to 0.42
+        :type Ccontent: float
+        :param forced_Cres: A [nz,nx,ny] array to use as forced input to 'ls_CRES', default to None
+        :type forced_Cres: nd.array
         
         """
         #""" add matrice associee au C des residus (CRES) et de leur microbial biomass """
@@ -423,39 +616,58 @@ class SoilN(Soil):
             self.bilanC['initialCres'] += sum(forced_Cres)/ self.soilSurface *10000
             self.bilanN['NminfromNres'].append([])  # ajoute une liste vide pour le residu
 
-    def Pot_rate_ResidueMin(self, res_id, par):
-        """
-        
+
+    def Pot_rate_ResidueMin(self, res_id, parSN):
+        """ Compute the potential rate of residue mineralisation consirering soil water and temperature effects (unit: kg C.day-1)
+        (STICS book, Eq. 8.7, p 146)
+
+        :param res_id: residue ID in 'parResi' dict
+        :type res_id: int
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
+
+        :return: Potential rate of residue mineralisation (unit: kg C.day-1)
+        :rtype: float
+
         """
         #""" changement potentiel en C du residu id (dans conditions donnes d'humidite et T) eq. 8.7 p 146"""
-        #par : par_Sol, pour reponse a humidite
-        pDCRES = -self.parResi['KRES'][res_id] * self.ls_CRES[res_id] * self.SOMMin_RespHum(par) * self.SOMMin_RespT(self.parResi) #sans *FN (dispo en N) ->  pot microbial growth dans ces condition
+
+        pDCRES = -self.parResi['KRES'][res_id] * self.ls_CRES[res_id] * self.SOMMin_RespHum(parSN) * self.SOMMin_RespT(self.parResi) #sans *FN (dispo en N) ->  pot microbial growth dans ces condition
         return pDCRES
         #faudrait lire les FH plutot que de les recalculer a chaque fois
         #laisser en valeur positive?
 
-    def Pot_Ndemand_microbialBio(self, par):
-        """
+    def Pot_Ndemand_microbialBio(self, parSN):
+        """ Compute total microbial N demand for all residues (unit: kg de N per voxel)
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
+
+        :return: an array of size [nz,nx,ny] storing total microbial N demand to support residue mineralisation (unit: kg de N per voxel)
+        :rtype: nd.array
         
         """
         #"""  demande totale en azote pour atteindre croissance optimale microbio de tous les residus (kg de N par voxel) - somme des demandes pour chaque residu """
-        #par : par_Sol, pour reponse a humidite
+        #parSN: pour reponse a humidite
         res = self.m_1*0
         for i in range(len(self.parResi['KRES'])):
-            pDCRESi = -self.Pot_rate_ResidueMin(i, par)
+            pDCRESi = -self.Pot_rate_ResidueMin(i, parSN)
             CBio_poti = pDCRESi *   self.parResi['YRES'][i]
             deltaNi = CBio_poti/self.parResi['CNBio'][i] - pDCRESi/self.parResi['CNRESt'][i] #ce qu'il manque entre N issu de biomasse decomposee et N requis pour microbio! (>0 de ce qu'il faut en N pour atteindre potentiel)
             res = res + deltaNi
 
         return res
 
-    def FN_factor(self, par):
-        """
+    def FN_factor(self, parSN):
+        """ Compute 'FN' reduction factor related to Nmin availability to support residue mineralisation
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
         
         """
         #""" calcul du facteur de reduction lie a la disponibilite en Nmin a proximite des residus """
         #!! demande des plantes pas prise en compte -> servie slmt s'il en reste apres microbio!
-        MND = self.Pot_Ndemand_microbialBio(par)
+        MND = self.Pot_Ndemand_microbialBio(parSN)
         Nmin = self.m_NH4 + self.m_NO3
         delta = Nmin - MND #<0 -> manque de N 
         ratio = Nmin/(MND+1e-15)
@@ -469,23 +681,27 @@ class SoilN(Soil):
                         FN[i][j][k] = ratio[i][j][k] #rajouter un petit% de securite?
         return FN
 
-    def FBIO_factor(self, par):
-        """
+    def FBIO_factor(self):
+        """  Compute 'FBIO' reduction factor (0-1 fraction), default to 1. -
+        (STICS book, Eq. 8.11, p 147)
         
         """
         #""" p147 - a faire et introduire dans stepMicrobioMin"""
-        pass
+        return 1.
 
-    def stepResidueMin(self, par):
-        """
+    def stepResidueMin(self, parSN):
+        """ Compute Daily Carbon and Nitrogen fluxes associated with mineralisation of all residues -
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
         
         """
-        #par : par_Sol, pour reponse a humidite
-        FN = self.FN_factor(par) #!! faudrait calculer FN une seule fois pour tous les residus!
+
+        FN = self.FN_factor(parSN) #!! faudrait calculer FN une seule fois pour tous les residus!
         cumNRes1, cumNRes2= [],[]
         for i in range(len(self.ls_CRES)):
             #fux de C
-            DCRESi = self.Pot_rate_ResidueMin(i, par) * FN
+            DCRESi = self.Pot_rate_ResidueMin(i, parSN) * FN
             self.ls_CRES[i] = self.ls_CRES[i] + DCRESi #ou - si garde DCRESi positif
             DCBioi = DCRESi*self.parResi['YRES'][i]
             self.ls_CBio[i] = self.ls_CBio[i] - DCBioi #ou + si garde DCRESi positif
@@ -514,15 +730,18 @@ class SoilN(Soil):
         self.bilanN['cumNRes2'].append(sum(cumNRes2))
 
 
-    def stepMicrobioMin(self, par):
+    def stepMicrobioMin(self, parSN):
+        """ Compute Daily Carbon and Nitrogen fluxes associated with microbial biomass of all residues -
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
+
         """
-        
-        """
-        #par : par_Sol, pour reponse a humidite
+        #parSN : pour reponse a humidite
         cumNRes3= []
         for i in range(len(self.ls_CBio)):
             #fux de C
-            DCBioi = self.parResi['KBio'][i] * self.ls_CBio[i] * self.SOMMin_RespHum(par) * self.SOMMin_RespT(self.parResi)
+            DCBioi = self.parResi['KBio'][i] * self.ls_CBio[i] * self.SOMMin_RespHum(parSN) * self.SOMMin_RespT(self.parResi)
             self.ls_CBio[i] = self.ls_CBio[i] - DCBioi
             DCHUM = DCBioi * self.parResi['HRES'][i]
             self.Corg = self.Corg + DCHUM
@@ -547,8 +766,8 @@ class SoilN(Soil):
         #a faire! avec approche similaire a FN_factor!
 
     def ls_NRES(self):
-        """
-        
+        """ Compute a list of [nz,nx,ny] arrays storing residue N distribution per type of residue (unit: kg N per voxel)
+
         """
         #""" calcul N dans les residus - liste equivalente de ls_CRES """
         lsNRES = []
@@ -557,7 +776,7 @@ class SoilN(Soil):
         return lsNRES
 
     def ls_NBio(self):
-        """
+        """ Compute a list of [nz,nx,ny] arrays storing microbial N distribution per type of residue (unit: kg N per voxel)
         
         """
         #""" calcul N dans les biomasse microbienne de residus - liste equivalente de ls_CBio """
@@ -567,25 +786,45 @@ class SoilN(Soil):
         return lsNbio
 
     def mixResMat(self, mat_res, idres, Ccontent=0.42):
-        """
-        
+        """ Mix a new input residue [nz,nx,ny] array with an existing residue type in 'parResi' and 'ls_CRES' attributes
+
+        :param mat_res: An input residue array of size [nz,nx,ny] (unit: g dry matter per voxel)
+        :type mat_res: nd.array
+        :param idres: residue ID in 'parResi' dict
+        :type idres: int
+        :param Ccontent: Residue carbon content (0-1 fraction of dry weight), default to 0.42
+        :type Ccontent: float
+
         """
         #""" add matrice associee des residus (en g MS par voxl) au C (CRES) d' un residu avec id deja existant """
+        # suppose CsurN comme residu existant
+
         cres = mat_res * Ccontent / 1000.  # conversion #kg of C per voxel
         self.ls_CRES[idres] += cres
         # bilan
         self.bilanC['initialCres'] += sum(cres) / self.soilSurface * 10000
         self.bilanN['initialNres'] += sum(self.ls_CRES[idres] / self.parResi['CNRESt'][idres]) / self.soilSurface * 10000
 
-    # suppose CsurN comme residu existant; a faire (?) cree noueau residu si tres different? ajuster bilan C/N # faire evoluer lrd parametres des reisdus selon C/N vrai?
+    #  a faire (?) cree noueau residu si tres different? ajuster bilan C/N # faire evoluer lrd parametres des reisdus selon C/N vrai?
 
-    def Nitrif_RespHum(self, par):
-        """
+
+    #####  soil nitrification functions #####
+
+
+    def Nitrif_RespHum(self, parSN):
+        """ Compute response of nitrification rate to soil Humidity 'HRv' (0-1 fraction) -
+        (STICS book, Eq. 8.14, p 150)
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
+
+        :return: 'FHN', a relative factor  accounting for soil humidity on nitrification (0-1 fraction)
+        :rtype: float
         
         """
         #""" reponse de la nitrification de NH4+ a l'humidite relative (FHN) - Eq. 8.14 p 150 - increasing sigmoid-like curve """
         HR = self.HRv()
-        FHN = (HR - par['HMinNg']*100) / (par['HoptNg']*100 - par['HMinNg']*100)
+        FHN = (HR - parSN['HMinNg']*100) / (parSN['HoptNg']*100 - parSN['HMinNg']*100)
         for i in range(len(FHN)):
             for j in range(len(FHN[i])):
                 for k in range(len(FHN[i][j])):
@@ -595,21 +834,35 @@ class SoilN(Soil):
                         FHN[i][j][k]=1.
         return FHN
 
-    def Nitrif_RespPH(self, par):
-        """
+    def Nitrif_RespPH(self, parSN):
+        """ Compute response of nitrification rate to soil pH (0-1 fraction) -
+        (STICS book, Eq. 8.13, p 150)
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
+
+        :return: 'FPHN', a relative factor  accounting for soil pH on nitrification (0-1 fraction)
+        :rtype: float
         
         """
         #""" reponse de la nitrification de NH4+ au pH (FH) - Eq. 8.13 p 150 - increasing sigmoid-like curve """
         pHs = self.pHeau
-        FPHN = (pHs - par['PHMinNITg']) / (par['PHMaxNITg'] - par['PHMinNITg'])
+        FPHN = (pHs - parSN['PHMinNITg']) / (parSN['PHMaxNITg'] - parSN['PHMinNITg'])
         if FPHN<0.:
             FPHN=0.
         elif FPHN>1.:
             FPHN=1.
         return FPHN #a priori scalaire a ne calculer qu'une fois (comme pH change pas)
 
-    def Nitrif_RespT(self, par):
-        """
+    def Nitrif_RespT(self, parSN):
+        """ Compute response of nitrification rate to soil temperature (0-1 fraction) -
+        (STICS book, Eq. 8.15, p 151)
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
+
+        :return: 'FTN', a relative factor  accounting for soil temperature on nitrification (0-1 fraction)
+        :rtype: float
         
         """
         #""" reponse de la nitrification de NH4+ a la temperature (FTN) - Eq. 8.15 p 151 - bilinear beta-like curve """
@@ -618,21 +871,25 @@ class SoilN(Soil):
             for j in range(len(FTN[i])):
                 for k in range(len(FTN[i][j])):
                     Tsol = FTN[i][j][k]
-                    if Tsol <= par['TNITOPTg']:
-                        ratio = (Tsol - par['TNITMINg']) / (par['TNITOPTg'] - par['TNITMINg'])
+                    if Tsol <= parSN['TNITOPTg']:
+                        ratio = (Tsol - parSN['TNITMINg']) / (parSN['TNITOPTg'] - parSN['TNITMINg'])
                         FTN[i][j][k] = max(0., ratio)
                     else:#superieur a Topt
-                        ratio = (Tsol - par['TNITMAXg']) / (par['TNITOPTg'] - par['TNITMAXg'])
+                        ratio = (Tsol - parSN['TNITMAXg']) / (parSN['TNITOPTg'] - parSN['TNITMAXg'])
                         FTN[i][j][k] = max(0., ratio)
         return FTN
 
-    def stepNitrif(self, par):
-        """
+    def stepNitrif(self, parSN):
+        """ Compute daily N fluxes associated to NH4+ nitrification -
+        (STICS book, Eq. 8.12 and 8.16, p 151)
+
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
         
         """
-        #""" eq. 8.12 et 8.16 """
-        TNITRIF = self.m_NH4 * par['FNXg'] * self.Nitrif_RespHum(par) * self.Nitrif_RespPH(par) * self.Nitrif_RespT(par)
-        NITRIF = (1 - par['RATIONITs']) * TNITRIF
+
+        TNITRIF = self.m_NH4 * parSN['FNXg'] * self.Nitrif_RespHum(parSN) * self.Nitrif_RespPH(parSN) * self.Nitrif_RespT(parSN)
+        NITRIF = (1 - parSN['RATIONITs']) * TNITRIF
         self.m_NO3 = self.m_NO3 + NITRIF
         self.m_NH4 = self.m_NH4 - TNITRIF
         dN2ONitrif = sum3(TNITRIF-NITRIF)
@@ -640,23 +897,37 @@ class SoilN(Soil):
         self.bilanN['cumN2O'].append(dN2ONitrif / self.soilSurface *10000) #UpdateNminbalance
 
 
-    def infil_layerNO3(self, in_N, out_Water , idz, opt=1):
-        """
-        
+    #####  Nitrates infiltration functions #####
+
+
+    def infil_layerNO3(self, in_N, out_Water , idz, opt_infil=1):
+        """ Compute nitrate infiltration for soil layer idz
+
+        :param in_N: Input infiltration N-NO3 array of size [nx,ny] coming from (idz-1) layer (unit: kg N per voxel)
+        :type in_N: nd.array
+        :param out_Water: Output infiltration water array of size [nx,ny] going to (idz+1) layer (unit: mm)
+        :type out_Water: nd.array
+        :param idz: z value of voxel/layer ID in grid [nz, nx, ny]
+        :type idz: int
+        :param opt_infil: Option indicating if infiltration is vertical (=1) or distributed between first order voxels of the layer below (=2), default=1
+        :type opt_infil: int
+
+        :return: new, out_N
+
         """
         new = self.m_NO3[idz] + in_N
-        propNO3 = out_Water / (self.m_QH20max[idz] + out_Water)#prop de nitrate qui part est fraction du volume d'eau max qui passe (jamais >1)
+        propNO3 = out_Water / (self.m_QH20max[idz] + out_Water) #prop de nitrate qui part est fraction du volume d'eau max qui passe (jamais >1)
         #putmask(propNO3, propNO3>1. ,1.)#!!!verif pas superieur a 1 et sinon remplace par 1!!  syntaxe interessante
         out_N = new*propNO3
         new = new-out_N
 
-        if opt==2: #ditribution pas juste verticale
+        if opt_infil==2: #ditribution pas juste verticale
             out_N2 = deepcopy(out_N)
             out_N2.fill(0.)
             for x in range(len(out_N2)):
                 for y in range(len(out_N2[x])):
                     q_out = out_N[x][y]
-                    ls_v = ls_1storder_vox(self.dxyz, x,y,idz, opt)#distribution entre les 1st order ; mettre opt=1 si veut forcer verticalement / 2 si
+                    ls_v = ls_1storder_vox(self.dxyz, x,y,idz, opt_infil) #distribution entre les 1st order ; mettre opt=1 si veut forcer verticalement / 2 si
                     if len(ls_v)>1:
                         ponder = [0.0416666, 0.0416666, 0.0416666, 0.0416666, 2/3., 0.0416666, 0.0416666, 0.0416666, 0.0416666]# 2/3 en dessous 1/3 au premier ordre
                     else:
@@ -671,31 +942,53 @@ class SoilN(Soil):
         return new, out_N
 
 
-    def distrib_NO3(self, map_N, ls_outWater, opt=1):#map_N = map application nitrates en surface
-        """
-        
+    def distrib_NO3(self, map_N, ls_outWater, opt_infil=1): #map_N = map application nitrates en surface
+        """ Distribute nitrate infiltration into the soil grid from mineralisation and/or fertilizer distribution map at the soil surface
+
+        :param map_N: Input infiltration N-NO3 array at soil surface (unit: kg N per voxel)
+        :type map_N: nd.array
+        :param ls_outWater: List of nz output infiltration water array of size [nx,ny] by layer (unit: mm)
+        :type ls_outWater: list
+        :param opt_infil: Option indicating if infiltration is vertical (=1) or distributed between first order voxels of the layer below (=2), default=1
+        :type opt_infil: int
+
+        :return: matNO3_t, out_N
         """
         
         in_N = map_N
         matNO3_t = deepcopy(self.m_NO3)
         #ls_out = []
         for z in range(len(matNO3_t)):
-            new, out_ = self.infil_layerNO3(in_N, ls_outWater[z], z, opt)
+            new, out_N = self.infil_layerNO3(in_N, ls_outWater[z], z, opt_infil)
             #ls_out.append(out_)
-            in_N = out_
+            in_N = out_N
             matNO3_t[z] = new
 
-        return matNO3_t, out_
+        return matNO3_t, out_N
         #A faire: distinguer les entree N pluie, irrigation, fertilisation
 
 
-    def stepNINFILT(self, mapN_Rain, mapN_Irrig, mapN_fertNO3, mapN_fertNH4, ls_outWater, opt=1):#(self, map_N, ls_outWater, opt=1):
+    def stepNINFILT(self, mapN_Rain, mapN_Irrig, mapN_fertNO3, mapN_fertNH4, ls_outWater, opt_infil=1):#(self, map_N, ls_outWater, opt=1):
+        """ Compute daily N fluxes associated to nitrate infiltration and fertilizer application
+
+        :param mapN_Rain: Input N from rain in a array of size [nx,ny] at soil surface (unit: kg N per voxel)
+        :type mapN_Rain: nd.array
+        :param mapN_Irrig: Input N from irrigation water in a array of size [nx,ny] at soil surface (unit: kg N per voxel)
+        :type mapN_Irrig: nd.array
+        :param mapN_fertNO3: Input N from NO3- fertilizers in a array of size [nx,ny] at soil surface (unit: kg N per voxel)
+        :type mapN_fertNO3: nd.array
+        :param mapN_fertNH4: Input N from NH4+ fertilizers in a array of size [nx,ny] at soil surface (unit: kg N per voxel)
+        :type mapN_fertNH4: nd.array
+        :param ls_outWater: List of nz output infiltration water array of size [nx,ny] by layer (unit: mm)
+        :type ls_outWater: list
+        :param opt_infil: Option indicating if infiltration is vertical (=1) or distributed between first order voxels of the layer below (=2), default=1
+        :type opt_infil: int
+
         """
-        
-        """
+
         #ajout N NO3 mobile
         map_N = mapN_Rain + mapN_Irrig + mapN_fertNO3 #+ mapN_fertNH4
-        matNO3_t, out_NO3 = self.distrib_NO3(map_N, ls_outWater, opt)
+        matNO3_t, out_NO3 = self.distrib_NO3(map_N, ls_outWater, opt_infil)
         self.m_NO3 = matNO3_t
         Lix = sum(sum(out_NO3))
         self.lixiNO3 = self.lixiNO3 + Lix
@@ -711,45 +1004,99 @@ class SoilN(Soil):
         self.bilanN['cumLix'].append(Lix / self.soilSurface *10000) 
      
 
-    def mask_PROFUM(self, parSN):
-        """
-        
-        """
-        #""" pour creer un mask pour profhum """
-        PROFHUM = parSN['PROFHUMs']/100. #en m
-        limz = [0.]
-        for i in range(len(self.dxyz[2])): 
-            limz.append(limz[-1]+self.dxyz[2][i])
+    #####  Plant N uptake functions #####
 
-        limz = array(limz)
+    def stepNuptakePlt(self, parSN, paramp=[{}], ls_lrac=None, ls_mWaterUptakePlt=None, ls_demandeN=None, optNuptake=1):
+        """ Compute daily N fluxes associated to plant mineral N uptake
 
-        v = limz<PROFHUM 
-        v=v*1.
-        v = v.tolist()
-        idlim = v.index(0)
-        limz[idlim-1]
-        v[idlim] = (PROFHUM - limz[idlim-1]) / (limz[idlim]-limz[idlim-1])
-        v = v[1:] #mask 1D
-        
-        #applique a matrice sol
-        res = self.m_1*1.
-        for i in range(len(v)):
-            res[i,:,:] = res[i,:,:]*v[i]
+        :param parSN: A dictionnary defining general soil parameters derived from STICS
+        :type parSN: dict
+        :param paramp: List of individual plant parameters
+        :type paramp: list
+        :param ls_lrac: List of [z,x,y] arrays for root length distribution per individual plant - equivalent to 'ls_roots' (unit: m)
+        :type ls_lrac: list
+        :param ls_mWaterUptakePlt: List of [z,x,y] arrays for water uptake per individual plant (unit: mm)
+        :type ls_mWaterUptakePlt: list
+        :param ls_demandeN: List of plant Nitrogen status per individual plant ; for optNuptake=0, a list of plant NNI (unitless); for optNuptake=1, a list of root N concentration (unit: %)
+        :type ls_demandeN: list
+        :param optNuptake: Options for computing plant mineral N uptake, either 0: 'original STICS' (minimum of plant demand, plant uptake capacity and soil provision) or 1: 'LocalTransporters' (plant uptake from root transporters)
+        :type optNuptake: int
 
-        return res
-
-    def updateTsol(self, Tair):
+        :return: ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N, idmin
         """
-        
-        """
-        #""" Tsol= Tair """
-        self.m_Tsol = self.m_1*Tair
-        # A ameliorer avec bilan d'E! et TCULT
+        # ls_lrac = ls_roots!
+        # """ calculation of actual N uptake by plant - if no plants (baresoil) -> let None in ls_rac,ls_mWaterUptakePlt, ls_demandeN """
+
+        if optNuptake == 0:  # 'STICS':
+            # version initiale tiree de STICS avec correction unites concN
+            if ls_lrac is None or ls_mWaterUptakePlt is None or ls_demandeN is None:  # si pas de plante (au moins fournir le paramp qui donne un nbre de plante)
+                ActUpNtot = self.m_1 * 0.
+                ls_Act_Nuptake_plt = [self.m_1 * 0.] * len(paramp)
+                ls_DQ_N = [1.] * len(paramp)
+                idmin = self.m_1 * -1.
+            else:  # si plante
+                PotUpNtot, ls_Pot_Nuptake_plt, idmin = Distrib_Potential_Nuptake_Plt(self, parSN, paramp, ls_lrac, ls_mWaterUptakePlt)
+                ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N = Actual_Nuptake_plt(self, ls_Pot_Nuptake_plt, ls_demandeN)
+        elif optNuptake == 1:  # 'LocalTransporter':
+            # version reponse locale racine-trasporter
+            if ls_lrac is None or ls_mWaterUptakePlt is None or ls_demandeN is None:  # si pas de plante (au moins fournir le paramp qui donne un nbre de plante)
+                ActUpNtot = self.m_1 * 0.
+                ls_Act_Nuptake_plt = [self.m_1 * 0.] * len(paramp)
+                ls_DQ_N = [1.] * len(paramp)
+                idmin = self.m_1 * -1.
+            else:  # si plante
+                ls_PltN = ls_demandeN  # avec cette option doit etre ls valeur de NNI
+                PotUpNtot, ls_Pot_Nuptake_plt, idmin = Distrib_Potential_Nuptake_Plt_Bis(self, paramp, ls_lrac)
+                ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N = Actual_Nuptake_plt_Bis(self, ls_Pot_Nuptake_plt, ls_PltN)
+        elif optNuptake == 2:  # 'old':
+            # version ancienne (bug concN)
+            if ls_lrac is None or ls_mWaterUptakePlt is None or ls_demandeN is None:  # si pas de plante (au moins fournir le paramp qui donne un nbre de plante)
+                ActUpNtot = self.m_1 * 0.
+                ls_Act_Nuptake_plt = [self.m_1 * 0.] * len(paramp)
+                ls_DQ_N = [1.] * len(paramp)
+                idmin = self.m_1 * -1.
+            else:  # si plante
+                ls_PltN = ls_demandeN  # avec cette option doit etre ls valeur de NNI
+                PotUpNtot, ls_Pot_Nuptake_plt, idmin = Distrib_Potential_Nuptake_Plt_old(self, parSN, paramp, ls_lrac, ls_mWaterUptakePlt)
+                ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N = Actual_Nuptake_plt_old(self, ls_Pot_Nuptake_plt, ls_PltN)
+
+        # retire les nitrates et ammomium rellement preleves du sol
+        frac_NO3 = self.m_NO3 / (self.m_NO3 + self.m_NH4 + 10 ** -15)
+        self.m_NO3 = self.m_NO3 - frac_NO3 * ActUpNtot
+        self.m_NH4 = self.m_NH4 - (1. - frac_NO3) * ActUpNtot
+
+        # bilan
+        self.bilanN['cumUptakePlt'].append(ActUpNtot / self.soilSurface * 10000)
+        self.bilanN['azomes'].append((sum(self.m_NO3) + sum(self.m_NH4)) / self.soilSurface * 10000)
+
+        return ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N, idmin
+
+
+    #####  Nitrogen and Carbon balance #####
 
 
     def OpenCbalance(self):
-        """
-        
+        """ Initialise bilanC attribute, a dictionary storing carbon balance information
+
+            * Keys for simulation inputs:
+                - 'intialInertC':
+                - 'intialActiveC':
+                - 'initialCres':
+                - 'initialCZygo':
+            * Keys for simulation outputs:
+                - 'FinalInertC':
+                - 'FinalActiveC':
+                - 'finalCres':
+                - 'finalCZygo':
+            * Keys for simulation totals:
+                - 'InputCtot':
+                - 'OutputCtot':
+                - 'MinCtot':
+            * Keys for daily inputs/outputs :
+                - 'cumMinC':
+                - 'cumCO2Res1':
+                - 'cumCO2Res2':
+
         """
         #""" Dictionnary for soil Carbon balance (kg C.ha-1)
         #Keys for Daily outputs: 'cumMinC', 'cumCO2Res1', 'cumCO2Res2'
@@ -781,7 +1128,7 @@ class SoilN(Soil):
     #    # autres termes avec microbio et residus a ajouter!!
 
     def CloseCbalance(self, print_=1):
-        """
+        """ Finalise calculation of whole simulation variables in bilanC attribute
         
         """
         surfsolref = self.soilSurface
@@ -808,7 +1155,7 @@ class SoilN(Soil):
         #pourrait le diriger vers un fichier de sortie texte?
 
     def PrintCbalance(self):
-        """
+        """ Print a summary table of bilanC attribute
         
         """
         bilanC = self.bilanC
@@ -825,8 +1172,57 @@ class SoilN(Soil):
         print ("")
 
     def OpenNbalance(self):
-        """
-        
+        """ Initialise bilanN attribute, a dictionary storing nitrogen balance information
+
+            * Keys for simulation inputs:
+                - 'intialInertN':
+                - 'intialActiveN':
+                - 'intialNO3':
+                - 'intialNH4':
+                - 'initialNres':
+                - 'initialNZygo':
+
+                - 'TotNRain':
+                - 'TotNIrrig':
+                - 'TotFertNO3':
+                - 'TotFertNH4':
+
+            * Keys for simulation outputs:
+                - 'FinalInertN':
+                - 'FinalActiveN':
+                - 'FinalNO3':
+                - 'FinalNH4':
+                - 'finalNres':
+                - 'finalNZygo':
+
+                - 'Lixtot':
+                - 'N2Otot':
+                - 'TotUptPlt':
+                - 'HumusMinNtot':
+                - 'ResidueMinNtot':
+                - 'MinNtot':
+
+            * Keys for simulation totals:
+                - 'InputNtot':
+                - 'InputNmintot':
+                - 'OutputNtot':
+                - 'OutputNmintot':
+            * Keys for daily inputs/outputs :
+                - 'cumMinN':
+                - 'cumRain':
+                - 'cumIrrig':
+                - 'cumfertNO3':
+                - 'cumfertNH4':
+                - 'cumUptakePlt':
+                - 'azomes':
+                - 'cumLix':
+                - 'cumN2O':
+                - 'cumNRes1':
+                - 'cumNRes2':
+                - 'cumNRes3':
+                - 'NminfromNresCum':
+
+
         """
         #""" Dictionnary for soil Organic and Mineral balance (kg N.ha-1)
         #Keys for Daily outputs: 
@@ -875,7 +1271,7 @@ class SoilN(Soil):
     #    # autres termes avec plantes...
 
     def CloseNbalance(self, print_=1):
-        """
+        """ Finalise calculation of whole simulation variables in bilanC attribute
         
         """
         
@@ -926,7 +1322,7 @@ class SoilN(Soil):
 
 
     def PrintNbalance(self):
-        """
+        """ Print a summary table of bilanN attribute
         
         """
         
@@ -965,67 +1361,44 @@ class SoilN(Soil):
 
 
 
-    def stepNuptakePlt(self, par, paramp=[{}], ls_lrac=None, ls_mWaterUptakePlt=None, ls_demandeN=None, optNuptake='LocalTransporter'):
-        """
-        
-        """
-        #""" calculation of actual N uptake by plant - if no plants (baresoil) -> let None in ls_rac,ls_mWaterUptakePlt, ls_demandeN """
-
-        if optNuptake ==0:#'STICS':
-            # version initiale tiree de STICS avec correction unites concN
-            if ls_lrac is None or ls_mWaterUptakePlt is None or ls_demandeN is None: #si pas de plante (au moins fournir le paramp qui donne un nbre de plante)
-                ActUpNtot = self.m_1*0.
-                ls_Act_Nuptake_plt = [self.m_1*0.]*len(paramp)
-                ls_DQ_N = [1.]*len(paramp)
-                idmin = self.m_1*-1.
-            else: #si plante
-                PotUpNtot, ls_Pot_Nuptake_plt, idmin = Distrib_Potential_Nuptake_Plt(self, par, paramp, ls_lrac, ls_mWaterUptakePlt)
-                ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N = Actual_Nuptake_plt(self, ls_Pot_Nuptake_plt, ls_demandeN)
-        elif optNuptake ==1:#'LocalTransporter':
-            # version reponse locale racine-trasporter
-            if ls_lrac is None or ls_mWaterUptakePlt is None or ls_demandeN is None: #si pas de plante (au moins fournir le paramp qui donne un nbre de plante)
-                ActUpNtot = self.m_1*0.
-                ls_Act_Nuptake_plt = [self.m_1*0.]*len(paramp)
-                ls_DQ_N = [1.]*len(paramp)
-                idmin = self.m_1*-1.
-            else: #si plante
-                ls_PltN = ls_demandeN # avec cette option doit etre ls valeur de NNI
-                PotUpNtot, ls_Pot_Nuptake_plt, idmin = Distrib_Potential_Nuptake_Plt_Bis(self, paramp, ls_lrac)
-                ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N = Actual_Nuptake_plt_Bis(self, ls_Pot_Nuptake_plt, ls_PltN)
-        elif optNuptake ==2:#'old':
-            # version ancienne (bug concN)
-            if ls_lrac is None or ls_mWaterUptakePlt is None or ls_demandeN is None: #si pas de plante (au moins fournir le paramp qui donne un nbre de plante)
-                ActUpNtot = self.m_1*0.
-                ls_Act_Nuptake_plt = [self.m_1*0.]*len(paramp)
-                ls_DQ_N = [1.]*len(paramp)
-                idmin = self.m_1*-1.
-            else: #si plante
-                ls_PltN = ls_demandeN # avec cette option doit etre ls valeur de NNI
-                PotUpNtot, ls_Pot_Nuptake_plt, idmin = Distrib_Potential_Nuptake_Plt_old(self, par, paramp, ls_lrac, ls_mWaterUptakePlt)
-                ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N = Actual_Nuptake_plt_old(self, ls_Pot_Nuptake_plt, ls_PltN)
-
-
-        # retire les nitrates et ammomium rellement preleves du sol
-        frac_NO3 =  self.m_NO3 / (self.m_NO3 + self.m_NH4 + 10**-15)
-        self.m_NO3 = self.m_NO3 - frac_NO3*ActUpNtot
-        self.m_NH4 = self.m_NH4 - (1. - frac_NO3)*ActUpNtot
-        #bilan
-        self.bilanN['cumUptakePlt'].append(ActUpNtot/self.soilSurface *10000)
-        self.bilanN['azomes'].append((sum(self.m_NO3)+sum(self.m_NH4))/self.soilSurface *10000)
-
-        return ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N, idmin
-
-
 
 
 
 
 def step_bilanWN_solVGL(S, par_SN, meteo_j,  mng_j, ParamP, ls_epsi, ls_roots, ls_demandeN_bis, opt_residu, opt_Nuptake):
-    """
-        
-    """
-    #""" daily step for soil W and N balance from meteo, management and L-egume lsystem inputs"""
+    """ Daily step for soil Water and Nitrogen balance from L-egume lsystem inputs, meteo and management
 
+    :param S: Previous day SoilN object
+    :type S: `soil3ds.soil_moduleN.SoilN`
+    :param par_SN: A dictionnary defining general soil parameters derived from STICS
+    :type par_SN: dict
+    :param meteo_j: A dictionnary containing daily meterorological data
+    :type meteo_j: dict
+    :param mng_j: A dictionnary containing daily management of irrigation and N fertilisation
+    :type mng_j: dict
+    :param ParamP: List of individual plant parameters for the L-egume model
+    :type ParamP: list
+    :param ls_epsi: List of individual plant daily fraction of incoming global radiation interception (0-1 fraction)
+    :type ls_epsi: list
+    :param ls_roots: List of [z,x,y] arrays for root length distribution per individual plant (unit: m)
+    :type ls_roots: list
+    :param ls_demandeN_bis: List of individual plant Nitrogen demand
+    :type ls_demandeN_bis: list
+    :param opt_residu: Option to activate calculation of residue mineralisation (0=deactivate or 1=activate)
+    :type opt_residu: int
+    :param opt_Nuptake: Option to define the calculation of plant N uptake (0:'STICS', 1:'LocalTransporter', 2:'old')
+    :type opt_Nuptake: int
+
+    :return:
+        * [S,  new_stateEV, ls_ftsw, ls_transp, ls_Act_Nuptake_plt, temps_sol]
+            - S (`soil3ds.soil_moduleN.SoilN`): Updated SoilN object
+            - new_stateEV (list): Updated memory variables to compute soil transpiration
+            - ls_ftsw (list): List of daily ftsw by individual plants (0-1 fraction)
+            - ls_transp (list): List of daily transpiration by individual plants (unit: mm)
+            - ls_Act_Nuptake_plt (list):  List of Array of size [nz,nx,ny] storing voxel daily individual plant mineral N uptake (unit: kg N per voxel.plant-1.day-1)
+            - temps_sol (list): List of other output variables [evapo_tot, Drainage, ls_m_transpi, m_evap, ActUpNtot, ls_DQ_N, idmin]
+
+    """
     # testRL = updateRootDistrib(invar['RLTot'][0], ls_systrac[0], lims_sol)
     # ls_roots = rtd.build_ls_roots_mult(invar['RLTot'], ls_systrac, lims_sol) #ancien calcul base sur SRL fixe
     #ls_roots = rtd.build_ls_roots_mult(array(invar['RLTotNet']) * 100. + 10e-15, ls_systrac, lims_sol)  # !*100 pour passer en cm et tester absoption d'azote (normalement m) #a passer apres calcul de longuer de racine!
@@ -1065,7 +1438,7 @@ def step_bilanWN_solVGL(S, par_SN, meteo_j,  mng_j, ParamP, ls_epsi, ls_roots, l
         S.stepMicrobioMin(par_SN)
     S.stepNitrif(par_SN)
     #ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N, idmin = S.stepNuptakePlt(par_SN, ParamP, ls_roots, ls_m_transpi,ls_demandeN_bis)
-    S.stepNINFILT(mapN_Rain, mapN_Irrig, mapN_fertNO3, mapN_fertNH4, Drainage, opt=1)
+    S.stepNINFILT(mapN_Rain, mapN_Irrig, mapN_fertNO3, mapN_fertNH4, Drainage, opt_infil=1)
     ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N, idmin = S.stepNuptakePlt(par_SN, ParamP, ls_roots, ls_m_transpi, ls_demandeN_bis, opt_Nuptake)
     #print(amin(S.m_NO3), unique(idmin, return_counts=True),ls_DQ_N)
 
@@ -1083,11 +1456,11 @@ def default_parSN():
 
         Keys of the dictionnary are  parameters for a given soil object:
 
+        General STICS Nitrogen parameters
             * 'FMIN1G' :       (day-1) (p145)
             * 'FMIN2G' :       (%ARGIS-1) para pot rate min a ARGIs (p145)
             * 'FMIN3G' :       (% CALC-1)para pot rate min a CALCss (p145)
             * 'FINERTG' :      0.65 = default fraction of N pool inactive for minearlisation (p145) (could be smaller in grassland & forest)
-            * 'PROFHUMs' :     (cm) depth of soil contributing to SOM mineralisation #-> peut constituer un masque pour considerer certaines couches ou pas default value p220
             * 'HMinMg' :       Humidite min de mineralisation (prop of Field Capacity) #value p 142 (cite Rodrigo et al. 1997)
             * 'HoptMg' :       Humidite opt de mineralisation (prop of Field capacity) #value p 142 (cite Rodrigo et al. 1997)
             * 'TRefg' :        reference temperature (degreC)
@@ -1105,25 +1478,63 @@ def default_parSN():
             * 'RATIONITs' :    proportion of nitrtified NH4 converted to N2O (pas trouve de valeur par defaut - p151) #0-> N2O pas active
             * 'DIFNg' :        N diffusion coefficient at field capacity (cm2.day-1, p 161)
 
+        soil specific water and nitrogen parameters
+            * 'ZESX' :          Maximal depth of soil affected by evaporation (unit: m)
+            * 'CFES' :          Shape parameter to define relative contribution of soil depth to evaporation (unitless; 1. = proportional to soil depth)
+            * 'q0' :            Cumulative evaporation treshold indicating the end of maximum evaporation rate (unit: mm)
+
+            * 'Norg' :          Soil Organic N content in the topsoil layer (unit: g N.kg-1 soil)
+            * 'PROFHUMs' :      Depth of soil contributing to SOM mineralisation #-> peut constituer un masque pour considerer certaines couches ou pas default value p220 (unit: cm)
+
+            * 'pH' :            Soil pH (unit: pH unit)
+            * 'ACLIMc' :        Climatic demand of soil evaporation parameter (unit: mm)
+            * 'concrr' :        nitrate concentration in rainfall (unit: kg N.m-2.mm-1)
+
     :return: Default 'parSN' parameter dictionnary
 
     .. code-block:: python
 
-        geometry = {
-                    "scenes" : [scene0, scene1, scene2, ...] ,
-                    "domain" : ((xmin, ymin), (xmax, ymax))
+        parSN = {
+                    'FMIN1G' : 0.0006,
+                    'FMIN2G' : 0.0272,
+                    'FMIN3G' : 0.0167,
+                    'FINERTG' : 0.65,
+                    'HMinMg' : 0.3,
+                    'HoptMg' : 1.,
+                    'TRefg' :  15. ,
+                    'FTEMHAg' : 25. ,
+                    'FTEMHg' :  0.12 ,
+                    'FTEMHB' : 145.,
+                    'FNXg' :   0.5,
+                    'PHMinNITg' :  3. ,
+                    'PHMaxNITg' : 5.5 ,
+                    'HMinNg' : 0.67,
+                    'HoptNg' : 1.,
+                    'TNITMINg' : 5.,
+                    'TNITOPTg' : 20.,
+                    'TNITMAXg' :  45.,
+                    'RATIONITs' : 0.,
+                    'DIFNg' :  0.018,
+                    'ZESX' : 0.30,
+                    'CFES' : 1.,
+                    'q0' :  9.42,
+                    'Norg' : 1.1,
+                    'PROFHUMs' : 30.,
+                    'pH' : 7.1,
+                    'ACLIMc' : 26.,
+                    'concrr' : 0.000002
                     }
 
     """
     # parameters 'WCST' and 'gamma_theo' are not used / necessary in current model version
 
+    # General STICS Nitrogen parameters
     par_SN = {}
     par_SN['FMIN1G'] = 0.0006  # (day-1) (p145)
     par_SN['FMIN2G'] = 0.0272  # (%ARGIS-1) para pot rate min a ARGIs (p145)
     par_SN['FMIN3G'] = 0.0167  # (% CALC-1)para pot rate min a CALCss (p145)
 
     par_SN['FINERTG'] = 0.65  # 0.65 = default fraction of stable pool (p145) should be smaller in grassland & forest
-    par_SN['PROFHUMs'] = 30.  # (cm) depth of soil contributing to SOM mineralisation #-> peut constituer un masque pour considerer certaines couches ou pas default value p220
 
     par_SN['HMinMg'] = 0.3  # Humidite min de mineralisation (prop of Field Capacity) #value p 142 (cite Rodrigo et al. 1997)
     par_SN['HoptMg'] = 1.  # Humidite opt de mineralisation (prop of Field capacity) #value p 142 (cite Rodrigo et al. 1997)
@@ -1143,6 +1554,18 @@ def default_parSN():
     par_SN['TNITMAXg'] = 45.  # Temperature max de nitrification #  (degreC)value p151
     par_SN['RATIONITs'] = 0.  # proportion of nitrtified NH4 converted to N2O (pas trouve de valeur par defaut - p151) #0-> N2O pas active
     par_SN['DIFNg'] = 0.018  # N diffusion coefficient at field capacity (cm2.day-1, p 161)
+
+    # soil specific water and nitrogen balance parameters
+    par_SN['ZESX'] = 0.30  #  (m)
+    par_SN['CFES'] = 1.  #  (unitless)
+    par_SN['q0'] = 9.46  #  (mm)
+
+    par_SN['Norg'] = 1.1  # (g N.kg-1 sol)
+    par_SN['PROFHUMs'] = 30.  # (cm) depth of soil contributing to SOM mineralisation #-> peut constituer un masque pour considerer certaines couches ou pas default value p220
+
+    par_SN['pH'] = 7.1  # (pH unit)
+    par_SN['ACLIMc'] = 26.  #
+    par_SN['concrr'] = 0.000002  #concentration en N de la pluie (kg N.m-2.mm-1 )
 
     return par_SN
     # ajouter parametre hydriques generaux?
