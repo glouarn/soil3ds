@@ -1059,7 +1059,7 @@ The class inherits from ‘Soil’ class which includes descriptions of soil phy
 <p>Residue mineralisation methods:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.init_residues" title="soil3ds.soil_moduleN.SoilN.init_residues"><code class="xref py py-meth docutils literal notranslate"><span class="pre">init_residues()</span></code></a>: Initialise ‘parResi’ attribute for the properties of soil residues</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.init_residues" title="soil3ds.soil_moduleN.SoilN.init_residues"><code class="xref py py-meth docutils literal notranslate"><span class="pre">init_residues()</span></code></a>: Initialise ‘parResi’ attribute storing the properties of soil residues</p></li>
 <li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.addResPAR" title="soil3ds.soil_moduleN.SoilN.addResPAR"><code class="xref py py-meth docutils literal notranslate"><span class="pre">addResPAR()</span></code></a>: Add a new set of residue parameters to input dictionary of type ‘parResi’</p></li>
 <li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.VdistribResidues" title="soil3ds.soil_moduleN.SoilN.VdistribResidues"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VdistribResidues()</span></code></a>:  Distribute a new residue in a [nz,nx,ny] ‘m_CRES’ array assuming horizontal homogeneity (unit: kg C per Voxel)</p></li>
 <li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.addResMat" title="soil3ds.soil_moduleN.SoilN.addResMat"><code class="xref py py-meth docutils literal notranslate"><span class="pre">addResMat()</span></code></a>: Update ‘ls_CRES’, ‘bilanC’ and ‘bilanN’ attributes when adding a new residue</p></li>
@@ -1233,7 +1233,7 @@ The class inherits from ‘Soil’ class which includes descriptions of soil phy
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.OpenCbalance">
 <span class="sig-name descname"><span class="pre">OpenCbalance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.OpenCbalance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.OpenCbalance" title="Permalink to this definition"></a></dt>
-<dd><p>Initialise bilanC attribute, a dictionary storing carbon balance information</p>
+<dd><p>Initialise bilanC attribute, a dictionary storing carbon balance information (unit: kg C.ha-1)</p>
 <ul class="simple">
 <li><dl class="simple">
 <dt>Keys for simulation inputs:</dt><dd><ul>
@@ -1279,7 +1279,7 @@ The class inherits from ‘Soil’ class which includes descriptions of soil phy
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.OpenNbalance">
 <span class="sig-name descname"><span class="pre">OpenNbalance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.OpenNbalance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.OpenNbalance" title="Permalink to this definition"></a></dt>
-<dd><p>Initialise bilanN attribute, a dictionary storing nitrogen balance information</p>
+<dd><p>Initialise bilanN attribute, a dictionary storing nitrogen balance information (unit: kg N.ha-1)</p>
 <ul class="simple">
 <li><dl class="simple">
 <dt>Keys for simulation inputs:</dt><dd><ul>
@@ -1566,7 +1566,7 @@ Parameters calculated according to Nicolardot et al. (2001) as functions of resi
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.init_residues">
 <span class="sig-name descname"><span class="pre">init_residues</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parSN</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vCNRESt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vAmount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vProps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vWC</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vCC</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forced_Cres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.init_residues"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.init_residues" title="Permalink to this definition"></a></dt>
-<dd><p>Initialise ‘parResi’ attribute for the properties of soil residues</p>
+<dd><p>Initialise ‘parResi’ attribute storing the properties of soil residues</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1698,7 +1698,7 @@ Parameters calculated according to Nicolardot et al. (2001) as functions of resi
 <li><p><strong>parSN</strong> (<em>dict</em>) – A dictionnary defining general soil parameters derived from STICS</p></li>
 <li><p><strong>paramp</strong> (<em>list</em>) – List of individual plant parameters</p></li>
 <li><p><strong>ls_lrac</strong> (<em>list</em>) – List of [z,x,y] arrays for root length distribution per individual plant - equivalent to ‘ls_roots’ (unit: m)</p></li>
-<li><p><strong>ls_mWaterUptakePlt</strong> (<em>list</em>) – List of [z,x,y] arrays for water uptake per individual plant (unit: mm)</p></li>
+<li><p><strong>ls_mWaterUptakePlt</strong> (<em>nd.array</em>) – A [nbplt,z,x,y] nd.array storing individual plant daily water uptake distributions (unit: mm) - equivalent to ‘ls_m_transpi’ (unit: mm)</p></li>
 <li><p><strong>ls_demandeN</strong> (<em>list</em>) – List of plant Nitrogen status per individual plant ; for optNuptake=0, a list of plant NNI (unitless); for optNuptake=1, a list of root N concentration (unit: %)</p></li>
 <li><p><strong>optNuptake</strong> (<em>int</em>) – Options for computing plant mineral N uptake, either 0: ‘original STICS’ (minimum of plant demand, plant uptake capacity and soil provision) or 1: ‘LocalTransporters’ (plant uptake from root transporters)</p></li>
 </ul>

@@ -112,7 +112,7 @@ class SoilN(Soil):
 
     Residue mineralisation methods:
 
-        * :meth:`init_residues`: Initialise 'parResi' attribute for the properties of soil residues
+        * :meth:`init_residues`: Initialise 'parResi' attribute storing the properties of soil residues
         * :meth:`addResPAR`: Add a new set of residue parameters to input dictionary of type 'parResi'
         * :meth:`VdistribResidues`:  Distribute a new residue in a [nz,nx,ny] 'm_CRES' array assuming horizontal homogeneity (unit: kg C per Voxel)
         * :meth:`addResMat`: Update 'ls_CRES', 'bilanC' and 'bilanN' attributes when adding a new residue
@@ -463,7 +463,7 @@ class SoilN(Soil):
 
 
     def init_residues(self, parSN, vCNRESt=[], vAmount=[], vProps=[], vWC=[], vCC=[], forced_Cres=None):
-        """ Initialise 'parResi' attribute for the properties of soil residues
+        """ Initialise 'parResi' attribute storing the properties of soil residues
 
         :param parSN: A dictionnary defining general soil parameters derived from STICS
         :type parSN: dict
@@ -1015,8 +1015,8 @@ class SoilN(Soil):
         :type paramp: list
         :param ls_lrac: List of [z,x,y] arrays for root length distribution per individual plant - equivalent to 'ls_roots' (unit: m)
         :type ls_lrac: list
-        :param ls_mWaterUptakePlt: List of [z,x,y] arrays for water uptake per individual plant (unit: mm)
-        :type ls_mWaterUptakePlt: list
+        :param ls_mWaterUptakePlt: A [nbplt,z,x,y] nd.array storing individual plant daily water uptake distributions (unit: mm) - equivalent to 'ls_m_transpi' (unit: mm)
+        :type ls_mWaterUptakePlt: nd.array
         :param ls_demandeN: List of plant Nitrogen status per individual plant ; for optNuptake=0, a list of plant NNI (unitless); for optNuptake=1, a list of root N concentration (unit: %)
         :type ls_demandeN: list
         :param optNuptake: Options for computing plant mineral N uptake, either 0: 'original STICS' (minimum of plant demand, plant uptake capacity and soil provision) or 1: 'LocalTransporters' (plant uptake from root transporters)
@@ -1076,7 +1076,7 @@ class SoilN(Soil):
 
 
     def OpenCbalance(self):
-        """ Initialise bilanC attribute, a dictionary storing carbon balance information
+        """ Initialise bilanC attribute, a dictionary storing carbon balance information (unit: kg C.ha-1)
 
             * Keys for simulation inputs:
                 - 'intialInertC':
@@ -1172,7 +1172,7 @@ class SoilN(Soil):
         print ("")
 
     def OpenNbalance(self):
-        """ Initialise bilanN attribute, a dictionary storing nitrogen balance information
+        """ Initialise bilanN attribute, a dictionary storing nitrogen balance information (unit: kg N.ha-1)
 
             * Keys for simulation inputs:
                 - 'intialInertN':

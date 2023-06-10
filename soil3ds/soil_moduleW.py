@@ -10,7 +10,6 @@
 '''
 
 
-import IOtable
 from scipy import *
 from copy import deepcopy
 import numpy as np
