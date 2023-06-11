@@ -482,38 +482,38 @@
 <ul class="simple">
 <li><dl class="simple">
 <dt>Keys for simulation inputs:</dt><dd><ul>
-<li><p>‘intialWC’:</p></li>
-<li><p>‘Irrigtot’:</p></li>
-<li><p>‘PPtot’:</p></li>
+<li><p>‘intialWC’: Initial soil water (unit: mm)</p></li>
+<li><p>‘Irrigtot’: Total simulation irrigation (unit: mm)</p></li>
+<li><p>‘PPtot’: Total simulation precipitations (unit: mm)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt>Keys for simulation outputs:</dt><dd><ul>
-<li><p>‘FinalWC’:</p></li>
-<li><p>‘EVtot’:</p></li>
-<li><p>‘Tranptot’:</p></li>
-<li><p>‘Drainagetot’:</p></li>
+<li><p>‘FinalWC’: Final soil water (unit: mm)</p></li>
+<li><p>‘EVtot’: Total simulation soil evaporation (unit: mm)</p></li>
+<li><p>‘Tranptot’: Total simulation plant transpiration (unit: mm)</p></li>
+<li><p>‘Drainagetot’: Total simulation water drainage (unit: mm)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt>Keys for simulation totals:</dt><dd><ul>
-<li><p>‘InputWtot’:</p></li>
-<li><p>‘OutputWtot’:</p></li>
+<li><p>‘InputWtot’: Total simulation water inputs (unit: mm)</p></li>
+<li><p>‘OutputWtot’: Total simulation water outputs (unit: mm)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt>Keys for daily inputs/outputs :</dt><dd><ul>
-<li><p>‘cumPP’:</p></li>
-<li><p>‘cumIrrig’:</p></li>
-<li><p>‘cumD’:</p></li>
-<li><p>‘cumEV’:</p></li>
-<li><p>‘cumTransp’:</p></li>
+<li><p>‘cumPP’: List of daily precipitations (unit: mm)</p></li>
+<li><p>‘cumIrrig’: List of daily irrigation (unit: mm)</p></li>
+<li><p>‘cumD’: List of daily soil water drainage (unit: mm)</p></li>
+<li><p>‘cumEV’: List of daily soil evaporation (unit: mm)</p></li>
+<li><p>‘cumTransp’: List of daily total plant transpiration (unit: mm)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1237,38 +1237,38 @@ The class inherits from ‘Soil’ class which includes descriptions of soil phy
 <ul class="simple">
 <li><dl class="simple">
 <dt>Keys for simulation inputs:</dt><dd><ul>
-<li><p>‘intialInertC’:</p></li>
-<li><p>‘intialActiveC’:</p></li>
-<li><p>‘initialCres’:</p></li>
-<li><p>‘initialCZygo’:</p></li>
+<li><p>‘intialInertC’: Initial soil organic C in the inert humified pool (unit: kg C.ha-1)</p></li>
+<li><p>‘intialActiveC’: Initial soil organic C in the active humified pool (unit: kg C.ha-1)</p></li>
+<li><p>‘initialCres’: Initial soil organic C in the organic residue pools (unit: kg C.ha-1)</p></li>
+<li><p>‘initialCZygo’: Initial soil organic C in the Zymogeneous biomass pools (unit: kg C.ha-1)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt>Keys for simulation outputs:</dt><dd><ul>
-<li><p>‘FinalInertC’:</p></li>
-<li><p>‘FinalActiveC’:</p></li>
-<li><p>‘finalCres’:</p></li>
-<li><p>‘finalCZygo’:</p></li>
+<li><p>‘FinalInertC’: Final soil organic C in the inert humified pool (unit: kg C.ha-1)</p></li>
+<li><p>‘FinalActiveC’: Final soil organic C in the active humified pool (unit: kg C.ha-1)</p></li>
+<li><p>‘finalCres’: Final soil organic C in the organic residue pools (unit: kg C.ha-1)</p></li>
+<li><p>‘finalCZygo’: Final soil organic C in the Zymogeneous biomass pools (unit: kg C.ha-1)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt>Keys for simulation totals:</dt><dd><ul>
-<li><p>‘InputCtot’:</p></li>
-<li><p>‘OutputCtot’:</p></li>
-<li><p>‘MinCtot’:</p></li>
+<li><p>‘InputCtot’:  Total simulation organic C inputs (unit: kg C.ha-1)</p></li>
+<li><p>‘OutputCtot’: Total simulation organic C outputs (unit: kg C.ha-1)</p></li>
+<li><p>‘MinCtot’: Total simulation net C produced by mineralisation (humus+residues) (unit: kg C.ha-1)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt>Keys for daily inputs/outputs :</dt><dd><ul>
-<li><p>‘cumMinC’:</p></li>
-<li><p>‘cumCO2Res1’:</p></li>
-<li><p>‘cumCO2Res2’:</p></li>
+<li><p>‘cumMinC’: List of daily C-CO2 emitted from humus mineralisation (unit: kg C.ha-1)</p></li>
+<li><p>‘cumCO2Res1’: List of daily C-CO2 emitted from direct residue mineralisation (unit: kg C.ha-1)</p></li>
+<li><p>‘cumCO2Res2’: List of daily C-CO2 emitted from residue microbial biomass turnover (unit: kg C.ha-1)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1283,63 +1283,63 @@ The class inherits from ‘Soil’ class which includes descriptions of soil phy
 <ul class="simple">
 <li><dl class="simple">
 <dt>Keys for simulation inputs:</dt><dd><ul>
-<li><p>‘intialInertN’:</p></li>
-<li><p>‘intialActiveN’:</p></li>
-<li><p>‘intialNO3’:</p></li>
-<li><p>‘intialNH4’:</p></li>
-<li><p>‘initialNres’:</p></li>
-<li><p>‘initialNZygo’:</p></li>
-<li><p>‘TotNRain’:</p></li>
-<li><p>‘TotNIrrig’:</p></li>
-<li><p>‘TotFertNO3’:</p></li>
-<li><p>‘TotFertNH4’:</p></li>
+<li><p>‘intialInertN’: Initial soil organic N in the inert humified pool (unit: kg N.ha-1)</p></li>
+<li><p>‘intialActiveN’: Initial soil organic N in the active humified pool (unit: kg N.ha-1)</p></li>
+<li><p>‘intialNO3’: Initial soil mineral N-NO3 (unit: kg N.ha-1)</p></li>
+<li><p>‘intialNH4’: Initial soil mineral N-NH4 (unit: kg N.ha-1)</p></li>
+<li><p>‘initialNres’: Initial soil organic N in the organic residue pools (unit: kg N.ha-1)</p></li>
+<li><p>‘initialNZygo’: Initial soil organic N in the Zymogeneous biomass pools (unit: kg N.ha-1)</p></li>
+<li><p>‘TotNRain’: Total simulation mineral N inputs with rain (unit: kg N.ha-1)</p></li>
+<li><p>‘TotNIrrig’: Total simulation mineral N inputs with irrigation water (unit: kg N.ha-1)</p></li>
+<li><p>‘TotFertNO3’: Total simulation N-NO3 fertilizer application (unit: kg N.ha-1)</p></li>
+<li><p>‘TotFertNH4’: Total simulation N-NH4 fertilizer application (unit: kg N.ha-1)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt>Keys for simulation outputs:</dt><dd><ul>
-<li><p>‘FinalInertN’:</p></li>
-<li><p>‘FinalActiveN’:</p></li>
-<li><p>‘FinalNO3’:</p></li>
-<li><p>‘FinalNH4’:</p></li>
-<li><p>‘finalNres’:</p></li>
-<li><p>‘finalNZygo’:</p></li>
-<li><p>‘Lixtot’:</p></li>
-<li><p>‘N2Otot’:</p></li>
-<li><p>‘TotUptPlt’:</p></li>
-<li><p>‘HumusMinNtot’:</p></li>
-<li><p>‘ResidueMinNtot’:</p></li>
-<li><p>‘MinNtot’:</p></li>
+<li><p>‘FinalInertN’: Final soil organic N in the inert humified pool (unit: kg N.ha-1)</p></li>
+<li><p>‘FinalActiveN’: Final soil organic N in the active humified pool (unit: kg N.ha-1)</p></li>
+<li><p>‘FinalNO3’: Final soil mineral N-NO3 (unit: kg N.ha-1)</p></li>
+<li><p>‘FinalNH4’: Final soil mineral N-NH4 (unit: kg N.ha-1)</p></li>
+<li><p>‘finalNres’: Final soil organic N in the organic residue pools (unit: kg N.ha-1)</p></li>
+<li><p>‘finalNZygo’: Final soil organic N in the Zymogeneous biomass pools (unit: kg N.ha-1)</p></li>
+<li><p>‘Lixtot’: Total simulation N-NO3 lixiviation in drainage water (unit: kg N.ha-1)</p></li>
+<li><p>‘N2Otot’: Total simulation N-N2O emissions in the atmosphere (unit: kg N.ha-1)</p></li>
+<li><p>‘TotUptPlt’: Total simulation mineral N uptake by plants (unit: kg N.ha-1)</p></li>
+<li><p>‘HumusMinNtot’: Total simulation mineral N produced by humus mineralisation (unit: kg N.ha-1)</p></li>
+<li><p>‘ResidueMinNtot’: Total simulation net mineral N produced by residue mineralisation (Res1+Res2+Res3) (unit: kg N.ha-1)</p></li>
+<li><p>‘MinNtot’: Total simulation net mineral N produced by mineralisation (humus+residues) (unit: kg N.ha-1)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt>Keys for simulation totals:</dt><dd><ul>
-<li><p>‘InputNtot’:</p></li>
-<li><p>‘InputNmintot’:</p></li>
-<li><p>‘OutputNtot’:</p></li>
-<li><p>‘OutputNmintot’:</p></li>
+<li><p>‘InputNtot’: Total simulation organic N inputs (unit: kg N.ha-1)</p></li>
+<li><p>‘InputNmintot’: Total simulation mineral N inputs (unit: kg N.ha-1)</p></li>
+<li><p>‘OutputNtot’: Total simulation organic N outputs (unit: kg N.ha-1)</p></li>
+<li><p>‘OutputNmintot’: Total simulation mineral N outputs (unit: kg N.ha-1)</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt>Keys for daily inputs/outputs :</dt><dd><ul>
-<li><p>‘cumMinN’:</p></li>
-<li><p>‘cumRain’:</p></li>
-<li><p>‘cumIrrig’:</p></li>
-<li><p>‘cumfertNO3’:</p></li>
-<li><p>‘cumfertNH4’:</p></li>
-<li><p>‘cumUptakePlt’:</p></li>
-<li><p>‘azomes’:</p></li>
-<li><p>‘cumLix’:</p></li>
-<li><p>‘cumN2O’:</p></li>
-<li><p>‘cumNRes1’:</p></li>
-<li><p>‘cumNRes2’:</p></li>
-<li><p>‘cumNRes3’:</p></li>
-<li><p>‘NminfromNresCum’:</p></li>
+<li><p>‘cumMinN’: List of daily soil humus mineralisation (unit: kg N.ha-1)</p></li>
+<li><p>‘cumRain’: List of daily mineral N inputs with rain (unit: kg N.ha-1)</p></li>
+<li><p>‘cumIrrig’: List of daily mineral N inputs with irrigation water (unit: kg N.ha-1)</p></li>
+<li><p>‘cumfertNO3’: List of daily mineral N-NO3 fertilizer application (unit: kg N.ha-1)</p></li>
+<li><p>‘cumfertNH4’: List of daily mineral N-NH4 fertilizer application (unit: kg N.ha-1)</p></li>
+<li><p>‘cumUptakePlt’: List of daily total plant mineral N uptake (unit: kg N.ha-1)</p></li>
+<li><p>‘azomes’: List of daily total soil mineral N (unit: kg N.ha-1)</p></li>
+<li><p>‘cumLix’: List of daily N-NO3 lixiviation in drainage water (unit: kg N.ha-1)</p></li>
+<li><p>‘cumN2O’: List of daily N-N2O emmission in the atmosphere (unit: kg N.ha-1)</p></li>
+<li><p>‘cumNRes1’: List of daily total mineral N direcly released by residue mineralisation (unit: kg N.ha-1)</p></li>
+<li><p>‘cumNRes2’: List of daily total mineral N uptake for microbial biomass growth (unit: kg N.ha-1)</p></li>
+<li><p>‘cumNRes3’: List of daily total mineral N released from microbial biomass turnover (unit: kg N.ha-1)</p></li>
+<li><p>‘NminfromNresCum’: List of daily residue mineralisation by residue type (unit: kg N.ha-1)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1699,7 +1699,7 @@ Parameters calculated according to Nicolardot et al. (2001) as functions of resi
 <li><p><strong>paramp</strong> (<em>list</em>) – List of individual plant parameters</p></li>
 <li><p><strong>ls_lrac</strong> (<em>list</em>) – List of [z,x,y] arrays for root length distribution per individual plant - equivalent to ‘ls_roots’ (unit: m)</p></li>
 <li><p><strong>ls_mWaterUptakePlt</strong> (<em>nd.array</em>) – A [nbplt,z,x,y] nd.array storing individual plant daily water uptake distributions (unit: mm) - equivalent to ‘ls_m_transpi’ (unit: mm)</p></li>
-<li><p><strong>ls_demandeN</strong> (<em>list</em>) – List of plant Nitrogen status per individual plant ; for optNuptake=0, a list of plant NNI (unitless); for optNuptake=1, a list of root N concentration (unit: %)</p></li>
+<li><p><strong>ls_demandeN</strong> (<em>list</em>) – List of plant Nitrogen status per individual plant ; for optNuptake=0, a list of plant N demand (kg N.plt-1); for optNuptake=1, a list of root N concentration (unit: %) or NNI (unitless)</p></li>
 <li><p><strong>optNuptake</strong> (<em>int</em>) – Options for computing plant mineral N uptake, either 0: ‘original STICS’ (minimum of plant demand, plant uptake capacity and soil provision) or 1: ‘LocalTransporters’ (plant uptake from root transporters)</p></li>
 </ul>
 </dd>
@@ -1779,6 +1779,7 @@ Parameters calculated according to Nicolardot et al. (2001) as functions of resi
 <li><p>‘Norg’ :          Soil Organic N content in the topsoil layer (unit: g N.kg-1 soil)</p></li>
 <li><p>‘PROFHUMs’ :      Depth of soil contributing to SOM mineralisation #-&gt; peut constituer un masque pour considerer certaines couches ou pas default value p220 (unit: cm)</p></li>
 <li><p>‘pH’ :            Soil pH (unit: pH unit)</p></li>
+<li><p>‘ARGIs’ :     Soil clay content (unit: %)</p></li>
 <li><p>‘ACLIMc’ :        Climatic demand of soil evaporation parameter (unit: mm)</p></li>
 <li><p>‘concrr’ :        nitrate concentration in rainfall (unit: kg N.m-2.mm-1)</p></li>
 </ul>
@@ -1817,6 +1818,7 @@ Parameters calculated according to Nicolardot et al. (2001) as functions of resi
             <span class="s1">&#39;Norg&#39;</span> <span class="p">:</span> <span class="mf">1.1</span><span class="p">,</span>
             <span class="s1">&#39;PROFHUMs&#39;</span> <span class="p">:</span> <span class="mf">30.</span><span class="p">,</span>
             <span class="s1">&#39;pH&#39;</span> <span class="p">:</span> <span class="mf">7.1</span><span class="p">,</span>
+            <span class="s1">&#39;ARGIs&#39;</span><span class="p">:</span> <span class="mf">18.3</span><span class="p">,</span>
             <span class="s1">&#39;ACLIMc&#39;</span> <span class="p">:</span> <span class="mf">26.</span><span class="p">,</span>
             <span class="s1">&#39;concrr&#39;</span> <span class="p">:</span> <span class="mf">0.000002</span>
             <span class="p">}</span>

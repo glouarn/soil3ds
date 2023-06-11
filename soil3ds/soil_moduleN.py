@@ -765,6 +765,7 @@ class SoilN(Soil):
         #facteur FBIO!! = 1 par defaut -> peut augmenter <-> baisse de CN ratio de la biomasse microbienne si Nmin exhauted (pour eviter bilan negatif)
         #a faire! avec approche similaire a FN_factor!
 
+
     def ls_NRES(self):
         """ Compute a list of [nz,nx,ny] arrays storing residue N distribution per type of residue (unit: kg N per voxel)
 
@@ -1017,7 +1018,7 @@ class SoilN(Soil):
         :type ls_lrac: list
         :param ls_mWaterUptakePlt: A [nbplt,z,x,y] nd.array storing individual plant daily water uptake distributions (unit: mm) - equivalent to 'ls_m_transpi' (unit: mm)
         :type ls_mWaterUptakePlt: nd.array
-        :param ls_demandeN: List of plant Nitrogen status per individual plant ; for optNuptake=0, a list of plant NNI (unitless); for optNuptake=1, a list of root N concentration (unit: %)
+        :param ls_demandeN: List of plant Nitrogen status per individual plant ; for optNuptake=0, a list of plant N demand (kg N.plt-1); for optNuptake=1, a list of root N concentration (unit: %) or NNI (unitless)
         :type ls_demandeN: list
         :param optNuptake: Options for computing plant mineral N uptake, either 0: 'original STICS' (minimum of plant demand, plant uptake capacity and soil provision) or 1: 'LocalTransporters' (plant uptake from root transporters)
         :type optNuptake: int
@@ -1079,23 +1080,23 @@ class SoilN(Soil):
         """ Initialise bilanC attribute, a dictionary storing carbon balance information (unit: kg C.ha-1)
 
             * Keys for simulation inputs:
-                - 'intialInertC':
-                - 'intialActiveC':
-                - 'initialCres':
-                - 'initialCZygo':
+                - 'intialInertC': Initial soil organic C in the inert humified pool (unit: kg C.ha-1)
+                - 'intialActiveC': Initial soil organic C in the active humified pool (unit: kg C.ha-1)
+                - 'initialCres': Initial soil organic C in the organic residue pools (unit: kg C.ha-1)
+                - 'initialCZygo': Initial soil organic C in the Zymogeneous biomass pools (unit: kg C.ha-1)
             * Keys for simulation outputs:
-                - 'FinalInertC':
-                - 'FinalActiveC':
-                - 'finalCres':
-                - 'finalCZygo':
+                - 'FinalInertC': Final soil organic C in the inert humified pool (unit: kg C.ha-1)
+                - 'FinalActiveC': Final soil organic C in the active humified pool (unit: kg C.ha-1)
+                - 'finalCres': Final soil organic C in the organic residue pools (unit: kg C.ha-1)
+                - 'finalCZygo': Final soil organic C in the Zymogeneous biomass pools (unit: kg C.ha-1)
             * Keys for simulation totals:
-                - 'InputCtot':
-                - 'OutputCtot':
-                - 'MinCtot':
+                - 'InputCtot':  Total simulation organic C inputs (unit: kg C.ha-1)
+                - 'OutputCtot': Total simulation organic C outputs (unit: kg C.ha-1)
+                - 'MinCtot': Total simulation net C produced by mineralisation (humus+residues) (unit: kg C.ha-1)
             * Keys for daily inputs/outputs :
-                - 'cumMinC':
-                - 'cumCO2Res1':
-                - 'cumCO2Res2':
+                - 'cumMinC': List of daily C-CO2 emitted from humus mineralisation (unit: kg C.ha-1)
+                - 'cumCO2Res1': List of daily C-CO2 emitted from direct residue mineralisation (unit: kg C.ha-1)
+                - 'cumCO2Res2': List of daily C-CO2 emitted from residue microbial biomass turnover (unit: kg C.ha-1)
 
         """
         #""" Dictionnary for soil Carbon balance (kg C.ha-1)
@@ -1175,52 +1176,52 @@ class SoilN(Soil):
         """ Initialise bilanN attribute, a dictionary storing nitrogen balance information (unit: kg N.ha-1)
 
             * Keys for simulation inputs:
-                - 'intialInertN':
-                - 'intialActiveN':
-                - 'intialNO3':
-                - 'intialNH4':
-                - 'initialNres':
-                - 'initialNZygo':
+                - 'intialInertN': Initial soil organic N in the inert humified pool (unit: kg N.ha-1)
+                - 'intialActiveN': Initial soil organic N in the active humified pool (unit: kg N.ha-1)
+                - 'intialNO3': Initial soil mineral N-NO3 (unit: kg N.ha-1)
+                - 'intialNH4': Initial soil mineral N-NH4 (unit: kg N.ha-1)
+                - 'initialNres': Initial soil organic N in the organic residue pools (unit: kg N.ha-1)
+                - 'initialNZygo': Initial soil organic N in the Zymogeneous biomass pools (unit: kg N.ha-1)
 
-                - 'TotNRain':
-                - 'TotNIrrig':
-                - 'TotFertNO3':
-                - 'TotFertNH4':
+                - 'TotNRain': Total simulation mineral N inputs with rain (unit: kg N.ha-1)
+                - 'TotNIrrig': Total simulation mineral N inputs with irrigation water (unit: kg N.ha-1)
+                - 'TotFertNO3': Total simulation N-NO3 fertilizer application (unit: kg N.ha-1)
+                - 'TotFertNH4': Total simulation N-NH4 fertilizer application (unit: kg N.ha-1)
 
             * Keys for simulation outputs:
-                - 'FinalInertN':
-                - 'FinalActiveN':
-                - 'FinalNO3':
-                - 'FinalNH4':
-                - 'finalNres':
-                - 'finalNZygo':
+                - 'FinalInertN': Final soil organic N in the inert humified pool (unit: kg N.ha-1)
+                - 'FinalActiveN': Final soil organic N in the active humified pool (unit: kg N.ha-1)
+                - 'FinalNO3': Final soil mineral N-NO3 (unit: kg N.ha-1)
+                - 'FinalNH4': Final soil mineral N-NH4 (unit: kg N.ha-1)
+                - 'finalNres': Final soil organic N in the organic residue pools (unit: kg N.ha-1)
+                - 'finalNZygo': Final soil organic N in the Zymogeneous biomass pools (unit: kg N.ha-1)
 
-                - 'Lixtot':
-                - 'N2Otot':
-                - 'TotUptPlt':
-                - 'HumusMinNtot':
-                - 'ResidueMinNtot':
-                - 'MinNtot':
+                - 'Lixtot': Total simulation N-NO3 lixiviation in drainage water (unit: kg N.ha-1)
+                - 'N2Otot': Total simulation N-N2O emissions in the atmosphere (unit: kg N.ha-1)
+                - 'TotUptPlt': Total simulation mineral N uptake by plants (unit: kg N.ha-1)
+                - 'HumusMinNtot': Total simulation mineral N produced by humus mineralisation (unit: kg N.ha-1)
+                - 'ResidueMinNtot': Total simulation net mineral N produced by residue mineralisation (Res1+Res2+Res3) (unit: kg N.ha-1)
+                - 'MinNtot': Total simulation net mineral N produced by mineralisation (humus+residues) (unit: kg N.ha-1)
 
             * Keys for simulation totals:
-                - 'InputNtot':
-                - 'InputNmintot':
-                - 'OutputNtot':
-                - 'OutputNmintot':
+                - 'InputNtot': Total simulation organic N inputs (unit: kg N.ha-1)
+                - 'InputNmintot': Total simulation mineral N inputs (unit: kg N.ha-1)
+                - 'OutputNtot': Total simulation organic N outputs (unit: kg N.ha-1)
+                - 'OutputNmintot': Total simulation mineral N outputs (unit: kg N.ha-1)
             * Keys for daily inputs/outputs :
-                - 'cumMinN':
-                - 'cumRain':
-                - 'cumIrrig':
-                - 'cumfertNO3':
-                - 'cumfertNH4':
-                - 'cumUptakePlt':
-                - 'azomes':
-                - 'cumLix':
-                - 'cumN2O':
-                - 'cumNRes1':
-                - 'cumNRes2':
-                - 'cumNRes3':
-                - 'NminfromNresCum':
+                - 'cumMinN': List of daily soil humus mineralisation (unit: kg N.ha-1)
+                - 'cumRain': List of daily mineral N inputs with rain (unit: kg N.ha-1)
+                - 'cumIrrig': List of daily mineral N inputs with irrigation water (unit: kg N.ha-1)
+                - 'cumfertNO3': List of daily mineral N-NO3 fertilizer application (unit: kg N.ha-1)
+                - 'cumfertNH4': List of daily mineral N-NH4 fertilizer application (unit: kg N.ha-1)
+                - 'cumUptakePlt': List of daily total plant mineral N uptake (unit: kg N.ha-1)
+                - 'azomes': List of daily total soil mineral N (unit: kg N.ha-1)
+                - 'cumLix': List of daily N-NO3 lixiviation in drainage water (unit: kg N.ha-1)
+                - 'cumN2O': List of daily N-N2O emmission in the atmosphere (unit: kg N.ha-1)
+                - 'cumNRes1': List of daily total mineral N direcly released by residue mineralisation (unit: kg N.ha-1)
+                - 'cumNRes2': List of daily total mineral N uptake for microbial biomass growth (unit: kg N.ha-1)
+                - 'cumNRes3': List of daily total mineral N released from microbial biomass turnover (unit: kg N.ha-1)
+                - 'NminfromNresCum': List of daily residue mineralisation by residue type (unit: kg N.ha-1)
 
 
         """
@@ -1487,6 +1488,7 @@ def default_parSN():
             * 'PROFHUMs' :      Depth of soil contributing to SOM mineralisation #-> peut constituer un masque pour considerer certaines couches ou pas default value p220 (unit: cm)
 
             * 'pH' :            Soil pH (unit: pH unit)
+            * 'ARGIs' :     Soil clay content (unit: %)
             * 'ACLIMc' :        Climatic demand of soil evaporation parameter (unit: mm)
             * 'concrr' :        nitrate concentration in rainfall (unit: kg N.m-2.mm-1)
 
@@ -1521,6 +1523,7 @@ def default_parSN():
                     'Norg' : 1.1,
                     'PROFHUMs' : 30.,
                     'pH' : 7.1,
+                    'ARGIs': 18.3,
                     'ACLIMc' : 26.,
                     'concrr' : 0.000002
                     }
@@ -1564,6 +1567,7 @@ def default_parSN():
     par_SN['PROFHUMs'] = 30.  # (cm) depth of soil contributing to SOM mineralisation #-> peut constituer un masque pour considerer certaines couches ou pas default value p220
 
     par_SN['pH'] = 7.1  # (pH unit)
+    par_SN['ARGIs'] = 18.3  #
     par_SN['ACLIMc'] = 26.  #
     par_SN['concrr'] = 0.000002  #concentration en N de la pluie (kg N.m-2.mm-1 )
 

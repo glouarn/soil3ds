@@ -862,23 +862,23 @@ class Soil(object):
         """ Initialise bilanW attribute, a dictionary storing water balance information
 
             * Keys for simulation inputs:
-                - 'intialWC':
-                - 'Irrigtot':
-                - 'PPtot':
+                - 'intialWC': Initial soil water (unit: mm)
+                - 'Irrigtot': Total simulation irrigation (unit: mm)
+                - 'PPtot': Total simulation precipitations (unit: mm)
             * Keys for simulation outputs:
-                - 'FinalWC':
-                - 'EVtot':
-                - 'Tranptot':
-                - 'Drainagetot':
+                - 'FinalWC': Final soil water (unit: mm)
+                - 'EVtot': Total simulation soil evaporation (unit: mm)
+                - 'Tranptot': Total simulation plant transpiration (unit: mm)
+                - 'Drainagetot': Total simulation water drainage (unit: mm)
             * Keys for simulation totals:
-                - 'InputWtot':
-                - 'OutputWtot':
+                - 'InputWtot': Total simulation water inputs (unit: mm)
+                - 'OutputWtot': Total simulation water outputs (unit: mm)
             * Keys for daily inputs/outputs :
-                - 'cumPP':
-                - 'cumIrrig':
-                - 'cumD':
-                - 'cumEV':
-                - 'cumTransp':
+                - 'cumPP': List of daily precipitations (unit: mm)
+                - 'cumIrrig': List of daily irrigation (unit: mm)
+                - 'cumD': List of daily soil water drainage (unit: mm)
+                - 'cumEV': List of daily soil evaporation (unit: mm)
+                - 'cumTransp': List of daily total plant transpiration (unit: mm)
 
 
         """
