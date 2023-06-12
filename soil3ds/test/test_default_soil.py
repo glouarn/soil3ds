@@ -38,18 +38,11 @@ mng = IOxls.read_met_file(mn_path, ongletMn)
 # ongletIn = 'Lusignan30'#'Lusignan30_1'  #
 # inis = IOxls.read_plant_param(inis_path, ongletIn)
 
-# lecture des parametres du sol par defaut
+# lecture des parametres du sol et plante par defaut
 par_sol = solW.default_par_sol()
 par_SN = solN.default_parSN()
+ParamP = solN.default_paramp()
 
-# Param Plante defaut
-
-ParamP =  {'Vmax1': 0.0018,
- 'Kmax1': 50.0,
- 'Vmax2': 0.05,
- 'Kmax2': 25000.0}
-
-# faire fonction par defaut
 
 
 
@@ -78,6 +71,8 @@ vNO3 = [1.]*ncouches_sol #inis['NO3'] #
 
 
 opt_residu = 0
+opt_Nuptake = 0 #1 #2 # #option for plant N uptake calculation
+
 
 # debut, fin de simulation
 DOY_deb, DOY_fin = 100, 300  # 239,623
@@ -95,7 +90,10 @@ S = solN.SoilN(par_sol, par_SN, soil_number=vsoilnumbers,
 # simulation d'un sol 1D
 ## pour sol nu
 epsilon = 10-10
-R1 = S.m_1 * 200
+MSr = 0.30  # T.ha-1
+MSrplt = MSr*1000*1000/10000 # g. plt-1
+SRL = 250 #m.g-1
+R1 = S.m_1 * MSrplt*SRL
 ls_roots = [R1]
 ls_epsi = [0.2]
 #ls_N = [0.9]
@@ -104,6 +102,9 @@ ls_paramP = [ParamP]
 Npc = 2.  # %
 MSa = 1.5  # T.ha-1
 QN = MSa * Npc / 100. * 1000  # kg N.ha-1 #%N libre
+MSplt = MSa*1000/10000 # kg
+QNplt = MSplt * Npc / 100. # kg N
+
 
 
 # initialisation de variables de sorties
@@ -133,11 +134,14 @@ for DOY in range(DOY_deb, DOY_fin):
     mapN_fertNH4 = 1. * S.m_1[0, :, :] * mng_j['FertNH4'] * S.m_vox_surf[0, :, :] / 10000.  # kg N par voxel
 
     # demande N plante pour 1 couvert
-    PotN = MSa * critN(MSa) / 100. * 1000  # kg N.ha-1
-    demande_N_plt = max(PotN - QN, 0.)  # kg N.ha-1
-    ls_N = [sum(demande_N_plt) / 10000.]  # kg N.surface de sol
+    if opt_Nuptake == 0 or opt_Nuptake == 2:
+        PotN = MSa * critN(MSa) / 100. * 1000  # kg N.ha-1
+        demande_N_plt = max(PotN - QN, 0.)  # kg N.ha-1
+        ls_N = [sum(demande_N_plt) / 10000.]  # kg N.plt-1 surface de sol
+    elif opt_Nuptake == 1:
+        ls_N = [0.6]
 
-    res_soil_step = solN.step_bilanWN_solVGL(S, par_SN, meteo_j, mng_j, ls_paramP, ls_epsi, ls_roots, ls_N, opt_residu, opt_Nuptake=1)
+    res_soil_step = solN.step_bilanWN_solVGL(S, par_SN, meteo_j, mng_j, ls_paramP, ls_epsi, ls_roots, ls_N, opt_residu, opt_Nuptake)
     S, stateEV, ls_ftsw, ls_transp, ls_Act_Nuptake_plt, temps_sol = res_soil_step
 
     # sorties
@@ -152,17 +156,14 @@ for DOY in range(DOY_deb, DOY_fin):
     # S.bilanN['cumLix'] #lixiviation nitrates
     # S.bilanN['azomes'] # total minearal N
 
+    # S.bilanN['cumUptakePlt'] # uptake plt -> ??marche pas?
+
+
 
 ##termes du bilan hydrique global
 S.CloseWbalance()  # -> equilibre
 S.CloseCbalance()  # -> equilibre
 S.CloseNbalance()  # -> equilibre
-
-
-#?? tourne mis pas d'uptake plant??
-
-
-
 
 
 

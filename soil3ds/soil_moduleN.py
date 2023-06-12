@@ -1067,7 +1067,7 @@ class SoilN(Soil):
         self.m_NH4 = self.m_NH4 - (1. - frac_NO3) * ActUpNtot
 
         # bilan
-        self.bilanN['cumUptakePlt'].append(ActUpNtot / self.soilSurface * 10000)
+        self.bilanN['cumUptakePlt'].append(sum(ActUpNtot) / self.soilSurface * 10000)
         self.bilanN['azomes'].append((sum(self.m_NO3) + sum(self.m_NH4)) / self.soilSurface * 10000)
 
         return ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N, idmin
@@ -1573,3 +1573,39 @@ def default_parSN():
 
     return par_SN
     # ajouter parametre hydriques generaux?
+
+
+
+
+def default_paramp():
+    """ Creates a default parameter dictionnary 'paramp' for defining the STICS plant parameters necessary for computing N balance
+
+        Keys of the dictionnary are  parameters for a given soil object:
+
+        General STICS Nitrogen uptake parameters
+            * 'Vmax1' : HATS Vmax (unit: micromole.cm-1.h-1)
+            * 'Kmax1' : HATS Kmax (unit: micromole.L-1)
+            * 'Vmax2' : LATS Vmax (unit: micromole.cm-1.h-1)
+            * 'Kmax2' : LATS Kmax (unit: micromole.L-1)
+
+    :return: Default 'paramp' parameter dictionnary
+
+    .. code-block:: python
+
+        paramp =  {
+                    'Vmax1': 0.0018,
+                     'Kmax1': 50.0,
+                     'Vmax2': 0.05,
+                     'Kmax2': 25000.0
+                    }
+
+    """
+
+    paramp = {}
+    paramp['Vmax1'] = 0.0018
+    paramp['Kmax1'] = 50.
+    paramp['Vmax2'] = 0.05
+    paramp['Kmax2'] = 25000.0
+
+    return paramp
+

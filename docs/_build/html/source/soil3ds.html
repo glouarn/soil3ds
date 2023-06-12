@@ -73,8 +73,6 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#soil3ds.soil_moduleW.default_par_sol"><code class="docutils literal notranslate"><span class="pre">default_par_sol()</span></code></a></li>
-<li><a class="reference internal" href="#soil3ds.soil_moduleW.rand"><code class="docutils literal notranslate"><span class="pre">rand()</span></code></a></li>
-<li><a class="reference internal" href="#soil3ds.soil_moduleW.randn"><code class="docutils literal notranslate"><span class="pre">randn()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-soil3ds.soil_moduleN">soil3ds.soil_moduleN module</a><ul>
@@ -122,8 +120,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.default_parSN"><code class="docutils literal notranslate"><span class="pre">default_parSN()</span></code></a></li>
-<li><a class="reference internal" href="#soil3ds.soil_moduleN.rand"><code class="docutils literal notranslate"><span class="pre">rand()</span></code></a></li>
-<li><a class="reference internal" href="#soil3ds.soil_moduleN.randn"><code class="docutils literal notranslate"><span class="pre">randn()</span></code></a></li>
+<li><a class="reference internal" href="#soil3ds.soil_moduleN.default_paramp"><code class="docutils literal notranslate"><span class="pre">default_paramp()</span></code></a></li>
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.step_bilanWN_solVGL"><code class="docutils literal notranslate"><span class="pre">step_bilanWN_solVGL()</span></code></a></li>
 </ul>
 </li>
@@ -830,18 +827,6 @@ and used for computing water balance - Example with 4 possible soil layers / typ
             <span class="p">}</span>
 </pre></div>
 </div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="soil3ds.soil_moduleW.rand">
-<span class="sig-prename descclassname"><span class="pre">soil3ds.soil_moduleW.</span></span><span class="sig-name descname"><span class="pre">rand</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#soil3ds.soil_moduleW.rand" title="Permalink to this definition"></a></dt>
-<dd><p>scipy.rand is deprecated and will be removed in SciPy 2.0.0, use numpy.random.rand instead</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="soil3ds.soil_moduleW.randn">
-<span class="sig-prename descclassname"><span class="pre">soil3ds.soil_moduleW.</span></span><span class="sig-name descname"><span class="pre">randn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#soil3ds.soil_moduleW.randn" title="Permalink to this definition"></a></dt>
-<dd><p>scipy.randn is deprecated and will be removed in SciPy 2.0.0, use numpy.random.randn instead</p>
 </dd></dl>
 
 </section>
@@ -1827,15 +1812,34 @@ Parameters calculated according to Nicolardot et al. (2001) as functions of resi
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="soil3ds.soil_moduleN.rand">
-<span class="sig-prename descclassname"><span class="pre">soil3ds.soil_moduleN.</span></span><span class="sig-name descname"><span class="pre">rand</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#soil3ds.soil_moduleN.rand" title="Permalink to this definition"></a></dt>
-<dd><p>scipy.rand is deprecated and will be removed in SciPy 2.0.0, use numpy.random.rand instead</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="soil3ds.soil_moduleN.randn">
-<span class="sig-prename descclassname"><span class="pre">soil3ds.soil_moduleN.</span></span><span class="sig-name descname"><span class="pre">randn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#soil3ds.soil_moduleN.randn" title="Permalink to this definition"></a></dt>
-<dd><p>scipy.randn is deprecated and will be removed in SciPy 2.0.0, use numpy.random.randn instead</p>
+<dt class="sig sig-object py" id="soil3ds.soil_moduleN.default_paramp">
+<span class="sig-prename descclassname"><span class="pre">soil3ds.soil_moduleN.</span></span><span class="sig-name descname"><span class="pre">default_paramp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#default_paramp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.default_paramp" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a default parameter dictionnary ‘paramp’ for defining the STICS plant parameters necessary for computing N balance</p>
+<blockquote>
+<div><p>Keys of the dictionnary are  parameters for a given soil object:</p>
+<dl class="simple">
+<dt>General STICS Nitrogen uptake parameters</dt><dd><ul class="simple">
+<li><p>‘Vmax1’ : HATS Vmax (unit: micromole.cm-1.h-1)</p></li>
+<li><p>‘Kmax1’ : HATS Kmax (unit: micromole.L-1)</p></li>
+<li><p>‘Vmax2’ : LATS Vmax (unit: micromole.cm-1.h-1)</p></li>
+<li><p>‘Kmax2’ : LATS Kmax (unit: micromole.L-1)</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default ‘paramp’ parameter dictionnary</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">paramp</span> <span class="o">=</span>  <span class="p">{</span>
+            <span class="s1">&#39;Vmax1&#39;</span><span class="p">:</span> <span class="mf">0.0018</span><span class="p">,</span>
+             <span class="s1">&#39;Kmax1&#39;</span><span class="p">:</span> <span class="mf">50.0</span><span class="p">,</span>
+             <span class="s1">&#39;Vmax2&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+             <span class="s1">&#39;Kmax2&#39;</span><span class="p">:</span> <span class="mf">25000.0</span>
+            <span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
