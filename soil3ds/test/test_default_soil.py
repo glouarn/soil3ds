@@ -19,6 +19,11 @@ path_ = os.path.dirname(os.path.abspath(soil3ds.__file__))  # path ou trouver le
 path_leg = os.path.join(path_, 'test', 'inputs')
 
 
+def critN(MS, a=4.8, b=-0.33):
+    """ courbe critique de dilution de l'N """
+    return min(6.5, a * MS ** b)  # en %
+
+
 ## 1) lecture fichier initialisation
 meteo_path = os.path.join(path_leg, 'meteo_exemple.xls')  # 'meteo_exemple_debugL_gl.xls')#r'H:\devel\grassland\grassland\L-gume\meteo_exemple2.xls'
 ongletM = 'Lusignan30'  # 'Lusignan302ans'#'DivLeg15'#'morpholeg15'#'combileg15'#'combileg16'#'Avignon30'#'exemple'#'morpholeg15'#'testJLD'#'competiluz'#
@@ -89,16 +94,20 @@ S = solN.SoilN(par_sol, par_SN, soil_number=vsoilnumbers,
 
 # simulation d'un sol 1D
 ## pour sol nu
-epsilon = 0.5#10-10
-R1 = S.m_1 * epsilon
+epsilon = 10-10
+R1 = S.m_1 * 200
 ls_roots = [R1]
 ls_epsi = [0.2]
-ls_N = [0.9]
+#ls_N = [0.9]
 ls_paramP = [ParamP]
+
+Npc = 2.  # %
+MSa = 1.5  # T.ha-1
+QN = MSa * Npc / 100. * 1000  # kg N.ha-1 #%N libre
 
 
 # initialisation de variables de sorties
-cumET0, cumPP = [], []
+cumET0, cumNplt = [], []
 
 ##boucle journaliere couplage sol-plante
 for DOY in range(DOY_deb, DOY_fin):
@@ -123,13 +132,19 @@ for DOY in range(DOY_deb, DOY_fin):
     mapN_fertNO3 = 1. * S.m_1[0, :, :] * mng_j['FertNO3'] * S.m_vox_surf[0, :, :] / 10000.  # kg N par voxel
     mapN_fertNH4 = 1. * S.m_1[0, :, :] * mng_j['FertNH4'] * S.m_vox_surf[0, :, :] / 10000.  # kg N par voxel
 
+    # demande N plante pour 1 couvert
+    PotN = MSa * critN(MSa) / 100. * 1000  # kg N.ha-1
+    demande_N_plt = max(PotN - QN, 0.)  # kg N.ha-1
+    ls_N = [sum(demande_N_plt) / 10000.]  # kg N.surface de sol
+
     res_soil_step = solN.step_bilanWN_solVGL(S, par_SN, meteo_j, mng_j, ls_paramP, ls_epsi, ls_roots, ls_N, opt_residu, opt_Nuptake=1)
     S, stateEV, ls_ftsw, ls_transp, ls_Act_Nuptake_plt, temps_sol = res_soil_step
 
     # sorties
     cumET0.append(meteo_j['Et0'] * surfsolref)
-    cumPP.append(meteo_j['Precip'] * surfsolref)
+    cumNplt.append(ls_N[0])
 
+    # S.bilanW['cumPP'] # precipitation
     # S.bilanW['cumEV'] # soil evaporation
     # S.bilanW['cumTransp'] # transpiration
     # S.bilanW['cumD'] # drainage

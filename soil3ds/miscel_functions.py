@@ -10,7 +10,7 @@
 '''
 
 
-from scipy import *
+
 import numpy as np
 from copy import deepcopy
 
@@ -44,7 +44,7 @@ def mask(mat, tresh=0.):
     #""" retourne matrice masque de 0  et 1
     #utile pour root/no roots; asw/no asw """
     #m = deepcopy(mat) #pas utile->mat cree nouvelle matrice
-    return where(mat > tresh, 1, 0)
+    return np.where(mat > tresh, 1, 0)
     #m = m*1. #pour convertir en float
 
 #mask(R2)
@@ -62,7 +62,7 @@ def tetavol_pF_curve(par_sol, pF_):
     #WCST = volumic water content at saturation
     #gamma = empirical parameter to account for bulk density and texture"""
     
-    teta = float(par_sol['WCST'])*exp(-float(par_sol['gamma_theo'])*pF_*pF_)
+    teta = float(par_sol['WCST'])*np.exp(-float(par_sol['gamma_theo'])*pF_*pF_)
     return teta
     #tetavol_pF_curve(par_sol, 4.2)
 
@@ -83,7 +83,7 @@ def pF(h):
     """
     
     """
-    return log10(abs(h))
+    return np.log10(np.abs(h))
 
 
 
@@ -104,7 +104,7 @@ def bEV(ACLIMc, ARGIs, HXs):
     #    HXs: volumetric moisture content at fc of the surface layer """
     
     HA = ARGIs/1500.
-    return 0.5*ACLIMc*(HXs-HA)*power(0.63-HA, 5./3.)
+    return 0.5*ACLIMc*(HXs-HA)*np.power(0.63-HA, 5./3.)
 
 #bEV(ACLIMc=20, ARGIs=20, HXs=0.4)
 
@@ -213,8 +213,8 @@ def soil_EV_STICS(Et0, Precip, epsi, previous_state=[0., 0., 0.], leafAlbedo=0.1
 
     ##adaptation eq 7.1 p127 STICS book
     k_eq = 0.7  # LAI equivalent pour un k=0.7; pause k car les deux k et LAI sont inconnu
-    LAIeq = -log(1 - epsi) / k_eq
-    EP = Et0 * exp(-(k_eq - 0.2) * LAIeq)  # potentialSoilEvaporation Eq. 7.1, p127
+    LAIeq = -np.log(1 - epsi) / k_eq
+    EP = Et0 * np.exp(-(k_eq - 0.2) * LAIeq)  # potentialSoilEvaporation Eq. 7.1, p127
     # rq: la bonne variable a recuperer a la place de espi serait le taux de couverture ou le transmis vertical pour lequel le correctif 0.2 n'est pas necessaire (Eq. 7.2)
 
     SES1 = max(0., previousSES1)
@@ -525,10 +525,10 @@ def Diffusive_Nflux(SN, parSN, ls_lrac):
     filtre = FH>0
     filtre = filtre * 1. #remplace valeur negatives par zero
     DIFE = parSN['DIFNg'] * FH * filtre
-    coeff = 4*pi**0.5
+    coeff = 4*np.pi**0.5
     for i in range(len(ls_lrac)):
         draci = (ls_lrac[i]*100.) / (SN.m_soil_vol*1000000.) #root density (cm.cm-3)
-        flux_d = coeff * DIFE * (SN.m_NO3 + SN.m_NH4) *sqrt(draci)
+        flux_d = coeff * DIFE * (SN.m_NO3 + SN.m_NH4) *np.sqrt(draci)
         ls_diff.append(flux_d)
         difftot = difftot + flux_d
 

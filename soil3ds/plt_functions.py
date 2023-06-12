@@ -8,8 +8,10 @@
  
 
 '''
-from scipy import *
+
+
 import numpy as np
+from numpy import array, multiply, divide, sum
 from copy import deepcopy
 from soil3ds.miscel_functions import * #soil3ds miscellaneous soil functions
 
@@ -30,8 +32,8 @@ def Transpi_NC(Et0, ls_epsi, ls_FTSW, paramp = {"leafAlbedo":0.15, "FTSWThreshol
 
         ##adaptation eq 7.1 p127 STICS et 7.8 p131 book
         k_eq = 0.7 #LAI equivalent pour un k=0.7; pause k car les deux k et LAI sont inconnu
-        LAIeq = -log(1-ls_epsi[i])/k_eq 
-        potentialTranspiration = Et0 * (1 - exp(-(k_eq-0.2)*LAIeq))#complement a potentialSoilEvaporation
+        LAIeq = -np.log(1-ls_epsi[i])/k_eq
+        potentialTranspiration = Et0 * (1 - np.exp(-(k_eq-0.2)*LAIeq))#complement a potentialSoilEvaporation
         #rq: la bonne variable a recuperer a la place de espi serait le taux de couverture ou le transmis vertical pour lequel le correctif 0.2 n'est pas necessaire (Eq. 7.2)
         # faut introduire crop coefficient KMAXp cf eq. 7.7 -> pour le moment limite a Et0 (reference gazon)
 
@@ -103,7 +105,7 @@ def effective_root_lengths(ls_roots, tresh = 0.5):
     tot_root_dens = sum_mat(ls_roots) #sum bug
     for rt in range(nb_r):
         #frac_root = divide(ls_roots[rt], tot_root_dens)## rq: gere bien les voxels vides
-        m[rt] = where(tot_root_dens>tresh, tresh*ls_roots[rt]/tot_root_dens, ls_roots[rt])
+        m[rt] = np.where(tot_root_dens>tresh, tresh*ls_roots[rt]/tot_root_dens, ls_roots[rt])
         
     return m
 

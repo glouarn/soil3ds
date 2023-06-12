@@ -386,7 +386,7 @@ class SoilN(Soil):
         :rtype: float
         """
 
-        K2HUMi = parSN['FMIN1G']*exp(-parSN['FMIN2G']*ARGIs)/(1+parSN['FMIN3G']*CALCs)
+        K2HUMi = parSN['FMIN1G']*np.exp(-parSN['FMIN2G']*ARGIs)/(1+parSN['FMIN3G']*CALCs)
         return K2HUMi
         #? revoir ARGIs et CALCs depuis objet sol -> non laisse la possibilite d'adapter le calcul en fonction de profondeur
 
@@ -404,7 +404,7 @@ class SoilN(Soil):
         if self.m_Tsol.min()<=0.:#min(min(min(self.m_Tsol)))<=0.:
             FTH=0.*self.m_1
         else:
-            FTH = parSN['FTEMHAg'] / (1 + parSN['FTEMHB']*exp(-parSN['FTEMHg']*self.m_Tsol))
+            FTH = parSN['FTEMHAg'] / (1 + parSN['FTEMHB']*np.exp(-parSN['FTEMHg']*self.m_Tsol))
         return FTH 
 
     def SOMMin_RespHum(self, parSN):
@@ -928,7 +928,7 @@ class SoilN(Soil):
             for x in range(len(out_N2)):
                 for y in range(len(out_N2[x])):
                     q_out = out_N[x][y]
-                    ls_v = ls_1storder_vox(self.dxyz, x,y,idz, opt_infil) #distribution entre les 1st order ; mettre opt=1 si veut forcer verticalement / 2 si
+                    ls_v = self.ls_1storder_vox(x, y, idz, opt_infil) #distribution entre les 1st order ; mettre opt=1 si veut forcer verticalement / 2 si
                     if len(ls_v)>1:
                         ponder = [0.0416666, 0.0416666, 0.0416666, 0.0416666, 2/3., 0.0416666, 0.0416666, 0.0416666, 0.0416666]# 2/3 en dessous 1/3 au premier ordre
                     else:

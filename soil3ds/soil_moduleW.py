@@ -10,9 +10,10 @@
 '''
 
 
-from scipy import *
+
 from copy import deepcopy
 import numpy as np
+from numpy import array, multiply, divide, sum
 from soil3ds.miscel_functions import * #soil3ds miscellaneous soil functions
 from soil3ds.plt_functions import * #soil3ds miscellaneous plant functions
 
