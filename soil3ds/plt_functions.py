@@ -221,7 +221,7 @@ def FLUXRACs(SN, paramp, ls_lrac):
     """
     #""" list of potential active uptake rate (kg N. voxel-1, day-1) per root system per voxel - fluxTot=total uptake potential by all roots ; 
     #ls_frac_fluxrac = fraction de demande totale par voxel par systeme racinaire - eq. 8.37 p 161 """
-    #ls_lrac = ls_ roots (en m) -> convert en cm (*100)
+    #ls_lrac = ls_ roots (en m) -> converti en cm (*100)
 
     MMA = 71.428 #142.85 #mole d'N.kg-1 (14 g.mole-1)
     ls_flux_rac = []

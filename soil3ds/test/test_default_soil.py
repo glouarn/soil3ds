@@ -71,7 +71,7 @@ vNO3 = [1.]*ncouches_sol #inis['NO3'] #
 
 
 opt_residu = 0
-opt_Nuptake = 0 #1 #2 # #option for plant N uptake calculation
+opt_Nuptake = 1 #2 #0 # #option for plant N uptake calculation
 
 
 # debut, fin de simulation
@@ -93,8 +93,8 @@ epsilon = 10-10
 MSr = 0.30  # T.ha-1
 MSrplt = MSr*1000*1000/10000 # g. plt-1
 SRL = 250 #m.g-1
-R1 = S.m_1 * MSrplt*SRL
-ls_roots = [R1]
+R1 = S.m_1 * MSrplt*SRL # m
+ls_roots = [R1*100] # cm
 ls_epsi = [0.2]
 #ls_N = [0.9]
 ls_paramP = [ParamP]
@@ -166,5 +166,7 @@ S.CloseCbalance()  # -> equilibre
 S.CloseNbalance()  # -> equilibre
 
 
+# ambiguite entre unite de ls_roots (m) et ls_lrac (cm) -> pas du tout meme resultats!
+# ordre de grandeur bon quand on passe des m plutot que cm
 
 

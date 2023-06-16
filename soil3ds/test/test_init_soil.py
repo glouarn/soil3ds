@@ -56,38 +56,40 @@ def init_sol_test(pattern8 = [[-50.,-50.], [50.,50.]], dz=5., size=[10,10,30], )
 
 
     #parametre sol complementaires pour l'N
-    par_SN = {}
-    par_SN['FMIN1G'] = 0.0006 #(day-1) (p145)
-    par_SN['FMIN2G'] = 0.0272 #(%ARGIS-1) para pot rate min a ARGIs (p145)
-    par_SN['FMIN3G'] = 0.0167 #(% CALC-1)para pot rate min a CALCss (p145)
+    par_SN = solN.default_parSN()
 
-    par_SN['FINERTG'] = 0.65 #0.65 = default fraction of stable pool (p145) should be smaller in grassland & forest
-    par_SN['PROFHUMs'] = 150. # (cm) depth of soil contributing to SOM mineralisation #-> peut constituer un masque pour considerer certaines couches ou pas default value p220
-
-    par_SN['HMinMg'] = 0.3 #Humidite min de mineralisation (prop of Field Capacity) #value p 142 (cite Rodrigo et al. 1997)
-    par_SN['HoptMg'] = 1. #Humidite opt de mineralisation (prop of Field capacity) #value p 142 (cite Rodrigo et al. 1997)
-
-    par_SN['TRefg'] = 15. #reference temperature
-    par_SN['FTEMHAg'] = 25. #asymptotic value of FTH (seen as a logistic response)
-    par_SN['FTEMHg'] = 0.120 #(K-1)
-    par_SN['FTEMHB'] = 145.
-
-    par_SN['FNXg'] = 0.5 #(day-1) maximum fraction of NH4 transformed by nitrification every day in the nitrification layer(default value in STICS parameter excel file; 0.5 p149 for tropical soils)
-    par_SN['PHMinNITg'] = 3. #pH min de nitrification (prop of Field Capacity) #value p149
-    par_SN['PHMaxNITg'] = 5.5 #pH max de nitrification (prop of Field Capacity) #value p149
-    par_SN['HMinNg'] = 0.67 #Humidite min de nitrification #value p149
-    par_SN['HoptNg'] = 1. #Humidite opt de nitrification  #value p149
-    par_SN['TNITMINg'] = 5. #Temperature min de nitrification #  (degreC)value p151
-    par_SN['TNITOPTg'] = 20. #Temperature opt de nitrification #  (degreC)value p151
-    par_SN['TNITMAXg'] = 45. #Temperature max de nitrification #  (degreC)value p151
-    par_SN['RATIONITs'] = 0. #proportion of nitrtified NH4 converted to N2O (pas trouve de valeur par defaut - p151) #0-> N2O pas active
-    par_SN['DIFNg'] = 0.018  #N diffusion coefficient at field capacity (cm2.day-1, p 161)
+    # par_SN = {}
+    # par_SN['FMIN1G'] = 0.0006 #(day-1) (p145)
+    # par_SN['FMIN2G'] = 0.0272 #(%ARGIS-1) para pot rate min a ARGIs (p145)
+    # par_SN['FMIN3G'] = 0.0167 #(% CALC-1)para pot rate min a CALCss (p145)
+    #
+    # par_SN['FINERTG'] = 0.65 #0.65 = default fraction of stable pool (p145) should be smaller in grassland & forest
+    # par_SN['PROFHUMs'] = 150. # (cm) depth of soil contributing to SOM mineralisation #-> peut constituer un masque pour considerer certaines couches ou pas default value p220
+    #
+    # par_SN['HMinMg'] = 0.3 #Humidite min de mineralisation (prop of Field Capacity) #value p 142 (cite Rodrigo et al. 1997)
+    # par_SN['HoptMg'] = 1. #Humidite opt de mineralisation (prop of Field capacity) #value p 142 (cite Rodrigo et al. 1997)
+    #
+    # par_SN['TRefg'] = 15. #reference temperature
+    # par_SN['FTEMHAg'] = 25. #asymptotic value of FTH (seen as a logistic response)
+    # par_SN['FTEMHg'] = 0.120 #(K-1)
+    # par_SN['FTEMHB'] = 145.
+    #
+    # par_SN['FNXg'] = 0.5 #(day-1) maximum fraction of NH4 transformed by nitrification every day in the nitrification layer(default value in STICS parameter excel file; 0.5 p149 for tropical soils)
+    # par_SN['PHMinNITg'] = 3. #pH min de nitrification (prop of Field Capacity) #value p149
+    # par_SN['PHMaxNITg'] = 5.5 #pH max de nitrification (prop of Field Capacity) #value p149
+    # par_SN['HMinNg'] = 0.67 #Humidite min de nitrification #value p149
+    # par_SN['HoptNg'] = 1. #Humidite opt de nitrification  #value p149
+    # par_SN['TNITMINg'] = 5. #Temperature min de nitrification #  (degreC)value p151
+    # par_SN['TNITOPTg'] = 20. #Temperature opt de nitrification #  (degreC)value p151
+    # par_SN['TNITMAXg'] = 45. #Temperature max de nitrification #  (degreC)value p151
+    # par_SN['RATIONITs'] = 0. #proportion of nitrtified NH4 converted to N2O (pas trouve de valeur par defaut - p151) #0-> N2O pas active
+    # par_SN['DIFNg'] = 0.018  #N diffusion coefficient at field capacity (cm2.day-1, p 161)
 
 
 
 
     ## soil initialisation
-    S = solN.SoilN(par_sol, par_SN, soil_number = vsoilnumbers, dxyz = [[Lsol/10.]*size[0], [largsol/10.]*size[1], [dz_sol]*ncouches_sol], vDA=vDA, vCN=vCN,vMO=vMO, vARGIs = vARGIs,vNO3=vNO3,vNH4=vNH4, vCALCs=vCALCs, Tsol=Tsol,pH=pH, ZESX=ZESX , CFES=CFES, obstarac=None, pattern8=pattern8)
+    S = solN.SoilN(par_sol, par_SN, soil_number = vsoilnumbers, dxyz = [[Lsol/10.]*size[0], [largsol/10.]*size[1], [dz_sol]*ncouches_sol], vDA=vDA, vCN=vCN,vMO=vMO, vARGIs = vARGIs,vNO3=vNO3,vNH4=vNH4, vCALCs=vCALCs, Tsol=Tsol, obstarac=None, pattern8=pattern8)
     S.init_asw(HRp_init=HRpinit)
 
     return S
