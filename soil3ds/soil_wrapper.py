@@ -77,7 +77,7 @@ class Soil3D_wrapper(object):
     def property_names(self):
         return list(self.m.keys())
 
-    def pgl_representation(self, cm='jet', property_name='QWater', sizeratio = 0.1, transparency = 0, minvalue = None, maxvalue = None, scalefunc = None, cmview = False, scaling = 1):
+    def pgl_representation_property(self, cm='jet', property_name='QWater', sizeratio = 0.1, transparency = 0, minvalue = None, maxvalue = None, scalefunc = None, cmview = False, scaling = 1):
         """ return Plantgl scene """
         if property_name not in self.property_names(): return
 
@@ -178,3 +178,65 @@ def soil3Dw2s3DSprop(struct1, struct2, propname):
 def s3DS2soil3Dw(struct1, struct2, propname):
     return struct2.add_property(propname, np.transpose(getattr(struct1,propname), (2,1,0) ))
 
+
+def pgl_representation(S, m_property, cm='jet', sizeratio=0.1, transparency=0, minvalue=None, maxvalue=None, scalefunc=None, cmview=False, mask=None, dxyz = (1, 1, 1), scaling=1):
+    """ return Plantgl scene for 3ds soil grid
+
+    :param S:
+    :param m_property:
+    :param cm:
+    :param sizeratio:
+    :param transparency:
+    :param minvalue:
+    :param maxvalue:
+    :param scalefunc:
+    :param cmview:
+    :param mask:
+    :param dxyz:
+    :param scaling:
+    :return:
+    """
+
+    if mask is None:#mask==None:
+        mask = S.m_1
+
+    mproperty = m_property
+    if (not scalefunc is None) and ((not minvalue is None) or (not maxvalue is None)):
+        vscalefunc = np.vectorize(scalefunc)
+        mproperty = vscalefunc(mproperty)
+
+    minvalue = mproperty.min() if minvalue is None else minvalue
+    maxvalue = mproperty.max() if maxvalue is None else maxvalue
+    colormap = pgl.PglMaterialMap(minvalue, maxvalue, cm)
+    sc = pgl.Scene()
+    vsize = np.array(dxyz) * sizeratio / 2.
+    nz, nx, ny = S.m_1.shape[0], S.m_1.shape[1], S.m_1.shape[2]
+
+    for z in range(nz):
+        for x in range(nx):
+            for y in range(ny):
+                value = mproperty[z,x,y]
+                idpos = S.get_vox_coordinates(z, x, y)
+
+                if not scalefunc is None: value = scalefunc(value)
+                if minvalue <= value <= maxvalue and mask[z,x,y]>=1:
+                    mat = colormap(value)
+                    mat.transparency = transparency
+                    sc += pgl.Shape(pgl.Translated(idpos * scaling, pgl.Box(vsize * scaling)), mat)
+
+
+    # it = np.nditer(self.property(property_name), flags=['multi_index'])
+    # while not it.finished:
+    #     idx, value = it.multi_index, it[0]
+    #     if not scalefunc is None: value = scalefunc(value)
+    #     if minvalue <= value <= maxvalue:
+    #         mat = colormap(value)
+    #         mat.transparency = transparency
+    #         sc += pgl.Shape(pgl.Translated(self.getVoxelCenter(idx) * scaling, pgl.Box(vsize * scaling)), mat)
+    #
+    #     it.iternext()
+
+    if cmview:
+        sc += colormap.pglrepr()
+
+    return sc

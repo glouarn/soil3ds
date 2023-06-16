@@ -51,6 +51,25 @@ def mask(mat, tresh=0.):
 #mask(asw_t)
 
 
+def slice_mask(S, id_layer, axis=1):
+    """ define a 0-1 mask for a slice of a [z,x,y] np.array
+
+    :param S: Soil object
+    :param id_layer: layer id along, x,y or z
+    :param axis: slice selection (0: x-y plane; 1: y-z plane; 2:x-z plane)
+    :return: [z,x,y] np.array
+    """
+
+    mask_ = S.m_1 * 0
+    if axis==1: #y-z
+        mask_[:, id_layer, :] = S.m_1[:, id_layer, :]
+    elif axis==0: #x-y
+        mask_[ id_layer, :, :] = S.m_1[ id_layer, :, :]
+    elif axis==2: #x-z
+        mask_[:, :, id_layer] = S.m_1[:, :, id_layer]
+
+    return mask_
+
 ########## diverses fonction parametrage sol
 
 def tetavol_pF_curve(par_sol, pF_):

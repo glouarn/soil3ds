@@ -940,15 +940,15 @@ wRuler():
 Grid :
   if PLOT_PROPERTY !=-1:
     if PLOT_PROPERTY == 'root_length':
-      sc = intsoil.pgl_representation(property_name=PLOT_PROPERTY, sizeratio = 1, transparency = 0.5,  minvalue = 0.01/100, maxvalue = 1, cmview=True, scalefunc = lambda x : log(x +1), scaling = 10 )
+      sc = intsoil.pgl_representation_property(property_name=PLOT_PROPERTY, sizeratio = 1, transparency = 0.5,  minvalue = 0.01/100, maxvalue = 1, cmview=True, scalefunc = lambda x : log(x +1), scaling = 10 )
     elif PLOT_PROPERTY == 'ftsw_t':
       filter = intsoil.m['root_length']>0.
       #intsoil.add_property('tempo', filter.astype('float'))# filtre pour n'afficher que voxels avec racine -> marche 
       intsoil.add_property('tempo', filter.astype('float') * (intsoil.m[PLOT_PROPERTY] + 0.02/1000000))#filtre pour n'afficher que voxels avec racine et vaiable -> marche avec un epsilon superieur a borne min
-      #sc = intsoil.pgl_representation(property_name=PLOT_PROPERTY, sizeratio = 1, transparency = 0.5,  cmview=True, scalefunc = lambda x : 1-x, scaling = 10 )
-      sc = intsoil.pgl_representation(property_name='tempo', sizeratio = 1, transparency = 0.5,  minvalue = 0.01/1000000, maxvalue = 1., cmview=True, scalefunc = lambda x : x, scaling = 10 )
+      #sc = intsoil.pgl_representation_property(property_name=PLOT_PROPERTY, sizeratio = 1, transparency = 0.5,  cmview=True, scalefunc = lambda x : 1-x, scaling = 10 )
+      sc = intsoil.pgl_representation_property(property_name='tempo', sizeratio = 1, transparency = 0.5,  minvalue = 0.01/1000000, maxvalue = 1., cmview=True, scalefunc = lambda x : x, scaling = 10 )
     else:
-      sc = intsoil.pgl_representation(property_name=PLOT_PROPERTY, sizeratio = 1, transparency = 0.5,  cmview=True, scalefunc = lambda x : 1-x, scaling = 10 )
+      sc = intsoil.pgl_representation_property(property_name=PLOT_PROPERTY, sizeratio = 1, transparency = 0.5,  cmview=True, scalefunc = lambda x : 1-x, scaling = 10 )
     produce @g(sc)
 #A faire: filtre des ftsw ou autres variables uniquement sur celles avec des racines -> cree une variable tempo, mais pour le moment cases qui disparaissent?? (pas pour le filtre en revache qui fonctionne
 
