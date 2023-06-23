@@ -95,7 +95,9 @@ class SoilN(Soil):
 
         * ``__init__``: initializes and builds static object for the rest of simulation
         * :meth:`ConcNO3`: Calculation of the nitrate concentration (unit: kg N.mm-1)
+        * :meth:`moleN`: Calculation of the mineral N molar content (unit: micromole N per voxel)
         * :meth:`ConcN`: Calculation of the molar concentration of mineral nitrogen (unit: micromole N.L-1)
+        * :meth:`ConcN_roots`: Calculation of the average molar concentration of mineral nitrogen in each plant root zone (unit: micromole N.L-1)
         * :meth:`ConcN_old`: Calculation of the molar concentration of mineral nitrogen - former calulation to account for 1 Ha
         * :meth:`init_memory_EV`: Inititalise attributes corresponding to memory variables and parameters to compute soil evaporation
         * :meth:`update_memory_EV`: Update 'stateEV' attribute with new list of memory variables
@@ -270,18 +272,22 @@ class SoilN(Soil):
         #non - rq: dans devienne-baret (2000): utilise toute l'eau du sol pour calcul de concentration
         return self.m_NO3 / self.tsw_t#(S.tsw_t - S.m_QH20min + 0.00000001)
 
-    
+    def moleN(self):
+        """ Calculation of the mineral N molar content (unit: µmole N per voxel)
+
+        """
+        # """ calculation of the molar concentration of mineral nitrogen (micromole N.L-1) by voxel - 8.36 p 161 """
+        # L d'eau libre (eau liee retiree - car pas dans les eaux de drainage)
+        MMA = 71.428  # 142.85 #mole d'N.kg-1 (14 g.mole-1)
+        moleN_ = (self.m_NO3 + self.m_NH4) / (MMA) * 10 ** 6  # micromole d'N
+        return moleN_
+
     def ConcN(self):
         """ Calculation of the molar concentration of mineral nitrogen (unit: micromole N.L-1)
         (STICS book, Eq. 8.36, p 161)
         
         """
-        #""" calculation of the molar concentration of mineral nitrogen (micromole N.L-1) by voxel - 8.36 p 161 """
-        #L d'eau libre (eau liee retiree - car pas dans les eaux de drainage)
-        MMA = 71.428 #142.85 #mole d'N.kg-1 (14 g.mole-1)
-        moleN = (self.m_NO3 + self.m_NH4)/(MMA)*10**6 #micromole d'N
-        #return moleN / (self.tsw_t * self.m_vox_surf) * 10000   #remis pour conc sur 1ha pour coller au parametrage de sTICS
-        return moleN / (self.tsw_t * self.m_vox_surf) #micromole d'N.L-1
+        return self.moleN() / (self.tsw_t * self.m_vox_surf) #micromole d'N.L-1
 
 
     def ConcN_old(self):
@@ -291,9 +297,25 @@ class SoilN(Soil):
         #""" calculation of the molar concentration of mineral nitrogen (micromole N.L-1) by voxel - 8.36 p 161 """
         # L d'eau libre (eau liee retiree - car pas dans les eaux de drainage)
         MMA = 142.85  # mole d'N.kg-1 (g.mole-1)
-        moleN = (self.m_NO3 + self.m_NH4) / (MMA) * 10 ** 6  # micromole d'N
-        return moleN / (self.tsw_t * self.m_vox_surf) * 10000  # remis pour conc sur 1ha pour coller au parametrage de sTICS
+        moleN_ = (self.m_NO3 + self.m_NH4) / (MMA) * 10 ** 6  # micromole d'N
 
+        return moleN_ / (self.tsw_t * self.m_vox_surf) * 10000  # remis pour conc sur 1ha pour coller au parametrage de sTICS
+
+    def ConcN_roots(self, ls_roots):
+        """ Calculation of the average molar concentration of mineral nitrogen in each plant root zone (unit: micromole N.L-1)
+
+        :param ls_roots:
+        :type ls_roots: list
+
+        :return: ls_concN:
+        """
+        ls_mask_r = list(map(mask, ls_roots))  # mask de racines
+        ls_masked_moleN = list(map(np.multiply, ls_mask_r, [self.moleN()] * len(ls_mask_r))) #micromole N
+        ls_vol_eau = list(map(np.multiply, ls_mask_r, [self.tsw_t * self.m_vox_surf] * len(ls_mask_r))) #L
+        ls_concN = list(map(np.divide, list(map(np.sum, ls_masked_moleN)), list(map(np.sum, ls_vol_eau))))
+
+        return ls_concN
+        # rq: np.sum(S.moleN()) / (np.sum(S.tsw_t * S.m_vox_surf)) # whole soil average N molar concentration (micromole N .L-1)
 
     def init_memory_EV(self, parSN):
         """ Inititalise attributes corresponding to memory variables and parameters to compute soil evaporation

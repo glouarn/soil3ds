@@ -169,4 +169,3 @@ S.CloseNbalance()  # -> equilibre
 # ambiguite entre unite de ls_roots (m) et ls_lrac (cm) -> pas du tout meme resultats!
 # ordre de grandeur bon quand on passe des m plutot que cm
 
-

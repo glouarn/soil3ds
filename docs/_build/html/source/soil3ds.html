@@ -84,6 +84,7 @@
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ConcN"><code class="docutils literal notranslate"><span class="pre">SoilN.ConcN()</span></code></a></li>
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ConcNO3"><code class="docutils literal notranslate"><span class="pre">SoilN.ConcNO3()</span></code></a></li>
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ConcN_old"><code class="docutils literal notranslate"><span class="pre">SoilN.ConcN_old()</span></code></a></li>
+<li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ConcN_roots"><code class="docutils literal notranslate"><span class="pre">SoilN.ConcN_roots()</span></code></a></li>
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.FBIO_factor"><code class="docutils literal notranslate"><span class="pre">SoilN.FBIO_factor()</span></code></a></li>
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.FN_factor"><code class="docutils literal notranslate"><span class="pre">SoilN.FN_factor()</span></code></a></li>
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.Nitrif_RespHum"><code class="docutils literal notranslate"><span class="pre">SoilN.Nitrif_RespHum()</span></code></a></li>
@@ -109,6 +110,7 @@
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ls_NRES"><code class="docutils literal notranslate"><span class="pre">SoilN.ls_NRES()</span></code></a></li>
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.mask_PROFUM"><code class="docutils literal notranslate"><span class="pre">SoilN.mask_PROFUM()</span></code></a></li>
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.mixResMat"><code class="docutils literal notranslate"><span class="pre">SoilN.mixResMat()</span></code></a></li>
+<li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.moleN"><code class="docutils literal notranslate"><span class="pre">SoilN.moleN()</span></code></a></li>
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.stepMicrobioMin"><code class="docutils literal notranslate"><span class="pre">SoilN.stepMicrobioMin()</span></code></a></li>
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.stepNB"><code class="docutils literal notranslate"><span class="pre">SoilN.stepNB()</span></code></a></li>
 <li><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.stepNINFILT"><code class="docutils literal notranslate"><span class="pre">SoilN.stepNINFILT()</span></code></a></li>
@@ -1023,7 +1025,9 @@ The class inherits from ‘Soil’ class which includes descriptions of soil phy
 <div><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">__init__</span></code>: initializes and builds static object for the rest of simulation</p></li>
 <li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ConcNO3" title="soil3ds.soil_moduleN.SoilN.ConcNO3"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ConcNO3()</span></code></a>: Calculation of the nitrate concentration (unit: kg N.mm-1)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.moleN" title="soil3ds.soil_moduleN.SoilN.moleN"><code class="xref py py-meth docutils literal notranslate"><span class="pre">moleN()</span></code></a>: Calculation of the mineral N molar content (unit: micromole N per voxel)</p></li>
 <li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ConcN" title="soil3ds.soil_moduleN.SoilN.ConcN"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ConcN()</span></code></a>: Calculation of the molar concentration of mineral nitrogen (unit: micromole N.L-1)</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ConcN_roots" title="soil3ds.soil_moduleN.SoilN.ConcN_roots"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ConcN_roots()</span></code></a>: Calculation of the average molar concentration of mineral nitrogen in each plant root zone (unit: micromole N.L-1)</p></li>
 <li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.ConcN_old" title="soil3ds.soil_moduleN.SoilN.ConcN_old"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ConcN_old()</span></code></a>: Calculation of the molar concentration of mineral nitrogen - former calulation to account for 1 Ha</p></li>
 <li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.init_memory_EV" title="soil3ds.soil_moduleN.SoilN.init_memory_EV"><code class="xref py py-meth docutils literal notranslate"><span class="pre">init_memory_EV()</span></code></a>: Inititalise attributes corresponding to memory variables and parameters to compute soil evaporation</p></li>
 <li><p><a class="reference internal" href="#soil3ds.soil_moduleN.SoilN.update_memory_EV" title="soil3ds.soil_moduleN.SoilN.update_memory_EV"><code class="xref py py-meth docutils literal notranslate"><span class="pre">update_memory_EV()</span></code></a>: Update ‘stateEV’ attribute with new list of memory variables</p></li>
@@ -1141,6 +1145,20 @@ The class inherits from ‘Soil’ class which includes descriptions of soil phy
 <dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.ConcN_old">
 <span class="sig-name descname"><span class="pre">ConcN_old</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.ConcN_old"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.ConcN_old" title="Permalink to this definition"></a></dt>
 <dd><p>Calculation of the molar concentration of mineral nitrogen - former calulation to account for 1 Ha</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.ConcN_roots">
+<span class="sig-name descname"><span class="pre">ConcN_roots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ls_roots</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.ConcN_roots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.ConcN_roots" title="Permalink to this definition"></a></dt>
+<dd><p>Calculation of the average molar concentration of mineral nitrogen in each plant root zone (unit: micromole N.L-1)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ls_roots</strong> (<em>list</em>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ls_concN:</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1624,6 +1642,12 @@ Parameters calculated according to Nicolardot et al. (2001) as functions of resi
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="soil3ds.soil_moduleN.SoilN.moleN">
+<span class="sig-name descname"><span class="pre">moleN</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleN.html#SoilN.moleN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleN.SoilN.moleN" title="Permalink to this definition"></a></dt>
+<dd><p>Calculation of the mineral N molar content (unit: µmole N per voxel)</p>
 </dd></dl>
 
 <dl class="py method">

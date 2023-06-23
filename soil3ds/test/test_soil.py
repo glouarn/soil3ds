@@ -203,8 +203,3 @@ S.CloseNbalance() #-> equilibre
 
 
 
-
-
-
-
-

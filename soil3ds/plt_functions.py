@@ -91,6 +91,23 @@ def vert_roots(dxyz, lvopt):
 #R2 = vert_roots(dxyz, [0.95, 0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.25, 0.15, 0.05])
 
 
+def root_density(ls_roots, S, unit=1):
+    """ Compute a list of root length density distribution per plant (unit: cm.cm-3)
+
+    :param ls_roots:
+    :param S: Soil object
+    :param unit: root length array unit (1: m; 100:cm))
+    :return: ls_root_density
+    """
+    ls_root_density = []
+    cor_ = 100. / unit
+    for rt in ls_roots:
+        plt_density = (rt * cor_) / (S.m_soil_vol * 10 ** 6)  # m->cm / m3 -> cm3
+        ls_root_density.append(plt_density)  # cm/cm-3
+
+    return ls_root_density
+
+
 def effective_root_lengths(ls_roots, tresh = 0.5):
     """
     
@@ -188,47 +205,54 @@ def RLprof_t(t, ncouches_sol):
 
 ##### fonctions uptake plantes (avec objet sol + paramp) #####
 
-
-def VABSvox(paramp, CONCN):
-    """
-        
-    """
-    #""" Specific absorbtion capacity by roots (micromole N.h-1.cm-1 root) eq. 8.36 p 161 """
-    #""" paramp = plant parameters """
-    HATS = paramp['Vmax1']*CONCN / (paramp['Kmax1'] + CONCN) *10000*10
-    LATS = paramp['Vmax2']*CONCN / (paramp['Kmax2'] + CONCN) *10000*10
-    # facteur 10000*10 car parametres STICS prevu pour densite (pas longueur) couche LrarZ
-    return HATS+LATS
-
-    #rq: separer HATS et LATS dans des fonctions avec des options?
-
-
-def VABSvox_old(paramp, CONCN):
+def HATSvox(paramp, CONCN):
     """
 
     """
     # """ Specific absorbtion capacity by roots (micromole N.h-1.cm-1 root) eq. 8.36 p 161 """
     # """ paramp = plant parameters """
     HATS = paramp['Vmax1'] * CONCN / (paramp['Kmax1'] + CONCN)
-    LATS = paramp['Vmax2'] * CONCN / (paramp['Kmax2'] + CONCN)
-    return HATS + LATS
+    return HATS
+
+def LATSvox(paramp, CONCN):
+    """
+
+    """
+    # """ Specific absorbtion capacity by roots (micromole N.h-1.cm-1 root) eq. 8.36 p 161 """
+    # """ paramp = plant parameters """
+    LATS = paramp['Vmax2']*CONCN / (paramp['Kmax2'] + CONCN)
+    return LATS
+
+
+def VABSvox(paramp, CONCN):
+    """ (unit: micromole N.h-1.cm-1 root)
+        
+    """
+    #""" Specific absorbtion capacity by roots (micromole N.h-1.cm-1 root) eq. 8.36 p 161 """
+    #""" paramp = plant parameters """
+    HATS = HATSvox(paramp, CONCN)
+    LATS = LATSvox(paramp, CONCN)
+    return HATS+LATS
+
+    #rq: separer HATS et LATS dans des fonctions avec des options?
 
 
 
 def FLUXRACs(SN, paramp, ls_lrac):
-    """
+    """ (unit: kg N.jour-1 per voxel)
         
     """
     #""" list of potential active uptake rate (kg N. voxel-1, day-1) per root system per voxel - fluxTot=total uptake potential by all roots ; 
     #ls_frac_fluxrac = fraction de demande totale par voxel par systeme racinaire - eq. 8.37 p 161 """
-    #ls_lrac = ls_ roots (en m) -> converti en cm (*100)
+    #ls_lrac = ls_ roots (en m) -> a convertir en cm (*100)
 
     MMA = 71.428 #142.85 #mole d'N.kg-1 (14 g.mole-1)
     ls_flux_rac = []
     fluxTot = SN.m_1*0.
     for i in range(len(ls_lrac)):
         VABS = VABSvox(paramp[i], SN.ConcN())
-        flux = VABS * ls_lrac[i] * 24. / (MMA * 10 ** 6 * 1000) #24h / mole-µmole / g-kg
+        #flux = VABS * ls_lrac[i] * 24. / (MMA * 10 ** 6 * 1000) #24h / mole-µmole / g-kg
+        flux = VABS * ls_lrac[i] * 100. * 24. / (MMA * 10 ** 6 )  # m-cm/ 24h / mole-µmole
 
         ls_flux_rac.append(flux)
         fluxTot = fluxTot + flux
@@ -251,13 +275,13 @@ def FLUXRACs_old(paramp, SN, ls_lrac):
     """
     # """ list of potential active uptake rate (kg N. voxel-1, day-1) per root system per voxel - fluxTot=total uptake potential by all roots ;
     # ls_frac_fluxrac = fraction de demande totale par voxel par systeme racinaire - eq. 8.37 p 161 """
-    # ls_lrac = ls_ roots (en m) -> convert en cm (*100)
+    # ls_lrac = ls_ roots (en m) -> a convertir en cm (*100)
 
-    MMA = 142.85  # mole d'N.kg-1 (g.mole-1)
+    MMA = 142.85  # mole d'N.kg-1 (g.mole-1) #MMA erreur
     ls_flux_rac = []
     fluxTot = SN.m_1 * 0.
     for i in range(len(ls_lrac)):
-        VABS = VABSvox_old(paramp[i], SN.ConcN_old())
+        VABS = VABSvox(paramp[i], SN.ConcN_old()) *100. #facteur 100. erreur
         flux = VABS * ls_lrac[i] * 100. * 24. / (MMA * 10 ** 6)  # calcule car retombe pas sur coeff 33.6 indique p 161
         ls_flux_rac.append(flux)
         fluxTot = fluxTot + flux
