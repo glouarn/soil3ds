@@ -112,16 +112,25 @@ S, Tsol = initial.init_sol_fromLpy(inis, meteo_j, par_sol, par_SN, discret_solXY
 ###### Creation variables plante entree pour simul plante-sol: ls_epsi / ls_roots / concentration N racine ou NNI = fixes
 nb_plt = 200 #nombre de plantes dans pattern8
 ls_epsi = [0.5/200]*nb_plt #fration de espsi.plant-1 (equivalent a transmis de 50%)
-MSrac_plt = np.array([10./200]*nb_plt) #g plt-1 (equivalent a 1 T.ha-1)
+#MSrac_plt = np.array([10./200]*nb_plt) #g plt-1 (equivalent a 1 T.ha-1)
+#SRL = 250 #m.g-1
+#LENrac_plt = MSrac_plt*SRL #m.plt-1
+
 SRL = 250 #m.g-1
-LENrac_plt = MSrac_plt*SRL #m.plt-1
+MSrac_plt = [6000./(SRL*nb_plt)] * nb_plt #g plt-1
+#sum(MSrac_plt) #g.m-2
+#sum(MSrac_plt)*10000/1000000 #T racines .ha-1
+# pas utilise, juste pour info
+
+# vise meme racine que test_1D : 6000 m.m-2 en 30 couches (200m par couche = 1 m par plante par couche)
+LENrac_plt = [6000./nb_plt]*nb_plt # m.plt-1
 ls_N = np.array([0.75]*nb_plt)#invar['NNI']
 
 #calcul de ls_roots adapte format sol S avec distribution homogene dans tout le sol
 ls_roots = [] # cm !!
 for i in range(nb_plt):
     #longueur de racine
-    rootLen_i = S.m_1 * LENrac_plt[i]/(ncouches_sol*discret_solXY[0]*discret_solXY[1])*100
+    rootLen_i = S.m_1 * LENrac_plt[i]/(ncouches_sol*discret_solXY[0]*discret_solXY[1])
     ls_roots.append(rootLen_i)
 
 
@@ -166,5 +175,16 @@ for j in range(n_jour):
     tsw = S.tsw_t.sum()
 
     #print('Water', DOY, tsw,transp)
+
+
+##termes du bilan hydrique global
+S.CloseWbalance()  # -> equilibre
+S.CloseCbalance()  # -> equilibre
+S.CloseNbalance()  # -> equilibre
+
+# S.bilanN['cumMinN'] # soil mineralisation
+# S.bilanN['cumLix'] #lixiviation nitrates
+# S.bilanN['azomes'] # total minearal N
+# S.bilanN['cumUptakePlt'] # uptake plt -> ??marche pas?
 
 

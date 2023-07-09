@@ -113,10 +113,10 @@ def test_uni2():
     ## vegetation
     ls_epsi = [0.4, 0.4]##[0.4]# !! correspondance avec les nb de root systems!
     ## 3D root distributions (fixe)
-    R3 = zeros(shape(S2.m_1))
-    R3[0:5, 1:3, 1:3] = ones([5,2,2])*0.25
-    R4 = zeros(shape(S2.m_1))
-    R4[0:7, 0:4, 2:4] = ones([7,4,2])*0.15
+    R3 = np.zeros(np.shape(S2.m_1))
+    R3[0:5, 1:3, 1:3] = np.ones([5,2,2])*0.25
+    R4 = np.zeros(np.shape(S2.m_1))
+    R4[0:7, 0:4, 2:4] = np.ones([7,4,2])*0.15
 
     ls_roots = [R3, R4]
 

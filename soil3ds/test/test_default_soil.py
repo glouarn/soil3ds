@@ -90,11 +90,12 @@ S = solN.SoilN(par_sol, par_SN, soil_number=vsoilnumbers,
 # simulation d'un sol 1D
 ## pour sol nu
 epsilon = 10-10
-MSr = 0.30  # T.ha-1
-MSrplt = MSr*1000*1000/10000 # g. plt-1
+MSr = 1.00  # T.ha-1
+MSrplt = MSr*1000*1000/10000 # g. m-2
 SRL = 250 #m.g-1
-R1 = S.m_1 * MSrplt*SRL # m
-ls_roots = [R1*100] # cm
+nb_couches = float(S.m_1.size)
+R1 = S.m_1 * MSrplt*SRL / nb_couches # m .plt-1 (si tout dans une plante; reparti dans differentes couches)
+ls_roots = [R1] # m
 ls_epsi = [0.2]
 #ls_N = [0.9]
 ls_paramP = [ParamP]
@@ -108,7 +109,7 @@ QNplt = MSplt * Npc / 100. # kg N
 
 
 # initialisation de variables de sorties
-cumET0, cumNplt = [], []
+cumET0, cumNplt, concN = [], [], []
 
 ##boucle journaliere couplage sol-plante
 for DOY in range(DOY_deb, DOY_fin):
@@ -128,8 +129,8 @@ for DOY in range(DOY_deb, DOY_fin):
 
     # entrees N
     # map_N = 0.*S.m_1[0,:,:]
-    mapN_Rain = 1. * S.m_1[0, :, :] * Rain * par_SN['concrr']  # Nmin de la pluie
-    mapN_Irrig = 1. * S.m_1[0, :, :] * Irrig * par_SN['concrr']  # Nmin de l'eau d'irrigation
+    mapN_Rain = 1. * S.m_1[0, :, :] * Rain * par_SN['concrr'] * S.m_vox_surf[0,:,:] # Nmin de la pluie
+    mapN_Irrig = 1. * S.m_1[0, :, :] * Irrig * par_SN['concrr'] * S.m_vox_surf[0,:,:] # Nmin de l'eau d'irrigation
     mapN_fertNO3 = 1. * S.m_1[0, :, :] * mng_j['FertNO3'] * S.m_vox_surf[0, :, :] / 10000.  # kg N par voxel
     mapN_fertNH4 = 1. * S.m_1[0, :, :] * mng_j['FertNH4'] * S.m_vox_surf[0, :, :] / 10000.  # kg N par voxel
 
@@ -147,6 +148,7 @@ for DOY in range(DOY_deb, DOY_fin):
     # sorties
     cumET0.append(meteo_j['Et0'] * surfsolref)
     cumNplt.append(ls_N[0])
+    concN.append(mean(S.ConcN_roots(ls_roots)))#(mean(S.ConcN()))
 
     # S.bilanW['cumPP'] # precipitation
     # S.bilanW['cumEV'] # soil evaporation

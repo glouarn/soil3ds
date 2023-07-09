@@ -104,8 +104,8 @@ for DOY in range(DOY_deb, DOY_fin):
 
     # entrees N
     # map_N = 0.*S.m_1[0,:,:]
-    mapN_Rain = 1. * S.m_1[0, :, :] * Rain * par_SN['concrr']  # Nmin de la pluie
-    mapN_Irrig = 1. * S.m_1[0, :, :] * Irrig * par_SN['concrr']  # Nmin de l'eau d'irrigation
+    mapN_Rain = 1. * S.m_1[0, :, :] * Rain * par_SN['concrr'] * S.m_vox_surf[0,:,:] # Nmin de la pluie
+    mapN_Irrig = 1. * S.m_1[0, :, :] * Irrig * par_SN['concrr'] * S.m_vox_surf[0,:,:] # Nmin de l'eau d'irrigation
     mapN_fertNO3 = 1. * S.m_1[0, :, :] * mng_j['FertNO3'] * S.m_vox_surf[0, :, :] / 10000.  # kg N par voxel
     mapN_fertNH4 = 1. * S.m_1[0, :, :] * mng_j['FertNH4'] * S.m_vox_surf[0, :, :] / 10000.  # kg N par voxel
 
@@ -158,7 +158,7 @@ S.CloseWbalance()  # -> equilibre
 S.CloseCbalance()  # -> equilibre
 S.CloseNbalance()  # -> equilibre
 
-
+S.bilanN['']
 
 
 

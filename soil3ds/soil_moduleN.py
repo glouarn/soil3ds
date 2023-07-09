@@ -279,7 +279,7 @@ class SoilN(Soil):
         # """ calculation of the molar concentration of mineral nitrogen (micromole N.L-1) by voxel - 8.36 p 161 """
         # L d'eau libre (eau liee retiree - car pas dans les eaux de drainage)
         MMA = 71.428  # 142.85 #mole d'N.kg-1 (14 g.mole-1)
-        moleN_ = (self.m_NO3 + self.m_NH4) / (MMA) * 10 ** 6  # micromole d'N
+        moleN_ = (self.m_NO3 + self.m_NH4) * (MMA) * 10 ** 6  # micromole d'N
         return moleN_
 
     def ConcN(self):
@@ -287,7 +287,7 @@ class SoilN(Soil):
         (STICS book, Eq. 8.36, p 161)
         
         """
-        return self.moleN() / (self.tsw_t * self.m_vox_surf) #micromole d'N.L-1
+        return self.moleN() / self.tsw_t  #micromole d'N.L-1
 
 
     def ConcN_old(self):
@@ -299,7 +299,7 @@ class SoilN(Soil):
         MMA = 142.85  # mole d'N.kg-1 (g.mole-1)
         moleN_ = (self.m_NO3 + self.m_NH4) / (MMA) * 10 ** 6  # micromole d'N
 
-        return moleN_ / (self.tsw_t * self.m_vox_surf) * 10000  # remis pour conc sur 1ha pour coller au parametrage de sTICS
+        return moleN_ / (self.tsw_t * self.m_vox_surf) * 10000  # remis pour conc sur 1ha pour coller au parametrage de sTICS + erreur voxsurf
 
     def ConcN_roots(self, ls_roots):
         """ Calculation of the average molar concentration of mineral nitrogen in each plant root zone (unit: micromole N.L-1)
@@ -311,7 +311,7 @@ class SoilN(Soil):
         """
         ls_mask_r = list(map(mask, ls_roots))  # mask de racines
         ls_masked_moleN = list(map(np.multiply, ls_mask_r, [self.moleN()] * len(ls_mask_r))) #micromole N
-        ls_vol_eau = list(map(np.multiply, ls_mask_r, [self.tsw_t * self.m_vox_surf] * len(ls_mask_r))) #L
+        ls_vol_eau = list(map(np.multiply, ls_mask_r, [self.tsw_t] * len(ls_mask_r))) #L
         ls_concN = list(map(np.divide, list(map(np.sum, ls_masked_moleN)), list(map(np.sum, ls_vol_eau))))
 
         return ls_concN
@@ -1434,8 +1434,8 @@ def step_bilanWN_solVGL(S, par_SN, meteo_j,  mng_j, ParamP, ls_epsi, ls_roots, l
     Irrig = mng_j['Irrig']  # ['irrig_Rh1N']#R1N = sol_nu
 
     # preparation des entrees azote
-    mapN_Rain = 1. * S.m_1[0, :, :] * Rain * par_SN['concrr']  # Nmin de la pluie
-    mapN_Irrig = 1. * S.m_1[0, :, :] * Irrig * par_SN['concrr']  # Nmin de l'eau d'irrigation
+    mapN_Rain = 1. * S.m_1[0, :, :] * Rain * par_SN['concrr'] * S.m_vox_surf[0,:,:] # Nmin de la pluie kg N par voxel
+    mapN_Irrig = 1. * S.m_1[0, :, :] * Irrig * par_SN['concrr'] * S.m_vox_surf[0,:,:] # Nmin de l'eau d'irrigation kg N par voxel
     mapN_fertNO3 = 1. * S.m_1[0, :, :] * mng_j['FertNO3'] * S.m_vox_surf[0, :, :] / 10000.  # kg N par voxel
     mapN_fertNH4 = 1. * S.m_1[0, :, :] * mng_j['FertNH4'] * S.m_vox_surf[0, :, :] / 10000.  # kg N par voxel
 
