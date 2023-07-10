@@ -804,7 +804,7 @@ class Soil(object):
         ls_masked_asw = list(map(multiply, ls_mask, [masked_aswt]*len(ls_mask)))#pour chaque root system, asw(mm) si racine et teta> wp; zero sinon
         ls_masked_tswt = list(map(multiply, ls_mask, [self.m_QH20max]*len(ls_mask)))
         ls_ftsw = list(map(divide, list(map(float, list(map(sum3, ls_masked_asw)))), list(map(float, list(map(sum3, ls_masked_tswt))))))
-        paramp = {"leafAlbedo":leafAlbedo, "FTSWThreshold":FTSWThreshold} # a faire passer en amont
+        paramp = [{"leafAlbedo":leafAlbedo, "WaterTreshGs":FTSWThreshold}] # a faire passer en amont
         ls_transp = Transpi_NC(Et0, ls_epsi, ls_ftsw, paramp)
         #m_transpi = distrib_water_uptakeNC(self.asw_t, ls_masked_asw, ls_roots_eff, ls_transp)
         m_transpi, ls_m_transpi = self.distrib_water_uptakeNC(ls_masked_asw, ls_roots_eff, ls_transp)

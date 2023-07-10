@@ -19,7 +19,7 @@ from soil3ds.miscel_functions import * #soil3ds miscellaneous soil functions
 ########## diverse plant fonctions - soil water balance
 
 
-def Transpi_NC(Et0, ls_epsi, ls_FTSW, paramp = {"leafAlbedo":0.15, "FTSWThreshold":0.4}):
+def Transpi_NC(Et0, ls_epsi, ls_FTSW, paramp = [{"leafAlbedo":0.15, "WaterTreshGs":0.4}]):
     """
     
     """
@@ -38,19 +38,20 @@ def Transpi_NC(Et0, ls_epsi, ls_FTSW, paramp = {"leafAlbedo":0.15, "FTSWThreshol
         # faut introduire crop coefficient KMAXp cf eq. 7.7 -> pour le moment limite a Et0 (reference gazon)
 
       
-        if (ls_FTSW[i] > paramp["FTSWThreshold"]):#previousTSW/TTSW
+        if (ls_FTSW[i] > paramp[0]["WaterTreshGs"]):#previousTSW/TTSW
             # la transpiration de la plante est faite a son potentielle
             Ks = 1.
         else:
             # regulation
             # la quantite d'eau presente dans le sol n'est pas suffisante pour
             # que la transpiration de plante se fasse a son maximum   
-            Ks = ls_FTSW[i]/paramp["FTSWThreshold"]
+            Ks = ls_FTSW[i]/paramp[0]["WaterTreshGs"]
 
         ls_transp.append(Ks*potentialTranspiration)
 
     return ls_transp
     # leafAlbedo pas necessaire dans cette version
+    # parametres pris dans la premiere plante et suppose identiques pour toutes les plantes
 
 #Transpi_NC(2., [0.4], [0.8], leafAlbedo=0.15, FTSWThreshold=0.4)
 
@@ -504,7 +505,7 @@ def Actual_Nuptake_plt(SN, ls_Pot_Nuptake_plt, ls_demandeN):
     return ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N
 
 
-def Actual_Nuptake_plt_Bis(SN, ls_Pot_Nuptake_plt, ls_PltN):
+def Actual_Nuptake_plt_Bis(SN, ls_Pot_Nuptake_plt, ls_PltN, paramp= [{"treshmaxN":1.0, "treshminN":0.8}]):
     """
         
     """
@@ -515,8 +516,8 @@ def Actual_Nuptake_plt_Bis(SN, ls_Pot_Nuptake_plt, ls_PltN):
     for i in range(len(ls_PltN)):
 
         # A passer en parametre (valeurs de NNI ou de Npc racine min et max)
-        treshmaxN = 1.0 #NNI  et au dessus -> frein=0 / peut aussi etre teneur en N des racines
-        treshminN = 0.8 #NNI et en dessous -> frein=1 / peut aussi etre teneur en N des racines
+        treshmaxN = paramp[0]['treshmaxN']# 1.0 #NNI  et au dessus -> frein=0 / peut aussi etre teneur en N des racines
+        treshminN = paramp[0]['treshminN']#0.8 #NNI et en dessous -> frein=1 / peut aussi etre teneur en N des racines
 
         if ls_PltN[i] > treshmaxN:
             frein = 0.
@@ -544,6 +545,7 @@ def Actual_Nuptake_plt_Bis(SN, ls_Pot_Nuptake_plt, ls_PltN):
     ##SN.bilanN['cumUptakePlt'].append(ActUpNtot/SN.soilSurface *10000)
 
     return ActUpNtot, ls_Act_Nuptake_plt, ls_frein_N
+    # parametres pris dans la premiere plante et suppose identiques pour toutes les plantes
 
 
 def Actual_Nuptake_plt_old(SN, ls_Pot_Nuptake_plt, ls_demandeN):

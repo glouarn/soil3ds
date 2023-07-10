@@ -158,7 +158,7 @@ S.CloseWbalance()  # -> equilibre
 S.CloseCbalance()  # -> equilibre
 S.CloseNbalance()  # -> equilibre
 
-S.bilanN['']
+
 
 
 

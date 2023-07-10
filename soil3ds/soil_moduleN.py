@@ -1070,7 +1070,7 @@ class SoilN(Soil):
             else:  # si plante
                 ls_PltN = ls_demandeN  # avec cette option doit etre ls valeur de NNI
                 PotUpNtot, ls_Pot_Nuptake_plt, idmin = Distrib_Potential_Nuptake_Plt_Bis(self, paramp, ls_lrac)
-                ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N = Actual_Nuptake_plt_Bis(self, ls_Pot_Nuptake_plt, ls_PltN)
+                ActUpNtot, ls_Act_Nuptake_plt, ls_DQ_N = Actual_Nuptake_plt_Bis(self, ls_Pot_Nuptake_plt, ls_PltN, paramp)
         elif optNuptake == 2:  # 'old':
             # version ancienne (bug concN)
             if ls_lrac is None or ls_mWaterUptakePlt is None or ls_demandeN is None:  # si pas de plante (au moins fournir le paramp qui donne un nbre de plante)
@@ -1609,6 +1609,10 @@ def default_paramp():
             * 'Kmax1' : HATS Kmax (unit: micromole.L-1)
             * 'Vmax2' : LATS Vmax (unit: micromole.cm-1.h-1)
             * 'Kmax2' : LATS Kmax (unit: micromole.L-1)
+            * 'treshmaxN' : Lower treshold of plant N status feedback effect on root nitrogen uptake (unit: either in NNI unit or %)
+            * 'treshminN' : Higher treshold of plant N status feedback effect on root nitrogen uptake (unit: either in NNI unit or %)
+            * 'leafAlbedo' : Leaf albedo (unit: 0-1 fraction)
+            * 'WaterTreshGs' : FTSW treshold for the onset of transpiration reduction (unit: 0-1 fraction)
 
     :return: Default 'paramp' parameter dictionnary
 
@@ -1618,7 +1622,12 @@ def default_paramp():
                     'Vmax1': 0.0018,
                      'Kmax1': 50.0,
                      'Vmax2': 0.05,
-                     'Kmax2': 25000.0
+                     'Kmax2': 25000.0,
+                     'treshmaxN': 1.0,
+                     'treshminN': 0.8,
+                     'leafAlbedo': 0.15,
+                     'WaterTreshGs': 0.4
+
                     }
 
     """
@@ -1628,6 +1637,12 @@ def default_paramp():
     paramp['Kmax1'] = 50.
     paramp['Vmax2'] = 0.05
     paramp['Kmax2'] = 25000.0
+    paramp['treshmaxN'] = 1.0
+    paramp['treshminN'] = 0.8
+
+    paramp['leafAlbedo'] = 0.15
+    paramp['WaterTreshGs'] = 0.4
+
 
     return paramp
 
