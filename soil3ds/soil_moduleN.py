@@ -1613,6 +1613,7 @@ def default_paramp():
             * 'treshminN' : Higher treshold of plant N status feedback effect on root nitrogen uptake (unit: either in NNI unit or %)
             * 'leafAlbedo' : Leaf albedo (unit: 0-1 fraction)
             * 'WaterTreshGs' : FTSW treshold for the onset of transpiration reduction (unit: 0-1 fraction)
+            * 'treshEffRootsN' : Treshold for maximal total root length density per voxel which is effective for N uptake (cm.cm-3)
 
     :return: Default 'paramp' parameter dictionnary
 
@@ -1626,7 +1627,8 @@ def default_paramp():
                      'treshmaxN': 1.0,
                      'treshminN': 0.8,
                      'leafAlbedo': 0.15,
-                     'WaterTreshGs': 0.4
+                     'WaterTreshGs': 0.4,
+                     'treshEffRootsN': 10**6
 
                     }
 
@@ -1642,7 +1644,7 @@ def default_paramp():
 
     paramp['leafAlbedo'] = 0.15
     paramp['WaterTreshGs'] = 0.4
-
+    paramp['treshEffRootsN'] = 10**6
 
     return paramp
 

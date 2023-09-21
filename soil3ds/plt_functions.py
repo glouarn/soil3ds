@@ -126,6 +126,8 @@ def effective_root_lengths(ls_roots, tresh = 0.5):
         m[rt] = np.where(tot_root_dens>tresh, tresh*ls_roots[rt]/tot_root_dens, ls_roots[rt])
         
     return m
+    #! fournir seuil tresh en densite ou en longueur absolue selon ce qu'on attend
+
 
 #def effective_root_length(m_root, tresh = 0.5):#faire avec une liste de root systems ls_root_syst pour competition
 #    """ for a single root system """
@@ -298,7 +300,7 @@ def FLUXRACs_old(paramp, SN, ls_lrac):
 
 
 
-def Potential_NuptakeTot(SN, parSN, paramp, ls_lrac, ls_mWaterUptakePlt):
+def Potential_NuptakeTot(SN, parSN, paramp, ls_lrac_, ls_mWaterUptakePlt):
     """
         
     """
@@ -308,6 +310,12 @@ def Potential_NuptakeTot(SN, parSN, paramp, ls_lrac, ls_mWaterUptakePlt):
     # transport actif peut etre limitee par le flux d'azote a la racine et mobilite de l'N ds le sol (convectif + diffusif = soilNsupply) -> prend le min des 2
     # in fine, n'est rellement preleve que l'N necessaire a la croissance (actual_N uptake) -> borne
     epsilon = 10e-10
+
+    #seuille pour effective root length
+    dens_coeff = 100. / (SN.m_soil_vol[0, 0, 0] * 10 ** 6)
+    dens_rac = list(map(np.multiply, ls_lrac_, [dens_coeff]*len(ls_lrac_)))  # cm.cm-3
+    dens_rac_seuille = effective_root_lengths(dens_rac, tresh=paramp[0]['treshEffRootsN'])  # cm.cm-3 - suppose meme seuil pour tous!
+    ls_lrac = list(map(np.multiply, dens_rac_seuille, [1./dens_coeff]*len(ls_lrac_)))  # m - effective root length
 
     Ntot = (SN.m_NO3 + SN.m_NH4)*SN.m_obstarac
     supNtot, ls_supNtot =  Nsoil_supply(SN, parSN, ls_lrac, ls_mWaterUptakePlt)
@@ -332,7 +340,7 @@ def Potential_NuptakeTot(SN, parSN, paramp, ls_lrac, ls_mWaterUptakePlt):
     # -> ajuste par voxel selon offre du sol et demande des plantes
 
 
-def Potential_NuptakeTot_Bis(SN, paramp, ls_lrac):
+def Potential_NuptakeTot_Bis(SN, paramp, ls_lrac_):
     """
         
     """
@@ -341,6 +349,12 @@ def Potential_NuptakeTot_Bis(SN, paramp, ls_lrac):
     # slmt determine par assimilation de l'azote est active, via equation de Devienne (HATS, LATS)-> FLUXRACs( qui est mal nomme!)
 
     epsilon = 10e-10
+
+    # seuille pour effective root length - suppose identique pour ttes les plantes!
+    dens_coeff = 100. / (SN.m_soil_vol[0, 0, 0] * 10 ** 6)
+    dens_rac = list(map(np.multiply, ls_lrac_, [dens_coeff] * len(ls_lrac_)))  # cm.cm-3
+    dens_rac_seuille = effective_root_lengths(dens_rac, tresh=paramp[0]['treshEffRootsN'])  # cm.cm-3 - suppose meme seuil pour tous!
+    ls_lrac = list(map(np.multiply, dens_rac_seuille, [1. / dens_coeff] * len(ls_lrac_)))  # m - effective root length
 
     Ntot = (SN.m_NO3 + SN.m_NH4)*SN.m_obstarac
     #supNtot, ls_supNtot =  Nsoil_supply(SN, parSN, ls_lrac, ls_mWaterUptakePlt)
@@ -364,7 +378,7 @@ def Potential_NuptakeTot_Bis(SN, paramp, ls_lrac):
     return ActUptakeN, idmin, ls_frac_fluxrac
 
 
-def Potential_NuptakeTot_old(SN, parSN, paramp, ls_lrac, ls_mWaterUptakePlt):
+def Potential_NuptakeTot_old(SN, parSN, paramp, ls_lrac_, ls_mWaterUptakePlt):
     """
 
     """
@@ -374,6 +388,12 @@ def Potential_NuptakeTot_old(SN, parSN, paramp, ls_lrac, ls_mWaterUptakePlt):
     # transport actif peut etre limitee par le flux d'azote a la racine et mobilite de l'N ds le sol (convectif + diffusif = soilNsupply) -> prend le min des 2
     # in fine, n'est rellement preleve que l'N necessaire a la croissance (actual_N uptake) -> borne
     epsilon = 10e-10
+
+    # seuille pour effective root length - suppose identique pour ttes les plantes!
+    dens_coeff = 100. / (SN.m_soil_vol[0, 0, 0] * 10 ** 6)
+    dens_rac = list(map(np.multiply, ls_lrac_, [dens_coeff] * len(ls_lrac_)))  # cm.cm-3
+    dens_rac_seuille = effective_root_lengths(dens_rac, tresh=paramp[0]['treshEffRootsN'])  # cm.cm-3 - suppose meme seuil pour tous!
+    ls_lrac = list(map(np.multiply, dens_rac_seuille, [1. / dens_coeff] * len(ls_lrac_)))  # m - effective root length
 
     Ntot = (SN.m_NO3 + SN.m_NH4) * SN.m_obstarac
     supNtot, ls_supNtot = Nsoil_supply(SN, parSN, ls_lrac, ls_mWaterUptakePlt)
