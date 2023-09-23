@@ -140,7 +140,7 @@ class Soil(object):
     
     Water uptake methods:
 
-        * :meth:`water_uptakeVox`: Compute water uptake partitioning between individual plants within a voxel
+        * :meth:`water_uptakeVox`: Compute water uptake relative distribution for a list of individual plants in voxel [idz,idx,idy]
         * :meth:`distrib_water_uptakeNC`: Compute daily water partitioning between individual plants and the spatial distribution of plant water uptake
     
 
@@ -669,8 +669,8 @@ class Soil(object):
 
     #####  plant water uptake #####
 
-    def water_uptakeVox(self, ls_masked_asw, ls_roots_eff, ls_transp, idx, idy, idz):
-        """ Compute water uptake partitioning between individual plants within a voxel [idz,idx,idy] -
+    def water_uptakeVox(self, ls_masked_asw, ls_roots_eff, ls_transp, idx, idy, idz, opt_Wvox=1):
+        """ Compute water uptake relative distribution for a list of individual plants in voxel [idz,idx,idy] -
         (STICS book, p 140)
 
         :param ls_masked_asw: Array of size [nbplt,z,x,y] storing available soil water (i.e. if root length>0 and teta>wp; else=0) to each individual plant (unit: mm)
@@ -685,22 +685,41 @@ class Soil(object):
         :type idy: int
         :param idz: z value of voxel ID in grid [nz, nx, ny]
         :type idz: int
+        :param opt_Wvox: option for computing water uptake partitioning between plants and voxels (default: 2=weighted asw and root length; 1 = STICS book eq 7.24; 2: root length weighted by available water)
+        :type opt_Wvox: int
 
         :return: ls_uptakeVox, list of individual plant water uptake in voxel [idz,idx,idy] (unit: mm)
 
         """
-        #""" STICS manual (p 140) adapte pour liste de root systems"""
+
 
         ls_uptake = []
-        for p in range(len(ls_roots_eff)):
-            if ls_masked_asw[p][idz][idx][idy]>0.:#y a de l'eau dispo
-                frac_root = ls_roots_eff[p][idz][idx][idy]/sum3(ls_roots_eff[p])
-                frac_asw = ls_masked_asw[p][idz][idx][idy]/sum3(ls_masked_asw[p])
-                uptake_vox = (ls_transp[p] * (frac_root+frac_asw))/2.
-            else:
-                uptake_vox = 0.
 
-            ls_uptake.append(uptake_vox)
+        if opt_Wvox==1:  #""" STICS manual (p 140 7.24) adapte pour liste de root systems"""
+            for p in range(len(ls_roots_eff)):
+                if ls_masked_asw[p][idz][idx][idy]>0.:#y a de l'eau dispo
+                    frac_root = ls_roots_eff[p][idz][idx][idy]/sum3(ls_roots_eff[p]) # fraction de racine de la plante p dans le voxel
+                    frac_asw = ls_masked_asw[p][idz][idx][idy]/sum3(ls_masked_asw[p]) # fraction d'asw de la plante p dans le voxel
+                    uptake_vox = (ls_transp[p] * (frac_root+frac_asw))/2.
+                else:
+                    uptake_vox = 0.
+
+                ls_uptake.append(uptake_vox)
+        elif opt_Wvox==2: # new option with weighted relative length (p231 new book 2023)
+            for p in range(len(ls_roots_eff)):
+                if ls_masked_asw[p][idz][idx][idy]>0.:#y a de l'eau dispo
+                    frac_weigh = (ls_roots_eff[p][idz][idx][idy] * ls_masked_asw[p][idz][idx][idy]) / sum3(ls_roots_eff[p] * ls_masked_asw[p])
+                    uptake_vox = ls_transp[p] * frac_weigh
+                    # pas fraction de longueu de la plante en relatif des autres plantes dans le voxel
+                    # gere distribution de la demande de plante p entre voxel.
+                    # partitionnement de la demande se fait sur la lumiere -> ls_trans[p]
+                    # et apres si pas assez??? -> gere avec condition asw > 0
+                else:
+                    uptake_vox = 0.
+
+                ls_uptake.append(uptake_vox)
+        else:
+            print("unknown opt_Wvox option")
 
         return ls_uptake
         #tester si prend plus... ajuster?

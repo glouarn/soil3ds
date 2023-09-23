@@ -409,7 +409,7 @@
 <p>Water uptake methods:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><a class="reference internal" href="#soil3ds.soil_moduleW.Soil.water_uptakeVox" title="soil3ds.soil_moduleW.Soil.water_uptakeVox"><code class="xref py py-meth docutils literal notranslate"><span class="pre">water_uptakeVox()</span></code></a>: Compute water uptake partitioning between individual plants within a voxel</p></li>
+<li><p><a class="reference internal" href="#soil3ds.soil_moduleW.Soil.water_uptakeVox" title="soil3ds.soil_moduleW.Soil.water_uptakeVox"><code class="xref py py-meth docutils literal notranslate"><span class="pre">water_uptakeVox()</span></code></a>: Compute water uptake relative distribution for a list of individual plants in voxel [idz,idx,idy]</p></li>
 <li><p><a class="reference internal" href="#soil3ds.soil_moduleW.Soil.distrib_water_uptakeNC" title="soil3ds.soil_moduleW.Soil.distrib_water_uptakeNC"><code class="xref py py-meth docutils literal notranslate"><span class="pre">distrib_water_uptakeNC()</span></code></a>: Compute daily water partitioning between individual plants and the spatial distribution of plant water uptake</p></li>
 </ul>
 </div></blockquote>
@@ -774,8 +774,8 @@ Apply a sequence: Plant transipration and soil evaporation -&gt; Rain and Irriga
 
 <dl class="py method">
 <dt class="sig sig-object py" id="soil3ds.soil_moduleW.Soil.water_uptakeVox">
-<span class="sig-name descname"><span class="pre">water_uptakeVox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ls_masked_asw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_roots_eff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_transp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleW.html#Soil.water_uptakeVox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleW.Soil.water_uptakeVox" title="Permalink to this definition"></a></dt>
-<dd><p>Compute water uptake partitioning between individual plants within a voxel [idz,idx,idy] -
+<span class="sig-name descname"><span class="pre">water_uptakeVox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ls_masked_asw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_roots_eff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ls_transp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_Wvox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/soil3ds/soil_moduleW.html#Soil.water_uptakeVox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#soil3ds.soil_moduleW.Soil.water_uptakeVox" title="Permalink to this definition"></a></dt>
+<dd><p>Compute water uptake relative distribution for a list of individual plants in voxel [idz,idx,idy] -
 (STICS book, p 140)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -786,6 +786,7 @@ Apply a sequence: Plant transipration and soil evaporation -&gt; Rain and Irriga
 <li><p><strong>idx</strong> (<em>int</em>) – x value of voxel ID in grid [nz, nx, ny]</p></li>
 <li><p><strong>idy</strong> (<em>int</em>) – y value of voxel ID in grid [nz, nx, ny]</p></li>
 <li><p><strong>idz</strong> (<em>int</em>) – z value of voxel ID in grid [nz, nx, ny]</p></li>
+<li><p><strong>opt_Wvox</strong> (<em>int</em>) – option for computing water uptake partitioning between plants and voxels (default: 2=weighted asw and root length; 1 = STICS book eq 7.24; 2: root length weighted by available water)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
