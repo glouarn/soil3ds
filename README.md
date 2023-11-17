@@ -33,7 +33,7 @@ To install and use *soil3ds*, you need first to install the dependencies.
 3) Install *soil3ds*
     1) Git console :
         ```bash
-        git clone -b Develop https://github.com/glouarn/soil3ds.git
+        git clone https://github.com/glouarn/soil3ds.git
         ```
     2) installation in the conda environment (in folder `soil3ds`)
         ```bash
