@@ -1,6 +1,7 @@
 ## Archisimple en L-py (These Vincent Migault)
 ## Adaptation These Lucas Faverjon (Faverson et al., 2019- Plant and Soil)
-## (fonctionne dans environnement conda 'impulse' + xlrd)
+## Couplage soil3ds GL et wrapper (fonctionne dans environnement conda 'impulse' + xlrd)
+## couplage pour 1 seule entite de racine (1 plante ou toutes les plantes ensemble)
 
 
 from openalea.plantgl.all import * 
@@ -26,29 +27,57 @@ from soil3ds import soil_wrapper as soil_interface #anciennement dans impulse
 #import impulse.soil.soil as soil_interface
 
 
+try:
+    import soil3ds
+    path_ = os.path.dirname(os.path.abspath(soil3ds.__file__))#local absolute path of soil3ds
+except:
+    path_ = r'C:\devel\soil3ds\soil3ds'#
 
-path_leg = r'C:\devel\soil3ds\soil3ds\test\inputs'#r'C:\devel\racine vincent'
+
+
+################
+# Options de simulation 
+################
+
+opt_visu_scale = 1#0# to visualise a scaling box in the scene
+opt_visu_grid = 1#0 # to visualise soil grid (redondant PLOT_PROPERTY = -1)
+opt_external_coupling = 0 #1 to bypass coupling with environmental model
+opt_plot_fin = 0 #1
+opt_verbose = 1 #pour desactiver les print
+
+PLOT_PROPERTY = 'ftsw_t'#'root_length' # (-1 pour pas de grille sol)
+
+
+
+################
+# input files
+################
+
+
+#path_leg = r'C:\devel\soil3ds\soil3ds\test\inputs'#r'C:\devel\racine vincent'
+path_leg = os.path.join(path_, 'test','inputs')
 sys.path.insert(0, path_leg)
-
-
 
 path_plante = os.path.join(path_leg,'param_root.xls')
 ongletP = 'sevanskij'#'leo'#'canto'#'formica'#'timbale'#'giga'#'canto'#'kayanne'#
 ParamP = IOxls.read_plant_param(path_plante, ongletP)
 
+
+#fichier_sol=open(r'C:\devel\archisimple_lpy\GL sur pc serge\sol2.txt',"rb")#r'C:\devel\racine vincent\sol2.txt'#
+path_sol_vincent = os.path.join(path_leg,'sol2.txt')
+
+
 path_offre=os.path.join(path_leg,"moyenne.csv") #"moyenne"-> pour allocation moyenne independante des especes
 df = pd.read_csv(path_offre, sep=';')
 #df = pd.read_csv(r'H:\Travail\devel\backup new\archisimple_lpy\GL sur pc serge\offremleg15\moyenne_.csv', sep=';')
 
-
+# lecture offre C racine
 TT = list(df[df.V1=="TT"]["moyenne"])
 MSRacFine = list(df[df.V1=="MS_rac_fine"]["moyenne"])
 #TT = map(float, IOtable.extract_dataframe(taboffre, taboffre.keys(), 'V1', val='TT')[taboffre.keys()[2]])#taboffre.keys()[2]#0 pour WC
 #MSRacFine = map(float, IOtable.extract_dataframe(taboffre, taboffre.keys(), 'V1', val='MS_rac_fine')[taboffre.keys()[2]])#taboffre.keys()[2]
 #print(MSRacFine)
 
-#fichier_sol=open(r'C:\devel\archisimple_lpy\GL sur pc serge\sol2.txt',"rb")#r'C:\devel\racine vincent\sol2.txt'#
-path_sol_vincent = os.path.join(path_leg,'sol2.txt')
 
 #fichier_volrac=open(r'C:\devel\archisimple_lpy\GL sur pc serge\volrac.txt',"rb")#r'C:\devel\racine vincent\volrac.txt'#
 #path_volrac_vincent = os.path.join(path_leg,'volrac.txt')
@@ -60,59 +89,86 @@ path_sol_vincent = os.path.join(path_leg,'sol2.txt')
 # sorti de fichier image?
 
 
+# Meteo et management constante
+nb_jours=100
+Rain = [0.]*nb_jours
+Irrig = [0.]*nb_jours #0.2.
+epsi = [0.9999]*nb_jours #efficience d'interceptio plante ; 1: voit que effet transpi
+Et0 = [0.1]*nb_jours #ETP (mm)
+IDj = 0 #ID du jour
 
 
-##### Options de simulation ######
 
-Rseed = 0
-option_visuescale = 1#0# #1 to visualise a scaling box in the scene
-PLOT_PROPERTY = 'root_length' #'ftsw_t'#-1 # (-1 pour pas de grille sol)
+################
+# Initialisation 
+################
+
+TPS=0 #temps en degres jours depuis initi
+nbSTEPS=300 #P_duree #degres jours
+dt=1 #degre jour par step
+timing = 0 #pour duree sim en s
+
 TTdays = range(1,350,10) # TT des changements de jour auquel faire le calcul de bilan hydrique / Sol
 decalj=3  # decalage en jour dans TT pour prendre le premier jour
+Rseed = 0
 
-
-
-
-
-
-## creation d'un objet sol 3ds par defaut (S)
-S = init_sol_test(pattern8 = [[-50.,-50.], [50.,50.]], dz=5., size=[10,10,30])
-stateEV = [0.,0.,0.]
-#print S.ftsw_t
-
-#instancie un odjet sol 3D d'interface vide (intsoil) a partir de l'objet sol 3ds (S)
-size_ = S.size[1:]+S.size[0:1] #passe z,x,y en xyz
-dxyz_ = [S.dxyz[0][0], S.dxyz[1][0], S.dxyz[2][0]]
-origin = S.origin
-# Par default, les dimensions sont exprimes en m. Il faut les convertir en cm pour le Soil3D
-dxyz_ = [v*100 for v in dxyz_]
-origin = [v*100 for v in origin]
-
-
-intsoil = soil_interface.Soil3D_wrapper(origin, size_, dxyz_)
-intsoil.add_property('root_length',0)
+#pattern8 = [[-50.,-50.], [50.,50.]] #cm
+pattern8 = [[-15.,-15.], [15.,15.]] # cm
+dz=3.# 5. # coucle sol, cm
+size=[10,10,30] #discretisation
 properties_3ds = ['asw_t', 'tsw_t', 'Corg', 'Norg', 'm_NO3', 'm_NH4', 'm_soil_vol', 'm_Tsol', 'm_DA', 'ftsw_t']
-
-# signification des properties:
-# asw_t : quantite d'eau libre pour plante dans le voxel au temps t (mm)
-# tsw_t : quantite d'eau totale dans le voxel au temps t (mm)
-# ftsw_t : fraction d'eau ranspirable = asw_t/tsw_t
-# m_soil_vol : volume des voxels (m3)
-# m_DA : densite apparente du sol par voxel (g.cm-3)
-# m_Tsol: Temperature sol (degreC - entree actuellement forcee par meteo)
-# Corg: (kg C dans le voxel)
-# Norg: (kg N dans le voxel)
-# m_NH4: (kg N NH4 dans le voxel)
-# m_NO3: (kg N NO3 dans le voxel)
-
-#mise a jour de ttes les proprietes de sol dans l'interface sol
-intsoil.set_3ds_properties(S, properties_3ds)
-#print origin, size_, dxyz_
+stateEV = [0.,0.,0.]
 
 
+carto = [[0.,0.,0.]] #[[0.,0.,0.], [50.,50.,0.]] #carto [x,y,z] des positions plantes (en mm!)
+#Nb_plt = len(carto)
+# pour le moment 1 seul plante -> prevoir couplage de plusieurs plantes? -> impliqure remplir plusieurs grilles de densite?
+# pour le moment couplage sol se fait avec 1 seul entite de densite de racine et epsi
+# ! remplissage grille densite dans le L-system (pas ds end each) -> requiert objet sol dedans
 
 
-# Sol original de vincent : utilise pour gravitropisme et croissance racine avec info supplementaires (resist meca...)
+def initiatisation_soil_default(pattern8, dz, size, stateEV, properties_3ds):
+  #properties_3ds = ['asw_t', 'tsw_t', 'Corg', 'Norg', 'm_NO3', 'm_NH4', 'm_soil_vol', 'm_Tsol', 'm_DA', 'ftsw_t']
+  # signification des properties:
+  # asw_t : quantite d'eau libre pour plante dans le voxel au temps t (mm)
+  # tsw_t : quantite d'eau totale dans le voxel au temps t (mm)
+  # ftsw_t : fraction d'eau ranspirable = asw_t/tsw_t
+  # m_soil_vol : volume des voxels (m3)
+  # m_DA : densite apparente du sol par voxel (g.cm-3)
+  # m_Tsol: Temperature sol (degreC - entree actuellement forcee par meteo)
+  # Corg: (kg C dans le voxel)
+  # Norg: (kg N dans le voxel)
+  # m_NH4: (kg N NH4 dans le voxel)
+  # m_NO3: (kg N NO3 dans le voxel)
+  
+  
+  ## creation d'un objet sol 3ds par defaut (S)
+  S = init_sol_test(pattern8, dz, size)
+  #print('surfsol',S.surfsolref) #-> c'est bien un objet sol de la bonne surface qui est cree 
+  
+  #instancie un odjet sol 3D d'interface vide (intsoil) a partir de l'objet sol 3ds (S)
+  size_ = S.size[1:]+S.size[0:1] #passe z,x,y en xyz
+  dxyz_ = [S.dxyz[0][0], S.dxyz[1][0], S.dxyz[2][0]]
+  origin = S.origin
+  # Par default, les dimensions sont exprimes en m. Il faut les convertir en cm pour le wrapper Soil3D
+  dxyz_ = [v*100 for v in dxyz_] # conversion cm
+  origin = [v*100 for v in origin] # conversion cm
+  
+  
+  # creation wrapper sol
+  intsoil = soil_interface.Soil3D_wrapper(origin, size_, dxyz_)
+  intsoil.add_property('root_length',0)
+  
+  #mise a jour de ttes les proprietes de sol dans l'interface sol
+  intsoil.set_3ds_properties(S, properties_3ds)
+  #print origin, size_, dxyz_
+  
+  return S, stateEV, intsoil
+
+
+
+
+# Sol original de vincent : utilise en dur pour gravitropisme et croissance racine avec info supplementaires (resist meca...)
 
 fichier_sol=open(path_sol_vincent,"r")#"rb", encoding=<theencodingofthefile>)
 tableau_sol=csv.reader(fichier_sol,delimiter='	')
@@ -131,7 +187,7 @@ fichier_sol.close()
 #/* Intensite de la contrainte mecanique */
 #/* Orientation de la contrainte mécanique (O iso, ou 1 vert) */
 
-# to do: passer ces infos dans intsol pour simplifier l'exemple
+# to do: passer ces infos dans intsol pour simplifier l'exemple !!
 #print('Sol:', SolV)
 # ['1', '1', '0.02', '0'] dans tous les horizons
 
@@ -139,7 +195,7 @@ fichier_sol.close()
 
 #### Parametre L-system Vincent #####
 
-P_duree=300
+#P_duree=300
 
 NBPASMAX=151 #/* Nombre maximal de pas de temps */
 NBHORMAX=60 #/* Nombre maximal d'horizons de sol */
@@ -216,13 +272,6 @@ P_GDs = 3000. #150j*20degre
 ordreMax = 4 #GL: ordre max ou representer les racines
 
 
-#/* Variables globales diverses */
-TPS=0  #/* Le temps, en jours */
-r3=[0,0,0]  #/* Position d'origine du système racinaire */
-
-
-
-
 
 #anisotropisme=0 # en attendant le sol
 
@@ -233,11 +282,6 @@ volElemSol=0  #/* Volume élémentaire de sol associé à la maille (mm3) */
 num_pointe=0
 num_primordium=0
 
-TPS=0
-dt=1
-nbSTEPS=P_duree
-
-timing = 0
 
 
 #### preparation des sorties
@@ -259,6 +303,8 @@ out = []
 # - raclcule une offre en C journaliere pour les racines fines a partir d'un fichier d'entree -> la rapporte par degre jour
 # - passe P_SC en varaible ajustee entre 0 et 1 selon ratio offre demande
 # - ajout d'un Rseed pour controler les memes graines aleatoires
+# - ajout collet(n) et bracket pour gerer plusieurs systems racinaires
+# - ajout fonction initialisation soil et opt_external_coupling
 # 
 # ! unites affichees en commentaire sont pas bonnes!: longueur/diametre: tout en mm!!; pas de temps = degre.jour!
 
@@ -282,7 +328,6 @@ out = []
 # lie a certain element lies a TPS (en jours) et autres a dt??
 #Y en tout cas: allongement primaire reste cst (36mm/jour alors que dTT varie!! -> pb!)  -> pas de temps du model doit reester e, degrejours
 # pourrait ajouter un control de la production de primordium par rapport source puit (seuil en dessous duquel plus de fille) -> demander loic
-
 
 
 
@@ -397,8 +442,6 @@ def tireDiamPointeFille(diametre_pere):
   while (diamPFille>(1.1*diametre_pere)):
      diamPFille=random.normalvariate(moy,et)
   return diamPFille
-
-
 
 
 def axialtree2mtg2(tree, scale, scene, parameters):
@@ -597,34 +640,19 @@ class seg:
 
 
 def Start():
-  global timing,branch,chemin_fichier
+  global timing,branch,chemin_fichier, S, stateEV, dxyz_, origin, intsoil, properties_3ds
   random.seed(Rseed)
   
-  
-  intsoil.add_property('root_length',0)
-  properties_3ds = ['asw_t', 'tsw_t', 'Corg', 'Norg', 'm_NO3', 'm_NH4', 'm_soil_vol', 'm_Tsol', 'm_DA', 'ftsw_t']
-  # signification des properties:
-  # asw_t : quantite d'eau libre pour plante dans le voxel au temps t (mm)
-  # tsw_t : quantite d'eau totale dans le voxel au temps t (mm)
-  # ftsw_t : fraction d'eau ranspirable = asw_t/tsw_t
-  # m_soil_vol : volume des voxels (m3)
-  # m_DA : densite apparente du sol par voxel (g.cm-3)
-  # m_Tsol: Temperature sol (degreC - entree actuellement forcee par meteo)
-  # Corg: (kg C dans le voxel)
-  # Norg: (kg N dans le voxel)
-  # m_NH4: (kg N NH4 dans le voxel)
-  # m_NO3: (kg N NO3 dans le voxel)
-  
-  #mise a jour de ttes les proprietes de sol dans l'interface sol
-  intsoil.set_3ds_properties(S, properties_3ds)
+  # initialisaion sol
+  S, stateEV, intsoil =  initiatisation_soil_default(pattern8, dz, size, stateEV, properties_3ds)
   
   
   frameDisplay(True)
   Viewer.frameGL.setBgColor(255,255,255)
   #Viewer.camera.setOrthographic() 
   #Viewer.camera.lookAt((-50,0,-20),(0,0,-20))
-  
   timing = t.time()
+
 
 def StartEach():
   global intsoil
@@ -649,7 +677,8 @@ def StartEach():
 
 
 def EndEach(lstring,lscene):
-  global mtg,TPS,id_site,branch,scales,parameters,pointes, branch,les_pointes,les_primordiums,cumlen,out,profmax,nbpte,TT,decalj,MSRacFine,P_SC, intsoil, S, stateEV,TTdays
+  global mtg,TPS,id_site,branch,scales,parameters,pointes, branch,les_pointes,les_primordiums,cumlen,out,profmax,nbpte,TT,decalj,MSRacFine,P_SC, intsoil, S, stateEV,TTdays, IDj, Rain, Irrig, epsi, Et0, var_soil_coupling, var_CAlloc
+  
   TPS=TPS+1
   tempete=t.time()
   mtg=axialtree2mtg2(lstring, scales, lscene, parameters)
@@ -658,48 +687,76 @@ def EndEach(lstring,lscene):
   les_pointes=[[mtg.property('pte').get(x).id_pointe,x] for x in VtxList(3) if Class(x)=='p']
   les_primordiums=[x for x in VtxList(3) if Class(x)=='P']
   
+  
+  ##########
+  # step calcul offre/demande en C
+  ##########
+  
   Demande_biomasse=0
   for a in les_pointes:
     vtx=a[1]
     la_pte=mtg.property('pte').get(vtx)
     elong=CroissanceRacine(la_pte,1)
     Demande_biomasse+=P_RootMasseVolumique*(pi*(la_pte.diametre/2)*(la_pte.diametre/2)*elong)
-    
   
-  #print('Demande en biomasse :',Demande_biomasse)
+  #print('Demande R en biomasse :',Demande_biomasse)
   #print 'TPS :',TPS
   
   #,' Temps pas :',t.time()-timing2
   #print 'temps pointe :', timing7 , '  temps primordium :',timing8,'  temps segments :',timing9,' temps endeach :',t.time()-tempete
   #print 'temps sysRac :',timing10
-  dOffr = Offrj(TT,MSRacFine, Which_idjour(TT, TPS, decalj))
-  #print cumlen, 'offre: ', dOffr
   
-  out.append([TPS,profmax,nbpte[2],Demande_biomasse,dOffr,P_SC,sum(cumlen)]+cumlen[1:])#ajouter offre_semande
-  #remise a zero
-  cumlen = [0,0,0,0,0,0,0,0]
-  nbpte = [0,0,0,0,0,0,0,0]
+  dOffr = Offrj(TT,MSRacFine, Which_idjour(TT, TPS, decalj)) #offre en C par degrejour du jour en question
+  #ratio de satisfaction pour faire le scaling de l'allocation (0-1)
   P_SC = min(1., max(0. ,dOffr/Demande_biomasse)) #1 #si impose cste
   
   
-  #step soil  avec meteo constante forcee (ajuster pour faire toutes les 10 iterations??)
-  j=0
-  nb_jours=100
-  Rain = [0.]*nb_jours
-  Irrig = [0.]*nb_jours
-  epsi = [0.9999]*nb_jours #efficience d'interceptio plante ; 1: voit que effet transpi
-  Et0 = [0.1]*nb_jours #ETP (mm)
   
-  if TPS in TTdays:#fait step wtaer balance pas tous les degres jours: uniquement 1 fois par jour (TT indiques dans TTdays)
-    ls_roots = [soil_interface.soil3Dw2s3DSprop(intsoil, S, 'root_length')]
-    ls_transp, evapo_tot, ls_drainage, stateEV,  ls_m_transpi, m_evap, ls_ftsw = S.stepWBmc(Et0[j], ls_roots, [epsi[j]], Rain[j], Irrig[j], stateEV)
-    print ('tp water balance:', TPS)
+  var_CAlloc = [Demande_biomasse, dOffr, P_SC] #point pour recup variables externe
+  var_soil_coupling = [TPS, IDj, TTdays, S, intsoil, stateEV, Et0, Rain, Irrig, epsi] #point pour recup variables externe
+  
+  
+  ##########
+  # step soil avec meteo jour IDj (ajuster pour faire toutes les 10 iterations??)
+  ##########
+  
+  if TPS in TTdays:#fait step water balance pas tous les degres jours: uniquement 1 fois par jour (TT indiques dans TTdays)
+    if opt_external_coupling == 0:
+      
+      #lecture meteo
+      j=IDj #id du jour dans la liste meteo /mng
+      
+      #calcul grille densite racine globale (la plante ou toutes les plantes)
+      ls_roots = [soil_interface.soil3Dw2s3DSprop(intsoil, S, 'root_length')]
+      # step water balance avec 1 seule entite (ls_roots et epsi)
+      ls_transp, evapo_tot, ls_drainage, stateEV,  ls_m_transpi, m_evap, ls_ftsw = S.stepWBmc(Et0[j]*S.surfsolref, ls_roots, [epsi[j]], Rain[j]*S.surfsolref, Irrig[j]*S.surfsolref, stateEV)
+      
+      if opt_verbose ==1:
+          print ('tp water balance:', TPS)
+      
+      # step de 1 jour
+      IDj = IDj+1
+  
+  
+  if opt_verbose == 1:
+    #print cumlen, 'offre: ', dOffr
+    try:
+      print('Demande R en biomasse :',Demande_biomasse, 'dOffr R en biomasse, P_SC :', dOffr, P_SC, 'FTSW', ls_ftsw)
+    except:
+      print('Demande R en biomasse :',Demande_biomasse, 'dOffr R en biomasse, P_SC :', dOffr, P_SC, 'FTSW', "-")
+  
+  
+  # fichier sortie
+  out.append([TPS,profmax,nbpte[2],Demande_biomasse,dOffr,P_SC,sum(cumlen)]+cumlen[1:])#ajouter offre_semande
+  
+  #remise a zero
+  cumlen = [0,0,0,0,0,0,0,0]
+  nbpte = [0,0,0,0,0,0,0,0]
   
   #frameDisplay(True)
   #Viewer.display(lscene)
   #Viewer.frameGL.setBgColor(255,255,255)
   #Viewer.camera.setOrthographic()
-  
 
 
 
@@ -717,14 +774,15 @@ def End():
   f.close()
   
   #visu fin
-  frameDisplay(True)
-  #Viewer.frameGL.setSize(2000,5000)
-  Viewer.frameGL.setBgColor(255,255,255)
-  #Viewer.camera.setOrthographic() 
-  
-  #Viewer.camera.lookAt#((7.5/100,-1666./100,-545/100),(384./100,0,-500/100))#((7.5,-1666.,-545),(384.,0,-500))#((-50,0,-20),(0,0,-20))
-  outimagepath =  os.path.join(path_leg, ongletP+"_seed"+str(Rseed)+"_"+str(getIterationNb())+".png")
-  Viewer.frameGL.saveImage(outimagepath)
+  if opt_plot_fin == 1:
+    frameDisplay(True)
+    #Viewer.frameGL.setSize(2000,5000)
+    Viewer.frameGL.setBgColor(255,255,255)
+    #Viewer.camera.setOrthographic() 
+    
+    #Viewer.camera.lookAt#((7.5/100,-1666./100,-545/100),(384./100,0,-500/100))#((7.5,-1666.,-545),(384.,0,-500))#((-50,0,-20),(0,0,-20))
+    outimagepath =  os.path.join(path_leg, ongletP+"_seed"+str(Rseed)+"_"+str(getIterationNb())+".png")
+    Viewer.frameGL.saveImage(outimagepath)
 
 
 
@@ -734,6 +792,7 @@ module racine : scale=2
 module segment(seg) : scale=3
 module Primordium(primord): scale=3
 module pointe(pte) : scale=3
+
 
 #Declaration des module pour transformation en mtg (using axialtree2mtg)
 scales={}
@@ -753,7 +812,7 @@ parameters['pointe']=['pte']
 
 
 
-Axiom: [wRuler()SystemeRacinaire] Grid
+Axiom: [wRuler()][Collet(0)SystemeRacinaire]Grid(0) #[wRuler()][Collet(0)SystemeRacinaire][Collet(1)SystemeRacinaire]Grid(0)
 
 derivation length: nbSTEPS
 production:
@@ -922,6 +981,7 @@ Primordium(X):
   
 
 
+Grid(n) --> Grid(n+1)
 
 
 interpretation:
@@ -932,13 +992,18 @@ pointe(X):
 segment(Z):
   nproduce StartGC() SetWidth(Z.diametre*2)SetColor(7)F(Z.longueur)EndGC()
 
+
+Collet(n):
+   produce @M(carto[n][0], carto[n][1], carto[n][2])
+
+
 wRuler():
-   if option_visuescale == 1:
+   if opt_visu_scale == 1:
      produce @M(750,0,-500)@g(Box(20,5,500))@M(0,0,0)
 
 
-Grid :
-  if PLOT_PROPERTY !=-1:
+Grid(n) :
+  if PLOT_PROPERTY !=-1 and n>2:
     if PLOT_PROPERTY == 'root_length':
       sc = intsoil.pgl_representation_property(property_name=PLOT_PROPERTY, sizeratio = 1, transparency = 0.5,  minvalue = 0.01/100, maxvalue = 1, cmview=True, scalefunc = lambda x : log(x +1), scaling = 10 )
     elif PLOT_PROPERTY == 'ftsw_t':
@@ -949,7 +1014,8 @@ Grid :
       sc = intsoil.pgl_representation_property(property_name='tempo', sizeratio = 1, transparency = 0.5,  minvalue = 0.01/1000000, maxvalue = 1., cmview=True, scalefunc = lambda x : x, scaling = 10 )
     else:
       sc = intsoil.pgl_representation_property(property_name=PLOT_PROPERTY, sizeratio = 1, transparency = 0.5,  cmview=True, scalefunc = lambda x : 1-x, scaling = 10 )
-    produce @g(sc)
+    if opt_visu_grid == 1: #comme PLOT_PROPERTY == -1
+      produce @g(sc)
 #A faire: filtre des ftsw ou autres variables uniquement sur celles avec des racines -> cree une variable tempo, mais pour le moment cases qui disparaissent?? (pas pour le filtre en revache qui fonctionne
 
 endlsystem
