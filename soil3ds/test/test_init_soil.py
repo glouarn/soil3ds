@@ -89,7 +89,7 @@ def init_sol_test(pattern8 = [[-50.,-50.], [50.,50.]], dz=5., size=[10,10,30], )
 
 
     ## soil initialisation
-    S = solN.SoilN(par_sol, par_SN, soil_number = vsoilnumbers, dxyz = [[Lsol/10.]*size[0], [largsol/10.]*size[1], [dz_sol]*ncouches_sol], vDA=vDA, vCN=vCN,vMO=vMO, vARGIs = vARGIs,vNO3=vNO3,vNH4=vNH4, vCALCs=vCALCs, Tsol=Tsol, obstarac=None, pattern8=pattern8)
+    S = solN.SoilN(par_sol, par_SN, soil_number = vsoilnumbers, dxyz = [[Lsol/size[0]]*size[0], [largsol/size[1]]*size[1], [dz_sol]*ncouches_sol], vDA=vDA, vCN=vCN,vMO=vMO, vARGIs = vARGIs,vNO3=vNO3,vNH4=vNH4, vCALCs=vCALCs, Tsol=Tsol, obstarac=None, pattern8=pattern8)
     S.init_asw(HRp_init=HRpinit)
 
     return S
