@@ -637,15 +637,16 @@ def demandeNdefaut(MSp,dMSp,Npc, surfsolref, a=4.8, b=-0.33):
 #Npc = array([4., 3., 2.])
 #demandeNdefaut(MSp,dMSp,Npc, surfsolref)
 
-def demandeNdefaut2(MSp,dMSp,Npc, surfsolref, a=4.8, b1=-0.1 ,b2=-0.33):
+def demandeNdefaut2(MSp,dMSp,Npc, surfsolref, a=4.8, b1=-0.1 ,b2=-0.33, MStot_extern=0.):
     """ demande N pour parties aerienne - suppose meme courbe critique pour tout le monde - base sur N crit de la biomasse totale """
     #MSp = array des MSp (g.plant-1)
     #dMSp = array des dMSp (g.plant-1)
     #Npc = array des Npc plante (%)
     #surfsol sur laquelle sont les plantes #m2
+    #MStot_extern (T.ha-1) MA aerien autres plantes hors l-egume si couplage externe de modeles
 
     QN = MSp * Npc/100. #gN.plant-1
-    MStot = array(sum(MSp+dMSp))/(surfsolref*100.)#MS new (T.ha-1)
+    MStot = array(sum(MSp+dMSp))/(surfsolref*100.) + MStot_extern #MS new (T.ha-1)
     if MStot>=1.:
         NcritTot = a*MStot**b2#critN (MStot, a, b2)#N crit de MS new dense
     else:
