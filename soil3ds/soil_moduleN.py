@@ -89,6 +89,7 @@ class SoilN(Soil):
 
         * :bilanC (dict): Dictionnary storing soil Carbon balance daily outputs
         * :bilanN (dict): Dictionnary storing soil Nitrogen balance daily outputs
+        * :out_profil (list): List storing daily soil profiles for different variables
 
 
     Main methods:
@@ -255,6 +256,8 @@ class SoilN(Soil):
         self.InertNorg = self.Norg * parSN['FINERTG']
         self.OpenCbalance()
         self.OpenNbalance()
+        self.out_profil = []  # vide
+
         
         self.N2ONitrif, self.N2ODenitrif = 0., 0. #kg N for the whole soil volume
         self.lixiNO3 = 0. #kg N
@@ -1383,12 +1386,52 @@ class SoilN(Soil):
         print ("")
 
 
+    def Update_out_profiles(self, axis_profile=1, forceIDj=None, outf={'outHRfile':1, 'outFTSWfile':1, 'outNO3file':1, 'outNH4file':1, 'outHRvfile':1}):
+        """ Add daily profiles to out_profil
+
+        :axis_profile: axis of the matrix slected for profile (1: vertical)
+        :type axis_profile: `int
+
+        """
+        #initialisation entetes
+        if self.out_profil == []:
+            self.out_profil.append(['var', 'DOY'] + list(range(0, len(self.dxyz[2])))) #prevu verstical -> adapt
+
+
+        id_out = list(range(0, self.size[0])) #prevu verstical -> adapt
+
+        if forceIDj is None:
+            if len(self.out_profil)==1:
+                IDj = 1
+            else:
+                IDj = self.out_profil[-1][1] +1
+        else:
+            IDj = forceIDj
+
+        if outf['outHRfile'] != 0.:
+            matr = self.HRp()  #
+            self.out_profil.append(['HRp', IDj] + np.mean(matr, axis=axis_profile)[id_out, 0].tolist())
+
+        if outf['outFTSWfile'] != 0.:
+            matr = self.ftsw_t  # S.HRp()#
+            self.out_profil.append(['FTSW', IDj] + np.mean(matr, axis=axis_profile)[id_out, 0].tolist())
+
+        if outf['outNO3file'] != 0.:
+            matr = self.m_NO3  # S.HRp()#
+            self.out_profil.append(['m_NO3', IDj] + sum(matr, axis=axis_profile)[id_out, 0].tolist())  # somme!
+
+        if outf['outNH4file'] != 0.:
+            matr = self.m_NH4  # S.HRp()#
+            self.out_profil.append(['m_NN4', IDj] + sum(matr, axis=axis_profile)[id_out, 0].tolist())  # somme!
+
+        if outf['outHRvfile'] != 0.:
+            matr = self.HRv_capteur()  #
+            self.out_profil.append(['HRv', IDj] + np.mean(matr, axis=1)[id_out, 0].tolist())
 
 
 
 
-
-def step_bilanWN_solVGL(S, par_SN, meteo_j,  mng_j, ParamP, ls_epsi, ls_roots, ls_demandeN_bis, opt_residu, opt_Nuptake):
+def step_bilanWN_solVGL(S, par_SN, meteo_j,  mng_j, ParamP, ls_epsi, ls_roots, ls_demandeN_bis, opt_residu, opt_Nuptake, outf={'outHRfile':1, 'outFTSWfile':1, 'outNO3file':1, 'outNH4file':1, 'outHRvfile':1}):
     """ Daily step for soil Water and Nitrogen balance from L-egume lsystem inputs, meteo and management
 
     :param S: Previous day SoilN object
@@ -1411,6 +1454,8 @@ def step_bilanWN_solVGL(S, par_SN, meteo_j,  mng_j, ParamP, ls_epsi, ls_roots, l
     :type opt_residu: int
     :param opt_Nuptake: Option to define the calculation of plant N uptake (0:'STICS', 1:'LocalTransporter', 2:'old')
     :type opt_Nuptake: int
+    :param outf: Dictionnary declaring the variables to includes in the output profiles list
+    :type outf: dict
 
     :return:
         * [S,  new_stateEV, ls_ftsw, ls_transp, ls_Act_Nuptake_plt, temps_sol]
@@ -1466,6 +1511,9 @@ def step_bilanWN_solVGL(S, par_SN, meteo_j,  mng_j, ParamP, ls_epsi, ls_roots, l
     #print(amin(S.m_NO3), unique(idmin, return_counts=True),ls_DQ_N)
 
     temps_sol = [evapo_tot, Drainage, ls_m_transpi, m_evap, ActUpNtot, ls_DQ_N, idmin] #other output variables
+
+    # mise a jour de out_profil (out_HR in VGL) du sol
+    S.Update_out_profiles(axis_profile=1, forceIDj=meteo_j['DOY'], outf=outf)
 
     return [S,  new_stateEV, ls_ftsw, ls_transp, ls_Act_Nuptake_plt, temps_sol]
     #lims_sol et surfsolref pourrait pas etre fournie via S.?
