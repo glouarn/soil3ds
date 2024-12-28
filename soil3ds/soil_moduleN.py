@@ -21,6 +21,8 @@
 #from soil_module import * #soil_module5
 from soil3ds.soil_moduleW import * #soil3ds installe comme module
 
+import os # pour lecture XML
+import xml.etree.ElementTree as ET # pour lecture XML
 
 class SoilN(Soil):
     """ Main class for the soilN object of the 'soil3ds' model
@@ -1639,7 +1641,19 @@ def default_parSN():
     par_SN['pH'] = 7.1  # (pH unit)
     par_SN['ARGIs'] = 18.3  #
     par_SN['ACLIMc'] = 26.  #
-    par_SN['concrr'] = 0.000002  #concentration en N de la pluie (kg N.m-2.mm-1 )
+    par_SN['concrr'] = 0. #0.000002  #concentration en N de la pluie (kg N.m-2.mm-1 )
+
+    #not used
+    # ajouter CN MO et ARGIs
+    par_SN['CN0_30'] = 9.5238  #ratio - layer 1
+    par_SN['CN30_60'] = 9.5238  #ratio - layer 2
+    par_SN['CN60_90'] = 6.51  #ratio - layer 3 and +
+    par_SN['MO0_30'] = par_SN['CN0_30']*par_SN['Norg']*1.72 #18.019  # gC.kg-1 sol #1.72: facteur de passage de Corg a MO - layer 1
+    par_SN['MO30_60'] = par_SN['CN30_60']*par_SN['Norg']*1.72 #18.019  # gC.kg-1 sol #1.72: facteur de passage de Corg a MO - layer 2
+    par_SN['MO60_90'] = par_SN['CN60_90']*par_SN['Norg']*1.72 #4.7  # gC.kg-1 sol #1.72: facteur de passage de Corg a MO - layer 3 and +
+    par_SN['ARGIs0_30'] = par_SN['ARGIs']  # % - layer 1
+    par_SN['ARGIs30_60'] = 18.3  # % - layer 2
+    par_SN['ARGIs60_90'] = 32  # % - layer 3 and+
 
     return par_SN
     # ajouter parametre hydriques generaux?
@@ -1695,4 +1709,114 @@ def default_paramp():
     paramp['treshEffRootsN'] = 10**6
 
     return paramp
+
+
+def default_soilInit(ncouches_sol=30, dz_sol=5, num_nb=[6,6,18], discret_solXY=[1,1], NO3=0, NH4=10):
+    """ Creates a default soil inis dictionnary
+
+        Keys of the dictionnary are  :
+
+        Initialisation of soil parameters
+            * 'ncouches_sol' :       number of soil layers
+            * 'dz_sol' :            thickness of soil layers (cm)
+            * 'num_nb' :            number of soil layers from top to bottom for each soil type in dictionnary par_sol (sum must equal ncouches_sol)
+            * 'discret_solXY' :     number of voxel discretisation along x and y horizontal axes
+            * 'HRp' :               initialisation of soil humidity from gravimetric soil humidity measurements (-1 = field capacity)
+            * 'NO3' :               initialisation of soil mineral N-NO3 (kg N.ha-1 / layer)
+            * 'NH4' :               initialisation of soil mineral N-NH4 (kg N.ha-1 / layer)
+
+    :return: Default 'inis' dictionnary
+
+    .. code-block:: python
+
+        inis = {
+                'name': 'Lusignan30_5x5',
+                'ncouches_sol': 30.0,
+                'dz_sol': 5.0,
+                'num_nb': [6.0, 6.0, 18.0],
+                'discret_solXY': [5.0, 5.0],
+                'HRp': [-1.0]*30,
+                'NO3': [0.0]*30,
+                'NH4': [2.0]*30
+            }
+
+    """
+
+    inis = {}
+    inis['name'] = 'default inis'
+    inis['ncouches_sol'] = ncouches_sol
+    inis['dz_sol'] = dz_sol
+    inis['num_nb'] = num_nb
+    inis['discret_solXY'] = discret_solXY
+    inis['HRp']= [-1.0] * int(ncouches_sol)
+    inis['NO3']= [NO3 / ncouches_sol] * int(ncouches_sol)
+    inis['NH4']= [NH4 / ncouches_sol] * int(ncouches_sol) #repartition homogene
+
+    return inis
+
+
+def read_soil_xmlSTICS(folder_inputs, sol_xlm, sol_name):
+    """ read soil XML file from STICS and updates default par_sol and par_SN dictionnaries
+
+    :param folder_inputs: path to folder with input files
+    :param sol_xlm: XML file names for STICS soil decription
+    :param sol_name: soil name within XML file
+    :return: par_sol and par_SN dictionnaries for soil3ds initialisation
+    """
+
+    #sol_xlm = 'sols.xml'
+    #sol_name = 'Lusignan-DivLeg'
+    sol_path = os.path.join(folder_inputs, sol_xlm)  # xml sol path
+    tree = ET.parse(sol_path)
+    root = tree.getroot()
+    sol = root.find("./sol[@nom='"+sol_name+"']")
+
+    # lecture des parametres du sol par defaut
+    par_sol = default_par_sol() #solW.default_par_sol()
+    par_SN = default_parSN() #solN.default_parSN()
+
+    # soil specific water and nitrogen parameters
+    par_SN['ZESX'] = float(sol.find("./param[@nom='zesx']").text)/100.  #  (m) #cm->m
+    par_SN['CFES'] = float(sol.find("./param[@nom='cfes']").text)  #  (unitless)
+    par_SN['q0'] = float(sol.find("./param[@nom='q0']").text)  #  (mm)
+
+    par_SN['Norg'] = float(sol.find("./param[@nom='norg']").text)*10  # (g N.kg-1 sol) -> % a pourmille
+    par_SN['PROFHUMs'] = float(sol.find("./param[@nom='profhum']").text)  # (cm) depth of soil contributing to SOM mineralisation #-> peut constituer un masque pour considerer certaines couches ou pas default value p220
+
+    par_SN['pH'] = float(sol.find("./param[@nom='pH']").text)  # (pH unit)
+    par_SN['ARGIs'] = float(sol.find("./param[@nom='argi']").text)  #
+    par_SN['CALCs'] = float(sol.find("./param[@nom='calc']").text)  #
+    par_SN['ACLIMc'] = 26.  #
+    par_SN['concrr'] = 0.# 0.000002  #concentration en N de la pluie (kg N.m-2.mm-1 )
+    #manque  ACLIMc??
+
+    # soil layers water parameters
+    for layerID in ['1', '2', '3', '4', '5']:
+        #layerID = '1'
+        layer = sol.find("./tableau[@nom='layer "+layerID+"']")
+        par_sol[layerID]['soil type'] = sol_name+' - '+ layerID
+        par_sol[layerID]['DA'] = float(layer.find("./colonne[@nom='DAF']").text)
+        par_sol[layerID]['teta_fc'] = float(layer.find("./colonne[@nom='HCCF']").text)/100 * par_sol[layerID]['DA'] #% en fraction + gravimetric a volumetric WC
+        par_sol[layerID]['teta_wp'] = float(layer.find("./colonne[@nom='HMINF']").text)/100 * par_sol[layerID]['DA'] #% en fraction + gravimetric a volumetric WC
+        par_sol[layerID]['teta_sat'] = par_sol[layerID]['teta_fc'] + 0.05 #not used
+        par_sol[layerID]['teta_ad'] = par_sol[layerID]['teta_wp'] - 0.04 #not used
+        # "WCST" et "gamma_theo" not used
+        par_sol[layerID]['epc'] = float(layer.find("./colonne[@nom='epc']").text) #cm # ajout epaisseur de sol / not used sauf init from STICS
+
+    #inis (mettre dans fonction separee avec init depuis XML STICS?
+    dz = 5. #cm # en dur!
+    discret_ = [1, 1] # en dur!
+    nbcouches = int((par_sol['1']['epc'] + par_sol['2']['epc'] + par_sol['3']['epc'] + par_sol['4']['epc'] + par_sol['5']['epc'])/dz)
+    numnb = [int(par_sol['1']['epc']/dz), int(par_sol['2']['epc']/dz), int(par_sol['3']['epc']/dz), int(par_sol['4']['epc']/dz), int(par_sol['5']['epc']/dz)]
+    #capacite au champ / 1kg Npar couche
+    inis = default_soilInit(ncouches_sol=nbcouches, dz_sol=dz, num_nb=numnb, discret_solXY=discret_, NO3=0, NH4=1*nbcouches)
+
+    #pourrait mettre a jour les inis apres a partir XML initialisation -> la force en dur
+
+    return par_sol, par_SN, inis
+    #message d'erreur si pas le sol?
+    #sol_xlm = 'sols.xml'
+    #sol_name = 'Lusignan-DivLeg'
+    #par_sol, par_SN, inis = solN.read_soil_xmlSTICS(path_leg, sol_xlm, sol_name)
+
 

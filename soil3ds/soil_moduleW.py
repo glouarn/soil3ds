@@ -1009,6 +1009,9 @@ def default_par_sol():
     # add soil type 4
     par_sol['4'] = {'soil number': '4', 'soil type': 'H90cm - ASCHYD11', 'teta_sat': 0.55, 'teta_fc': 0.426,
                     'teta_wp': 0.312, 'teta_ad': 0.248, 'DA': 1.36, 'WCST': '0.35', 'gamma_theo': '0.07'}
+    # add soil type 5
+    par_sol['5'] = {'soil number': '5', 'soil type': 'H90cm - ASCHYD11', 'teta_sat': 0.55, 'teta_fc': 0.426,
+                    'teta_wp': 0.312, 'teta_ad': 0.248, 'DA': 1.36, 'WCST': '0.35', 'gamma_theo': '0.07'}
 
     return par_sol
 
