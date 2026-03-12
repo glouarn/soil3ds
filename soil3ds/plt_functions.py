@@ -544,7 +544,7 @@ def Actual_Nuptake_plt_Bis(SN, ls_Pot_Nuptake_plt, ls_PltN, paramp= [{"treshmaxN
         elif ls_PltN[i] < treshminN:
             frein = 1.
         else:
-            frein = (ls_PltN[i] - treshminN) / (treshmaxN - treshminN)
+            frein = (treshmaxN - ls_PltN[i]) / (treshmaxN - treshminN)
 
         ls_frein_N.append(frein)
 
